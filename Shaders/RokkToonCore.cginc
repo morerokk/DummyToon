@@ -155,8 +155,8 @@ float4 frag (v2f i) : SV_Target
     float SaturationVar;
     float ToonContrastVar;
     float ToonRampOffsetVar;
-    sampler2D RampTex;
-    GetToonVars(IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, RampTex);
+    float4 ToonRampMaskColor;
+    GetToonVars(i.uv, IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, ToonRampMaskColor);
     
     // Obtain albedo from main texture and multiply by intensity
     float3 albedo = mainTex.rgb * IntensityVar;
@@ -206,7 +206,7 @@ float4 frag (v2f i) : SV_Target
     GetLightData(albedo, normalDir, i.worldPos.xyz, attenuation, lightDirection, lightColor);
     
     // Apply current light
-    finalColor += ToonLighting(albedo, normalDir, lightDirection, _LightColor0.rgb, RampTex, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+    finalColor += ToonLighting(albedo, normalDir, lightDirection, _LightColor0.rgb, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
     
     // Apply metallic
     #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)

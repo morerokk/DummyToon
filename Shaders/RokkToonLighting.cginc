@@ -37,14 +37,35 @@ float3 GIsonarDirection()
 }
 
 // Simple lambert lighting
-float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lightColor, sampler2D rampTex, float toonContrast, float toonRampOffset)
+float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lightColor, float4 ToonRampMaskColor, float toonContrast, float toonRampOffset)
 {
     float dotProduct = saturate(dot(normalDir, lightDir));
     
     // Turn ndotl into UV's for toon ramp
     // Sample toon ramp diagonally to cover horizontal and vertical ramps (thanks Rero)
     float2 rampUV = saturate(float2(dotProduct, dotProduct) + toonRampOffset);
-    float4 ramp = tex2D(rampTex, rampUV);
+    
+    #if defined(_RAMPMASK_ON)
+        float4 ramp;
+        if(ToonRampMaskColor.r > 0.5)
+        {
+            ramp = tex2D(_RampR, rampUV);
+        }
+        else if(ToonRampMaskColor.g > 0.5)
+        {
+            ramp = tex2D(_RampG, rampUV);
+        }
+        else if(ToonRampMaskColor.b > 0.5)
+        {
+            ramp = tex2D(_RampB, rampUV);
+        }
+        else
+        {
+            ramp = tex2D(_Ramp, rampUV);
+        }
+    #else
+        float4 ramp = tex2D(_Ramp, rampUV);
+    #endif
     
     // Multiply by toon ramp color value rather than ndotl
     return albedo * lightColor * ramp.rgb * toonContrast;

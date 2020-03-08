@@ -96,6 +96,7 @@
             #pragma shader_feature_local _ALPHABLEND_ON
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _EMISSION
+            #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
@@ -127,6 +128,7 @@
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _ALPHABLEND_ON
             #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX

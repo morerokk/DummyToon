@@ -613,7 +613,7 @@ public class RokkToonEditorGUI : ShaderGUI
 
     // Set up material blend modes and blending/alphatest keywords, render queues and override tags
     // By default, the current material is used.
-    // A material can be manually specified in case a new shader is assigned to the material, in which case the properties don't exist yet.
+    // A material can be manually specified in case this shader is newly assigned to the material, because the properties don't exist yet.
     private void SetupBlendModes()
     {
         this.SetupBlendModes(this.material);
