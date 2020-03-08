@@ -31,10 +31,10 @@
         // Metallic and specular
         [Enum(None,0,Metallic,1,Specular,2)] _MetallicMode("Metallic Mode", Float) = 0
         [NoScaleOffset] _MetallicGlossMap("Metallic Map", 2D) = "white" {}
-        _Metallic("Metallic", Range( 0 , 1)) = 0
-        _Glossiness("Smoothness", Range( 0 , 1)) = 0
+        _Metallic("Metallic", Range( 0 , 1)) = 1
+        _Glossiness("Smoothness", Range( 0 , 1)) = 1
         [NoScaleOffset] _SpecGlossMap("Specular Map", 2D) = "white" {}
-        [HDR] _SpecColor("Specular Color", Color) = (0,0,0,0)
+        [HDR] _SpecColor("Specular Color", Color) = (1,1,1,1)
         
         // Toon ramp masking
         [Toggle(_RAMPMASK_ON)] _RampMaskEnabled ("Ramp Masking", Float) = 0

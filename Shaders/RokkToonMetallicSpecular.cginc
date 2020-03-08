@@ -82,7 +82,8 @@ void MetallicSpecularGloss(float3 worldPos, float2 uv, float3 normalDirection, i
                     reflectionColor = DecodeHDR(reflectionData, unity_SpecCube0_HDR);
                 }
                 
-                reflectionColor *= color;
+                // For specular, use the specular color instead of the albedo color to tint the reflection
+                reflectionColor *= specular;
             #endif
         #endif
         

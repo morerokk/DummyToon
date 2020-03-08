@@ -106,7 +106,7 @@ public class RokkToonEditorGUI : ShaderGUI
         defaultFieldWidth = EditorGUIUtility.fieldWidth;
 
         DrawMain();
-        if(HasOutlines())
+        if (HasOutlines())
         {
             DrawOutlines();
         }
@@ -125,7 +125,7 @@ public class RokkToonEditorGUI : ShaderGUI
     {
         base.AssignNewShaderToMaterial(material, oldShader, newShader);
 
-        SetupBlendModes();
+        SetupBlendModes(material);
     }
 
     private void DrawMain()
@@ -141,17 +141,6 @@ public class RokkToonEditorGUI : ShaderGUI
 
         editor.TexturePropertySingleLine(new GUIContent("Normal Map"), bumpMap, bumpScale);
 
-        EditorGUI.BeginChangeCheck();
-        editor.ShaderProperty(cutoutEnabled, new GUIContent("Cutout", "Whether to use alpha-based cutout (alpha testing)."));
-        if (cutoutEnabled.floatValue == 1)
-        {
-            editor.RangeProperty(cutoff, "Alpha Cutoff");
-        }
-        if(EditorGUI.EndChangeCheck())
-        {
-            SetupBlendModes();
-        }
-
         editor.TexturePropertySingleLine(new GUIContent("Emission Map"), emissionMap, emissionColor);
 
         editor.ShaderProperty(cullMode, new GUIContent("Sidedness", "Which sides of the mesh should be rendered."));
@@ -163,9 +152,21 @@ public class RokkToonEditorGUI : ShaderGUI
             SetupBlendModes();
         }
 
+        EditorGUI.BeginChangeCheck();
+        editor.ShaderProperty(cutoutEnabled, new GUIContent("Cutout", "Whether to use alpha-based cutout (alpha testing)."));
+        if (EditorGUI.EndChangeCheck())
+        {
+            SetupBlendModes();
+        }
+
+        if (cutoutEnabled.floatValue == 1)
+        {
+            editor.RangeProperty(cutoff, "Alpha Cutoff");
+        }
+
         editor.ShaderProperty(zWrite, new GUIContent("ZWrite", "Whether the shader should write to the depth buffer or not."));
 
-        if(renderMode.floatValue != 2 && zWrite.floatValue == 0)
+        if (renderMode.floatValue != 2 && zWrite.floatValue == 0)
         {
             EditorGUILayout.HelpBox("ZWrite is disabled on a non-transparent rendering mode. This is likely not intentional.", MessageType.Warning);
         }
@@ -197,7 +198,7 @@ public class RokkToonEditorGUI : ShaderGUI
 
         editor.ShaderProperty(rampMaskingEnabled, new GUIContent("Ramp Masking", "Enable the Ramp Masking feature, allowing you to use RGB masks to define up to 4 toon ramps on the same material."));
 
-        if(rampMaskingEnabled.floatValue == 1)
+        if (rampMaskingEnabled.floatValue == 1)
         {
             DrawRampMasking();
         }
@@ -211,7 +212,7 @@ public class RokkToonEditorGUI : ShaderGUI
 
         //Red ramp
         ToonRampProperty(new GUIContent("Toon Ramp (R)", "The toon ramp texture to use on the red parts of the mask."), rampR);
-        
+
         editor.RangeProperty(toonContrastR, "Toon Contrast (R)");
         editor.RangeProperty(toonRampOffsetR, "Toon Ramp Offset (R)");
         editor.RangeProperty(intensityR, "Intensity (R)");
@@ -554,7 +555,7 @@ public class RokkToonEditorGUI : ShaderGUI
         }
 
         // Add ramp masking keyword
-        if(rampMaskingEnabled.floatValue == 1)
+        if (rampMaskingEnabled.floatValue == 1)
         {
             material.EnableKeyword("_RAMPMASK_ON");
         }
@@ -610,14 +611,22 @@ public class RokkToonEditorGUI : ShaderGUI
         }
     }
 
+    // Set up material blend modes and blending/alphatest keywords, render queues and override tags
+    // By default, the current material is used.
+    // A material can be manually specified in case a new shader is assigned to the material, in which case the properties don't exist yet.
     private void SetupBlendModes()
     {
+        this.SetupBlendModes(this.material);
+    }
+
+    private void SetupBlendModes(Material material)
+    {
         // Check if the render type is transparent or not
-        if (this.renderMode.floatValue == 2)
+        if (material.GetInt("_Mode") == 2)
         {
             // Set up transparent blend modes
-            this.srcBlend.floatValue = (int)UnityEngine.Rendering.BlendMode.SrcAlpha;
-            this.dstBlend.floatValue = (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha;
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
 
             // Enable alpha blend keyword
             material.EnableKeyword("_ALPHABLEND_ON");
@@ -629,15 +638,15 @@ public class RokkToonEditorGUI : ShaderGUI
         else
         {
             // Set up opaque blend modes (no blending)
-            this.srcBlend.floatValue = (int)UnityEngine.Rendering.BlendMode.One;
-            this.dstBlend.floatValue = (int)UnityEngine.Rendering.BlendMode.Zero;
+            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
 
             // Disable alpha blend keyword
             material.DisableKeyword("_ALPHABLEND_ON");
 
             // If Cutout is enabled, set the queue to AlphaTest and change the rendertype
             // Otherwise, set the queue and rendertype back to default.
-            if(this.cutoutEnabled.floatValue == 1)
+            if (material.GetInt("_CutoutEnabled") == 1)
             {
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
                 material.SetOverrideTag("RenderType", "TransparentCutout");

@@ -52,7 +52,8 @@ float _Metallic;
 float _Glossiness;
 
 #if defined(_SPECGLOSSMAP)
-    float4 _SpecColor;
+    // _SpecColor is already defined somewhere
+    //loat4 _SpecColor;
     sampler2D _SpecGlossMap;
 #endif
 
