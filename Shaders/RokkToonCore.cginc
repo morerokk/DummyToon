@@ -22,6 +22,58 @@ float3 _StaticToonLight;
 float _Intensity;
 float _Saturation;
 
+#if defined(_RAMPMASK_ON)
+    sampler2D _RampMaskTex;
+
+    sampler2D _RampR;
+    float _ToonContrastR;
+    float _ToonRampOffsetR;
+    float _IntensityR;
+    float _SaturationR;
+    
+    sampler2D _RampG;
+    float _ToonContrastG;
+    float _ToonRampOffsetG;
+    float _IntensityG;
+    float _SaturationG;
+    
+    sampler2D _RampB;
+    float _ToonContrastB;
+    float _ToonRampOffsetB;
+    float _IntensityB;
+    float _SaturationB;
+#endif
+
+#if defined(_METALLICGLOSSMAP)
+    sampler2D _MetallicGlossMap;
+#endif
+
+float _Metallic;
+float _Glossiness;
+
+#if defined(_SPECGLOSSMAP)
+    float4 _SpecColor;
+    sampler2D _SpecGlossMap;
+#endif
+
+#if defined(_EMISSION)
+    sampler2D _EmissionMap;
+    float4 _EmissionColor;
+#endif
+
+#if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+    sampler2D _MatCap;
+    float _MatCapStrength;
+#endif
+
+#if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
+    sampler2D _RimTex;
+    float4 _RimLightColor;
+    float _RimLightMode;
+    float _RimWidth;
+    float _RimInvert;
+#endif
+
 struct appdata
 {
     float4 vertex : POSITION;
@@ -42,6 +94,19 @@ struct v2f
 };
 
 #include "RokkToonLighting.cginc"
+#include "RokkToonRamping.cginc"
+
+#if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
+    #include "RokkToonMetallicSpecular.cginc"
+#endif
+
+#if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+    #include "RokkToonMatcap.cginc"
+#endif
+
+#if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
+    #include "RokkToonRimlight.cginc"
+#endif
 
 float3 NormalDirection(v2f i)
 {
@@ -49,7 +114,7 @@ float3 NormalDirection(v2f i)
     
     // Perturb normals with a normal map
     #if defined(_NORMALMAP)
-        float3x3 tangentTransform = float3x3( i.tangentDir, i.bitangentDir, i.normalDir);
+        float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap,TRANSFORM_TEX(i.uv, _BumpMap)), _BumpScale);
         float3 normalLocal = bumpTex.rgb;
         normalDir = normalize(mul(normalLocal, tangentTransform));
@@ -73,33 +138,93 @@ v2f vert (appdata v)
 
 float4 frag (v2f i) : SV_Target
 {
-    // sample the texture
+    float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
+
+    // Sample main texture
     float4 mainTex = tex2D(_MainTex, i.uv);
     mainTex *= _Color;
     
+    // Cutout
     #if defined(_ALPHATEST_ON)
         clip(mainTex.a - _Cutoff);
     #endif
     
+    // Get all vars related to toon ramping
+    float IntensityVar;
+    float SaturationVar;
+    float ToonContrastVar;
+    float ToonRampOffsetVar;
+    sampler2D RampTex;
+    GetToonVars(IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, RampTex);
+    
     // Obtain albedo from main texture and multiply by intensity
-    float3 albedo = mainTex.rgb * _Intensity;
+    float3 albedo = mainTex.rgb * IntensityVar;
+    
+    // Apply saturation modifier
     float lum = Luminance(albedo);
-    albedo = lerp(float3(lum, lum, lum), albedo, _Saturation);
+    albedo = lerp(float3(lum, lum, lum), albedo, SaturationVar);
 
+    // Get normal direction from vertex normals (and normal maps if applicable)
     float3 normalDir = NormalDirection(i);
+    
+    // Matcap
+    #if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+        Matcap(viewDir, normalDir, albedo);
+    #endif
+    
+    // Rimlight
+    #if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
+        float rim = 1.0 - saturate(dot(normalize(viewDir), normalDir));
+        if(_RimInvert == 1)
+        {
+            rim = 1 - rim;
+        }
+        
+        float4 rimTex = tex2D(_RimTex, i.uv);
+        rimTex *= _RimLightColor;
+        
+        float3 rimColor = rimTex.rgb * smoothstep(1 - _RimWidth, 1.0, rim);
+        
+        #if defined(_RIMLIGHT_ADD)
+            albedo += (rimColor * rimTex.a);
+        #else   
+            albedo = lerp(albedo, rimColor, rim * rimTex.a);
+        #endif
+    #endif
     
     // Lighting
     UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
     
     float3 lightDirection;
     float3 lightColor;
-    float3 finalColor;
     
-    // Fill finalColor with indirect lighting, fill lightDirection and lightColor with current light data
-    GetLightData(albedo, normalDir, i.worldPos.xyz, attenuation, finalColor, lightDirection, lightColor);
+    // Fill the finalcolor with indirect light data
+    float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz);
+    
+    // Fill lightDirection and lightColor with current light data
+    GetLightData(albedo, normalDir, i.worldPos.xyz, attenuation, lightDirection, lightColor);
     
     // Apply current light
-    finalColor += ToonLighting(albedo, normalDir, lightDirection, _LightColor0.rgb) * attenuation;
+    finalColor += ToonLighting(albedo, normalDir, lightDirection, _LightColor0.rgb, RampTex, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+    
+    // Apply metallic
+    #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
+        MetallicSpecularGloss(i.worldPos.xyz, i.uv, normalDir, finalColor);
+    #endif
+    
+    // Apply emission
+    #if defined(UNITY_PASS_FORWARDBASE) && defined(_EMISSION)
+        float4 emissive = tex2D(_EmissionMap, i.uv);
+        emissive *= _EmissionColor;
+        
+        finalColor += emissive;
+    #endif
+    
+    #if defined(_ALPHABLEND_ON)
+        float finalAlpha = mainTex.a;
+    #else
+        float finalAlpha = 1;
+    #endif
 
-    return float4(finalColor, 1);
+    return float4(finalColor, finalAlpha);
 }
