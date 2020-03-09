@@ -23,6 +23,7 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty staticToonLight = null;
     private MaterialProperty intensity = null;
     private MaterialProperty saturation = null;
+    private MaterialProperty indirectLightBoost = null;
 
     // Metallic and specular
     private MaterialProperty metallicMode = null;
@@ -93,6 +94,8 @@ public class RokkToonEditorGUI : ShaderGUI
     private bool matcapExpanded = false;
     private bool rimlightExpanded = false;
     private bool miscExpanded = false;
+
+    private bool rampMaskHelpExpanded = false;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
@@ -170,13 +173,6 @@ public class RokkToonEditorGUI : ShaderGUI
         {
             EditorGUILayout.HelpBox("ZWrite is disabled on a non-transparent rendering mode. This is likely not intentional.", MessageType.Warning);
         }
-
-        /*
-        editor.ShaderProperty(renderMode, "Mode");
-        editor.ShaderProperty(srcBlend, "SrcBlend");
-        editor.ShaderProperty(dstBlend, "DstBlend");
-        editor.ShaderProperty(zWrite, "ZWrite");
-        */
     }
 
     private void DrawToonLighting()
@@ -193,10 +189,23 @@ public class RokkToonEditorGUI : ShaderGUI
         editor.RangeProperty(toonRampOffset, "Toon Ramp Offset");
         editor.RangeProperty(intensity, "Intensity");
         editor.RangeProperty(saturation, "Saturation");
+        editor.RangeProperty(indirectLightBoost, "Indirect Lighting Boost");
 
         editor.VectorProperty(staticToonLight, "Fallback light direction");
 
+        // Draw the ramp masking toggle and a help box button horizontally
+        EditorGUILayout.BeginHorizontal();
         editor.ShaderProperty(rampMaskingEnabled, new GUIContent("Ramp Masking", "Enable the Ramp Masking feature, allowing you to use RGB masks to define up to 4 toon ramps on the same material."));
+        if (GUILayout.Button("?", GUILayout.Width(25)))
+        {
+            rampMaskHelpExpanded = !rampMaskHelpExpanded;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (rampMaskHelpExpanded)
+        {
+            EditorGUILayout.HelpBox("Toon Ramp Masking is an experimental feature to allow up to 4 different toon ramps and toon values to be used on the same material. The color of the mask texture defines whether the Red, Green, Blue or Default values are used in that particular area.", MessageType.Info);
+        }
 
         if (rampMaskingEnabled.floatValue == 1)
         {
@@ -206,7 +215,6 @@ public class RokkToonEditorGUI : ShaderGUI
 
     private void DrawRampMasking()
     {
-        //GUILayout.Label("Ramp Masking", EditorStyles.boldLabel);
         editor.TexturePropertySingleLine(new GUIContent("Ramp Mask Tex    ", "A mask texture that dictates which toon ramp goes where (black, red, green, blue)."), rampMaskTex);
         EditorGUILayout.Space();
 
@@ -403,6 +411,7 @@ public class RokkToonEditorGUI : ShaderGUI
         staticToonLight = FindProperty("_StaticToonLight", props);
         intensity = FindProperty("_Intensity", props);
         saturation = FindProperty("_Saturation", props);
+        indirectLightBoost = FindProperty("_IndirectLightBoost", props);
 
         // Metallic and specular
         metallicMode = FindProperty("_MetallicMode", props);

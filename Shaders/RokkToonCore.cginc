@@ -22,6 +22,8 @@ float3 _StaticToonLight;
 float _Intensity;
 float _Saturation;
 
+float _IndirectLightBoost;
+
 #if defined(_RAMPMASK_ON)
     sampler2D _RampMaskTex;
 
@@ -175,22 +177,7 @@ float4 frag (v2f i) : SV_Target
     
     // Rimlight
     #if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
-        float rim = 1.0 - saturate(dot(normalize(viewDir), normalDir));
-        if(_RimInvert == 1)
-        {
-            rim = 1 - rim;
-        }
-        
-        float4 rimTex = tex2D(_RimTex, i.uv);
-        rimTex *= _RimLightColor;
-        
-        float3 rimColor = rimTex.rgb * smoothstep(1 - _RimWidth, 1.0, rim);
-        
-        #if defined(_RIMLIGHT_ADD)
-            albedo += (rimColor * rimTex.a);
-        #else   
-            albedo = lerp(albedo, rimColor, rim * rimTex.a);
-        #endif
+        Rimlight(i.uv, viewDir, normalDir, albedo);
     #endif
     
     // Lighting
@@ -212,7 +199,11 @@ float4 frag (v2f i) : SV_Target
     GetLightData(i.worldPos.xyz, lightDirection, lightColor);
     
     // Apply current light
-    finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+    // If the current light is black or attenuation is 0, it will have no effect. Skip it to save on calculations and texture samples.
+    if(all(_LightColor0.rgb != 0) && attenuation != 0)
+    {
+        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+    }
     
     // Apply metallic
     #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
