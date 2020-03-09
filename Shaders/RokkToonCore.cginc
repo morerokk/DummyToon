@@ -22,6 +22,7 @@ float3 _StaticToonLight;
 float _Intensity;
 float _Saturation;
 
+float _DirectLightBoost;
 float _IndirectLightBoost;
 
 #if defined(_RAMPMASK_ON)
@@ -192,7 +193,7 @@ float4 frag (v2f i) : SV_Target
     #ifdef UNITY_PASS_FORWARDBASE
         // Run the lighting function with non-realtime data first
         GetBaseLightData(lightDirection, lightColor);
-        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar);
+        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor * _IndirectLightBoost, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar);
     #endif
     
     // Fill lightDirection and lightColor with current light data
@@ -200,9 +201,9 @@ float4 frag (v2f i) : SV_Target
     
     // Apply current light
     // If the current light is black or attenuation is 0, it will have no effect. Skip it to save on calculations and texture samples.
-    if(all(_LightColor0.rgb != 0) && attenuation != 0)
+    if(any(_LightColor0.rgb != 0) && attenuation != 0)
     {
-        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor * _DirectLightBoost, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
     }
     
     // Apply metallic

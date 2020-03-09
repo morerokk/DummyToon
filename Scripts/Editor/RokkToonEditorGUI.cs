@@ -23,6 +23,7 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty staticToonLight = null;
     private MaterialProperty intensity = null;
     private MaterialProperty saturation = null;
+    private MaterialProperty directLightBoost = null;
     private MaterialProperty indirectLightBoost = null;
 
     // Metallic and specular
@@ -189,6 +190,7 @@ public class RokkToonEditorGUI : ShaderGUI
         editor.RangeProperty(toonRampOffset, "Toon Ramp Offset");
         editor.RangeProperty(intensity, "Intensity");
         editor.RangeProperty(saturation, "Saturation");
+        editor.RangeProperty(directLightBoost, "Direct Lighting Boost");
         editor.RangeProperty(indirectLightBoost, "Indirect Lighting Boost");
 
         editor.VectorProperty(staticToonLight, "Fallback light direction");
@@ -411,6 +413,7 @@ public class RokkToonEditorGUI : ShaderGUI
         staticToonLight = FindProperty("_StaticToonLight", props);
         intensity = FindProperty("_Intensity", props);
         saturation = FindProperty("_Saturation", props);
+        directLightBoost = FindProperty("_DirectLightBoost", props);
         indirectLightBoost = FindProperty("_IndirectLightBoost", props);
 
         // Metallic and specular
