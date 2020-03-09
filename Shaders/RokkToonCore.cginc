@@ -202,11 +202,17 @@ float4 frag (v2f i) : SV_Target
     // Fill the finalcolor with indirect light data
     float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz);
     
+    #ifdef UNITY_PASS_FORWARDBASE
+        // Run the lighting function with non-realtime data first
+        GetBaseLightData(lightDirection, lightColor);
+        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar);
+    #endif
+    
     // Fill lightDirection and lightColor with current light data
-    GetLightData(albedo, normalDir, i.worldPos.xyz, attenuation, lightDirection, lightColor);
+    GetLightData(i.worldPos.xyz, lightDirection, lightColor);
     
     // Apply current light
-    finalColor += ToonLighting(albedo, normalDir, lightDirection, _LightColor0.rgb, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+    finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
     
     // Apply metallic
     #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)

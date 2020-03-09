@@ -148,6 +148,8 @@
             }
             Offset 1, 1
             
+            Cull [_Cull]
+            
             CGPROGRAM
             #pragma multi_compile_shadowcaster
             

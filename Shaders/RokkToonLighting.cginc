@@ -71,34 +71,32 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
     return albedo * lightColor * ramp.rgb * toonContrast;
 }
 
+// Fill the light direction and light color parameters with data from SH.
+// This ensures that there is always some toon shading going on.
+void GetBaseLightData(inout float3 lightDirection, inout float3 lightColor)
+{
+    lightDirection = GIsonarDirection();
+    lightColor = ShadeSH9(float4(0,0,0,1));
+}
+
 // Fill the light direction and light color parameters.
-void GetLightData(float3 albedo, float3 normalDir, float3 worldPos, float attenuation, inout float3 lightDirection, inout float3 lightColor)
-{        
-    #if defined(DIRECTIONAL) || defined(DIRECTIONAL_COOKIE)
-        #ifdef UNITY_PASS_FORWARDBASE
-            // Pass is forwardbase, realtime directional light may or may not exist, or may be obscured in shadow.
-            // Check if the attenuation is 0 (surface is in shadow), or if there is no realtime directional light.
-            if(all(_WorldSpaceLightPos0.xyz == 0) || attenuation == 0)
-            {
-                // No realtime directional light, use GI sonar to obtain a light direction.
-                // Use SH for color.
-                lightDirection = GIsonarDirection();
-                lightColor = ShadeSH9(float4(0,0,0,1));
-            }
-            else
-            {
-                // Realtime directional light exists, take directional light direction and color
-                lightDirection = normalize(_WorldSpaceLightPos0.xyz);
-                lightColor = _LightColor0.rgb;
-            }
-        #else
-            // Pass is forwardadd, take realtime directional light direction and color
+void GetLightData(float3 worldPos, inout float3 lightDirection, inout float3 lightColor)
+{
+    #ifdef UNITY_PASS_FORWARDBASE
+        // Take directional light direction and color
+        lightDirection = normalize(_WorldSpaceLightPos0.xyz);
+        lightColor = _LightColor0.rgb;
+    #else
+        // Pass is forwardadd
+        // Check if the light is directional or point/spot.
+        // Directional lights get their pos interpreted as direction
+        // Other lights get their direction calculated from their pos
+        #if defined(DIRECTIONAL) || defined(DIRECTIONAL_COOKIE)
             lightDirection = normalize(_WorldSpaceLightPos0.xyz);
             lightColor = _LightColor0.rgb;
+        #else
+            lightDirection = normalize(_WorldSpaceLightPos0.xyz - worldPos);
+            lightColor = _LightColor0.rgb;
         #endif
-    #else
-        // Pass is forwardadd, calculate direction from worldspace pos and take the color.
-        lightDirection = normalize(_WorldSpaceLightPos0.xyz - worldPos);
-        lightColor = _LightColor0.rgb;
     #endif
 }
