@@ -73,12 +73,12 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty outlineScreenspaceMinDist = null;
     private MaterialProperty outlineScreenspaceMaxDist = null;
     private MaterialProperty outlineStencilComp = null;
-    private MaterialProperty outlineCutout = null;
     private MaterialProperty outlineAlphaWidthEnabled = null;
 
     // Internal properties
     private MaterialProperty srcBlend = null;
     private MaterialProperty dstBlend = null;
+    private MaterialProperty outlineStencilWriteAction;
 
     private MaterialEditor editor;
 
@@ -122,6 +122,11 @@ public class RokkToonEditorGUI : ShaderGUI
         DrawMisc();
 
         SetupKeywords();
+
+        if(HasOutlines())
+        {
+            SetupOutlineStencilValues();
+        }
     }
 
     // Called when user switches to this shader
@@ -278,7 +283,6 @@ public class RokkToonEditorGUI : ShaderGUI
         }
 
         editor.ShaderProperty(outlineStencilComp, new GUIContent("Outline Mode", "Outer Only will only render the outlines on the outer edges of the model."));
-        editor.ShaderProperty(outlineCutout, new GUIContent("Cutout Outlines", "Whether the outlines should be subject to cutout."));
 
         //Display a warning if the user attempts to use outlines to create double-sidedness.
         if (
@@ -460,7 +464,6 @@ public class RokkToonEditorGUI : ShaderGUI
         outlineColor = FindProperty("_OutlineColor", props, false);
         outlineTex = FindProperty("_OutlineTex", props, false);
         outlineStencilComp = FindProperty("_OutlineStencilComp", props, false);
-        outlineCutout = FindProperty("_OutlineCutout", props, false);
         outlineAlphaWidthEnabled = FindProperty("_OutlineAlphaWidthEnabled", props, false);
         outlineScreenspaceEnabled = FindProperty("_ScreenSpaceOutline", props, false);
         outlineScreenspaceMinDist = FindProperty("_ScreenSpaceMinDist", props, false);
@@ -471,6 +474,7 @@ public class RokkToonEditorGUI : ShaderGUI
         srcBlend = FindProperty("_SrcBlend", props);
         dstBlend = FindProperty("_DstBlend", props);
         zWrite = FindProperty("_ZWrite", props);
+        outlineStencilWriteAction = FindProperty("_StencilWriteAction", props, false);
     }
 
     private bool HasOutlines()
@@ -668,6 +672,21 @@ public class RokkToonEditorGUI : ShaderGUI
                 material.renderQueue = -1;
                 material.SetOverrideTag("RenderType", "");
             }
+        }
+    }
+
+    private void SetupOutlineStencilValues()
+    {
+        // Check if outer only outline mode is enabled
+        if(outlineStencilComp.floatValue == (int)UnityEngine.Rendering.CompareFunction.NotEqual)
+        {
+            // If so, tell ForwardBase pass to also write to the stencil buffer
+            this.outlineStencilWriteAction.floatValue = (int)UnityEngine.Rendering.StencilOp.Replace;
+        }
+        else
+        {
+            // Otherwise, tell the ForwardBase pass to *not* write stencils.
+            this.outlineStencilWriteAction.floatValue = (int)UnityEngine.Rendering.StencilOp.Keep;
         }
     }
 }

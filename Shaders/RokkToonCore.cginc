@@ -3,9 +3,6 @@
 #include "AutoLight.cginc"
 #include "UnityPBSLighting.cginc"
 
-sampler2D _MainTex;
-float4 _MainTex_ST;
-float4 _Color;
 float _Cutoff;
 
 #if defined(_NORMALMAP)
@@ -78,6 +75,21 @@ float _Glossiness;
     float _RimInvert;
 #endif
 
+#ifdef OUTLINE_PASS
+    uniform sampler2D _OutlineTex;
+    uniform float4 _OutlineTex_ST;
+    uniform float _OutlineWidth;
+    uniform float4 _OutlineColor;
+
+    uniform float _ScreenSpaceMinDist;
+    uniform float _ScreenSpaceMaxDist;
+#else
+    sampler2D _MainTex;
+    float4 _Color;
+#endif
+
+float4 _MainTex_ST;
+
 struct appdata
 {
     float4 vertex : POSITION;
@@ -127,26 +139,33 @@ float3 NormalDirection(v2f i)
     return normalDir;
 }
 
-v2f vert (appdata v)
-{
-    v2f o;
-    o.pos = UnityObjectToClipPos(v.vertex);
-    o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-    o.normalDir = UnityObjectToWorldNormal(v.normal);
-    o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
-    o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-    o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-    TRANSFER_SHADOW(o);
-    return o;
-}
+#ifndef OUTLINE_PASS
+    v2f vert (appdata v)
+    {
+        v2f o;
+        o.pos = UnityObjectToClipPos(v.vertex);
+        o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+        o.normalDir = UnityObjectToWorldNormal(v.normal);
+        o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
+        o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
+        o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+        TRANSFER_SHADOW(o);
+        return o;
+    }
+#endif
 
 float4 frag (v2f i) : SV_Target
 {
     float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
 
     // Sample main texture
-    float4 mainTex = tex2D(_MainTex, i.uv);
-    mainTex *= _Color;
+    #ifdef OUTLINE_PASS
+        float4 mainTex = tex2D(_OutlineTex, i.uv);
+        mainTex *= _OutlineColor;
+    #else
+        float4 mainTex = tex2D(_MainTex, i.uv);
+        mainTex *= _Color;
+    #endif
     
     // Cutout
     #if defined(_ALPHATEST_ON)
