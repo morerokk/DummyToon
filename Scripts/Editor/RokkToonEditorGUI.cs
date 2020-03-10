@@ -75,6 +75,9 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty outlineStencilComp = null;
     private MaterialProperty outlineAlphaWidthEnabled = null;
 
+    // Alpha To Coverage
+    private MaterialProperty alphaToCoverageEnabled = null;
+
     // Internal properties
     private MaterialProperty srcBlend = null;
     private MaterialProperty dstBlend = null;
@@ -123,7 +126,7 @@ public class RokkToonEditorGUI : ShaderGUI
 
         SetupKeywords();
 
-        if(HasOutlines())
+        if (HasOutlines())
         {
             SetupOutlineStencilValues();
         }
@@ -179,6 +182,8 @@ public class RokkToonEditorGUI : ShaderGUI
         {
             EditorGUILayout.HelpBox("ZWrite is disabled on a non-transparent rendering mode. This is likely not intentional.", MessageType.Warning);
         }
+
+        editor.TextureScaleOffsetProperty(mainTex);
     }
 
     private void DrawToonLighting()
@@ -394,6 +399,14 @@ public class RokkToonEditorGUI : ShaderGUI
             return;
         }
 
+        editor.ShaderProperty(alphaToCoverageEnabled, new GUIContent("Alpha To Coverage", "Whether to enable the Alpha To Coverage feature, also known as anti-aliased cutout."));
+
+        if (alphaToCoverageEnabled.floatValue == 1)
+        {
+            editor.RangeProperty(cutoff, "Alpha Cutoff");
+            EditorGUILayout.HelpBox("When using Alpha To Coverage, ensure that the main texture has \"Mip Maps Preserve Coverage\" enabled in the import settings.", MessageType.Info);
+        }
+
         editor.RenderQueueField();
     }
 
@@ -468,6 +481,9 @@ public class RokkToonEditorGUI : ShaderGUI
         outlineScreenspaceEnabled = FindProperty("_ScreenSpaceOutline", props, false);
         outlineScreenspaceMinDist = FindProperty("_ScreenSpaceMinDist", props, false);
         outlineScreenspaceMaxDist = FindProperty("_ScreenSpaceMaxDist", props, false);
+
+        // A2C
+        alphaToCoverageEnabled = FindProperty("_AlphaToCoverage", props);
 
         // Internal properties
         renderMode = FindProperty("_Mode", props);
@@ -625,6 +641,12 @@ public class RokkToonEditorGUI : ShaderGUI
         {
             material.EnableKeyword("_RIMLIGHT_MIX");
         }
+
+        // A2C keyword
+        if (alphaToCoverageEnabled.floatValue == 1)
+        {
+            material.EnableKeyword("_ALPHATOCOVERAGE_ON");
+        }
     }
 
     // Set up material blend modes and blending/alphatest keywords, render queues and override tags
@@ -678,7 +700,7 @@ public class RokkToonEditorGUI : ShaderGUI
     private void SetupOutlineStencilValues()
     {
         // Check if outer only outline mode is enabled
-        if(outlineStencilComp.floatValue == (int)UnityEngine.Rendering.CompareFunction.NotEqual)
+        if (outlineStencilComp.floatValue == (int)UnityEngine.Rendering.CompareFunction.NotEqual)
         {
             // If so, tell ForwardBase pass to also write to the stencil buffer
             this.outlineStencilWriteAction.floatValue = (int)UnityEngine.Rendering.StencilOp.Replace;

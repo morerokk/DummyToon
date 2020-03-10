@@ -79,6 +79,8 @@
         [Enum(Normal,8,Outer Only,6)] _OutlineStencilComp ("Outline Mode", Float) = 8
         [Toggle(_OUTLINE_ALPHA_WIDTH_ON)] _OutlineAlphaWidthEnabled ("Alpha Affects Width", Float) = 1
         
+        [Toggle(_ALPHATOCOVERAGE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
+        
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
@@ -104,6 +106,8 @@
             Cull [_Cull]
             ZWrite [_ZWrite]
             Blend [_SrcBlend] [_DstBlend]
+            
+            AlphaToMask [_AlphaToCoverage]
         
             CGPROGRAM
             #pragma vertex vert
@@ -114,6 +118,7 @@
             
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
@@ -144,6 +149,8 @@
             ZWrite [_ZWrite]
             Blend [_SrcBlend] [_DstBlend]
             
+            AlphaToMask [_AlphaToCoverage]
+            
             CGPROGRAM
             #pragma vertex vertOutline
             #pragma fragment frag
@@ -156,6 +163,7 @@
             
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
@@ -185,6 +193,8 @@
             
             Cull [_Cull]
             
+            AlphaToMask [_AlphaToCoverage]
+            
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -193,6 +203,7 @@
             
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP

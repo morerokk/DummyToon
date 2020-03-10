@@ -167,11 +167,16 @@ float4 frag (v2f i) : SV_Target
         mainTex *= _Color;
     #endif
     
+    // Alpha to coverage
+    #if defined(_ALPHATOCOVERAGE_ON)
+        mainTex.a = (mainTex.a - _Cutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
+    #endif
+    
     // Cutout
     #if defined(_ALPHATEST_ON)
         clip(mainTex.a - _Cutoff);
     #endif
-    
+
     // Get all vars related to toon ramping
     float IntensityVar;
     float SaturationVar;
@@ -238,7 +243,7 @@ float4 frag (v2f i) : SV_Target
         finalColor += emissive;
     #endif
     
-    #if defined(_ALPHABLEND_ON)
+    #if defined(_ALPHABLEND_ON) || defined(_ALPHATOCOVERAGE_ON)
         float finalAlpha = mainTex.a;
     #else
         float finalAlpha = 1;
