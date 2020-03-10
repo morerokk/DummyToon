@@ -45,17 +45,17 @@
         _ToonContrastR ("Toon Contrast (R)", Range(0, 1)) = 0.5
         _ToonRampOffsetR ("Toon Ramp Offset (R)", Range(-1,1)) = 0.33
         _IntensityR ("Intensity (R)", Range(0, 5)) = 1.3
-        _SaturationR ("Saturation (R)", Range(0, 1)) = 1
+        _SaturationR ("Saturation (R)", Range(0, 5)) = 1
         [NoScaleOffset] _RampG ("Ramp (G)", 2D) = "white" {}
         _ToonContrastG ("Toon Contrast (G)", Range(0, 1)) = 0.5
         _ToonRampOffsetG ("Toon Ramp Offset (G)", Range(-1,1)) = 0.33
         _IntensityG ("Intensity (G)", Range(0, 5)) = 1.3
-        _SaturationG ("Saturation (G)", Range(0, 1)) = 1
+        _SaturationG ("Saturation (G)", Range(0, 5)) = 1
         [NoScaleOffset] _RampB ("Ramp (B)", 2D) = "white" {}
         _ToonContrastB ("Toon Contrast (B)", Range(0, 1)) = 0.5
         _ToonRampOffsetB ("Toon Ramp Offset (B)", Range(-1,1)) = 0.33
         _IntensityB ("Intensity (B)", Range(0, 5)) = 1.3
-        _SaturationB ("Saturation (B)", Range(0, 1)) = 1
+        _SaturationB ("Saturation (B)", Range(0, 5)) = 1
         
         // Rimlight
         [Enum(Off,0,Add,1,Mix,2)] _RimLightMode ("Rimlight Mode", Float) = 0
