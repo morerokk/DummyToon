@@ -171,6 +171,11 @@ public class RokkToonEditorGUI : ShaderGUI
             SetupBlendModes();
         }
 
+        if (cutoutEnabled.floatValue == 1 && alphaToCoverageEnabled.floatValue == 1)
+        {
+            EditorGUILayout.HelpBox("Cutout and Alpha To Coverage are enabled at the same time. This is likely not intentional.", MessageType.Warning);
+        }
+
         if (cutoutEnabled.floatValue == 1)
         {
             editor.RangeProperty(cutoff, "Alpha Cutoff");
@@ -400,6 +405,11 @@ public class RokkToonEditorGUI : ShaderGUI
         }
 
         editor.ShaderProperty(alphaToCoverageEnabled, new GUIContent("Alpha To Coverage", "Whether to enable the Alpha To Coverage feature, also known as anti-aliased cutout."));
+
+        if (cutoutEnabled.floatValue == 1 && alphaToCoverageEnabled.floatValue == 1)
+        {
+            EditorGUILayout.HelpBox("Cutout and Alpha To Coverage are enabled at the same time. This is likely not intentional.", MessageType.Warning);
+        }
 
         if (alphaToCoverageEnabled.floatValue == 1)
         {
