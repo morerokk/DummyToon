@@ -39,6 +39,8 @@ float3 GIsonarDirection()
 // Simple lambert lighting
 float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lightColor, float4 ToonRampMaskColor, float toonContrast, float toonRampOffset)
 {
+	// Get dot product
+	// Remap -1,1 range to 0,1
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
     
     // Turn ndotl into UV's for toon ramp

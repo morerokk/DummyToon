@@ -53,7 +53,7 @@ float _Glossiness;
 
 #if defined(_SPECGLOSSMAP)
     // _SpecColor is already defined somewhere
-    //loat4 _SpecColor;
+    //float4 _SpecColor;
     sampler2D _SpecGlossMap;
 #endif
 
@@ -88,6 +88,7 @@ float _Glossiness;
     float4 _Color;
 #endif
 
+// Most textures reuse the tiling and offset values of the main texture, so this should always be available
 float4 _MainTex_ST;
 
 struct appdata
@@ -206,6 +207,8 @@ float4 frag (v2f i) : SV_Target
     #endif
     
     // Lighting
+    
+    // Get light attenuation
     UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
     
     float3 lightDirection;
@@ -217,17 +220,17 @@ float4 frag (v2f i) : SV_Target
     #ifdef UNITY_PASS_FORWARDBASE
         // Run the lighting function with non-realtime data first
         GetBaseLightData(lightDirection, lightColor);
-        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor * _IndirectLightBoost, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar);
+        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
     #endif
     
     // Fill lightDirection and lightColor with current light data
     GetLightData(i.worldPos.xyz, lightDirection, lightColor);
     
     // Apply current light
-    // If the current light is black or attenuation is 0, it will have no effect. Skip it to save on calculations and texture samples.
-    if(any(_LightColor0.rgb != 0) && attenuation != 0)
+    // If the current light is black, it will have no effect. Skip it to save on calculations and texture samples.
+    if(any(_LightColor0.rgb != 0))
     {
-        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor * _DirectLightBoost, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation;
+        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
     }
     
     // Apply metallic
