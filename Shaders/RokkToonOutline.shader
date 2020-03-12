@@ -22,11 +22,11 @@
         // Toon lighting
         [NoScaleOffset] _Ramp ("Toon Ramp", 2D) = "white" {}
         _ToonContrast ("Toon Contrast", Range(0, 1)) = 0.5
-        _ToonRampOffset ("Toon Ramp Offset", Range(-1,1)) = 0.33
+        _ToonRampOffset ("Toon Ramp Offset", Range(-2,2)) = 0
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
         _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 1
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
-        [Toggle(_RAMPTINT_ON)] ("Ramp Tinting", Float) = 0
+        [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
         
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
@@ -44,17 +44,17 @@
         [NoScaleOffset] _RampMaskTex ("Ramp Mask", 2D) = "black"
         [NoScaleOffset] _RampR ("Ramp (R)", 2D) = "white" {}
         _ToonContrastR ("Toon Contrast (R)", Range(0, 1)) = 0.5
-        _ToonRampOffsetR ("Toon Ramp Offset (R)", Range(-1,1)) = 0.33
+        _ToonRampOffsetR ("Toon Ramp Offset (R)", Range(-2,2)) = 0
         _IntensityR ("Intensity (R)", Range(0, 5)) = 1.3
         _SaturationR ("Saturation (R)", Range(0, 5)) = 1
         [NoScaleOffset] _RampG ("Ramp (G)", 2D) = "white" {}
         _ToonContrastG ("Toon Contrast (G)", Range(0, 1)) = 0.5
-        _ToonRampOffsetG ("Toon Ramp Offset (G)", Range(-1,1)) = 0.33
+        _ToonRampOffsetG ("Toon Ramp Offset (G)", Range(-2,2)) = 0
         _IntensityG ("Intensity (G)", Range(0, 5)) = 1.3
         _SaturationG ("Saturation (G)", Range(0, 5)) = 1
         [NoScaleOffset] _RampB ("Ramp (B)", 2D) = "white" {}
         _ToonContrastB ("Toon Contrast (B)", Range(0, 1)) = 0.5
-        _ToonRampOffsetB ("Toon Ramp Offset (B)", Range(-1,1)) = 0.33
+        _ToonRampOffsetB ("Toon Ramp Offset (B)", Range(-2,2)) = 0
         _IntensityB ("Intensity (B)", Range(0, 5)) = 1.3
         _SaturationB ("Saturation (B)", Range(0, 5)) = 1
         
