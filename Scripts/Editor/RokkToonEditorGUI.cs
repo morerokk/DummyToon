@@ -696,6 +696,19 @@ public class RokkToonEditorGUI : ShaderGUI
         {
             material.EnableKeyword("_ALPHATOCOVERAGE_ON");
         }
+
+        // Detail normals keywords
+        if(detailNormalTex.textureValue != null)
+        {
+            if(detailNormalUvMap.floatValue == 0)
+            {
+                material.EnableKeyword("_DETAILNORMAL_UV0");
+            }
+            else
+            {
+                material.EnableKeyword("_DETAILNORMAL_UV1");
+            }
+        }
     }
 
     // Set up material blend modes and blending/alphatest keywords, render queues and override tags

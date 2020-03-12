@@ -15,6 +15,7 @@ float _Cutoff;
     #define DETAILNORMALMAP
 
     sampler2D _DetailNormalMap;
+    float4 _DetailNormalMap_ST;
     float _DetailNormalMapScale;
 #endif
 
@@ -104,6 +105,9 @@ struct appdata
     float3 normal : NORMAL;
     float4 tangent : TANGENT;
     float2 uv : TEXCOORD0;
+    #if defined(_DETAILNORMAL_UV1)
+        float2 uv1 : TEXCOORD1;
+    #endif
 };
 
 struct v2f

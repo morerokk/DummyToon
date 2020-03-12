@@ -119,6 +119,8 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            
+            #pragma target 3.0
 
             #pragma multi_compile_fwdbase_fullshadows
             #pragma multi_compile _ VERTEXLIGHT_ON
@@ -164,6 +166,8 @@
             CGPROGRAM
             #pragma vertex vertOutline
             #pragma fragment frag
+            
+            #pragma target 3.0
 
             #pragma multi_compile_fwdbase_fullshadows
             #pragma multi_compile _ VERTEXLIGHT_ON
@@ -211,6 +215,8 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            
+            #pragma target 3.0
 
             #pragma multi_compile_fwdadd_fullshadows
             
