@@ -26,6 +26,7 @@
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
         _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 1
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
+        [Toggle(_RAMPTINT_ON)] ("Ramp Tinting", Float) = 0
         
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
@@ -122,6 +123,7 @@
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
@@ -167,6 +169,7 @@
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
@@ -206,6 +209,7 @@
             #pragma shader_feature_local _ALPHATOCOVERAGE_ON
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX

@@ -25,6 +25,7 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty saturation = null;
     private MaterialProperty directLightBoost = null;
     private MaterialProperty indirectLightBoost = null;
+    private MaterialProperty rampTintingEnabled = null;
 
     // Metallic and specular
     private MaterialProperty metallicMode = null;
@@ -99,6 +100,7 @@ public class RokkToonEditorGUI : ShaderGUI
     private bool rimlightExpanded = false;
     private bool miscExpanded = false;
 
+    private bool rampTintHelpExpanded = false;
     private bool rampMaskHelpExpanded = false;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -207,6 +209,20 @@ public class RokkToonEditorGUI : ShaderGUI
         editor.RangeProperty(saturation, "Saturation");
         editor.RangeProperty(directLightBoost, "Direct Lighting Boost");
         editor.RangeProperty(indirectLightBoost, "Indirect Lighting Boost");
+
+        // Draw the ramp tinting toggle and a help box button horizontally
+        EditorGUILayout.BeginHorizontal();
+        editor.ShaderProperty(rampTintingEnabled, new GUIContent("Ramp Tinting", "Enable the Ramp Tinting feature, which tints shadows to the surface color."));
+        if (GUILayout.Button("?", GUILayout.Width(25)))
+        {
+            rampTintHelpExpanded = !rampTintHelpExpanded;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (rampTintHelpExpanded)
+        {
+            EditorGUILayout.HelpBox("Toon ramp tinting is an experimental feature that tints the darker side of the toon ramp towards the surface color. This can help make colors look less washed out on the dark side of the ramp. Works best with greyscale ramps, not recommended with colored ramps.", MessageType.Info);
+        }
 
         editor.VectorProperty(staticToonLight, "Fallback light direction");
 
@@ -442,6 +458,7 @@ public class RokkToonEditorGUI : ShaderGUI
         saturation = FindProperty("_Saturation", props);
         directLightBoost = FindProperty("_DirectLightBoost", props);
         indirectLightBoost = FindProperty("_IndirectLightBoost", props);
+        rampTintingEnabled = FindProperty("_RampTinting", props);
 
         // Metallic and specular
         metallicMode = FindProperty("_MetallicMode", props);
@@ -594,6 +611,12 @@ public class RokkToonEditorGUI : ShaderGUI
         if (cutoutEnabled.floatValue == 1)
         {
             material.EnableKeyword("_ALPHATEST_ON");
+        }
+
+        // Add ramp tinting keyword
+        if (rampTintingEnabled.floatValue == 1)
+        {
+            material.EnableKeyword("_RAMPTINT_ON");
         }
 
         // Add ramp masking keyword
