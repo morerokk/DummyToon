@@ -36,11 +36,19 @@ float3 GIsonarDirection()
     return dir;
 }
 
+float3 blendSoftLight(float3 base, float3 blend) {
+    return lerp(
+        sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend), 
+        2.0 * base * blend + base * base * (1.0 - 2.0 * blend),
+        step(base, 0.5)
+    );
+}
+
 // Simple lambert lighting
 float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lightColor, float4 ToonRampMaskColor, float toonContrast, float toonRampOffset)
 {
-	// Get dot product
-	// Remap -1,1 range to 0,1
+    // Get dot product
+    // Remap -1,1 range to 0,1
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
     
     // Turn ndotl into UV's for toon ramp
@@ -69,8 +77,15 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
         float4 ramp = tex2D(_Ramp, rampUV);
     #endif
     
-    // Multiply by toon ramp color value rather than ndotl
-    return albedo * lightColor * ramp.rgb * toonContrast;
+    #if defined(_RAMPTINT_ON)
+        // Soft-blend the ramp and albedo
+        return blendSoftLight(albedo * lightColor, ramp) * toonContrast;
+    #else
+        // Multiply by toon ramp color value
+        return albedo * lightColor * ramp.rgb * toonContrast;
+    #endif
+    
+
 }
 
 // Fill the light direction and light color parameters with data from SH.
