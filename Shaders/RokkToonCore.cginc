@@ -11,6 +11,13 @@ float _Cutoff;
     float _BumpScale;
 #endif
 
+#if defined(_DETAILNORMAL_UV0) || defined(_DETAILNORMAL_UV1)
+    #define DETAILNORMALMAP
+
+    sampler2D _DetailNormalMap;
+    float _DetailNormalMapScale;
+#endif
+
 sampler2D _Ramp;
 float _ToonContrast;
 float _ToonRampOffset;
@@ -108,6 +115,9 @@ struct v2f
     float3 bitangentDir : TEXCOORD3;
     float4 worldPos : TEXCOORD4;
     SHADOW_COORDS(5)
+    #if defined(_DETAILNORMAL_UV1)
+        float2 uv1 : TEXCOORD6;
+    #endif
 };
 
 #include "RokkToonLighting.cginc"
@@ -130,11 +140,41 @@ float3 NormalDirection(v2f i)
     float3 normalDir = normalize(i.normalDir);
     
     // Perturb normals with a normal map
-    #if defined(_NORMALMAP)
+    #if defined(_NORMALMAP) && defined(DETAILNORMALMAP) // Both normal and detail normal
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
-        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap,TRANSFORM_TEX(i.uv, _BumpMap)), _BumpScale);
+        
+        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv), _BumpScale);
+        
+        // Choose the correct UV map set
+        #if defined(_DETAILNORMAL_UV0)
+            // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
+            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
+        #else
+            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv1), _DetailNormalMapScale);
+        #endif
+        
+        float3 normalLocal = BlendNormals(bumpTex, detailBumpTex);
+        normalDir = normalize(mul(normalLocal, tangentTransform));  
+    #elif defined(_NORMALMAP) // Only normal
+        // Regular normal map
+        float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv), _BumpScale);
         float3 normalLocal = bumpTex.rgb;
-        normalDir = normalize(mul(normalLocal, tangentTransform));
+        normalDir = normalize(mul(normalLocal, tangentTransform));  
+    #elif defined(DETAILNORMALMAP) // Only detail normal
+        // Detail normal map
+        float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+        
+        // Choose the correct UV map set
+        #if defined(_DETAILNORMAL_UV0)
+            // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
+            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
+        #else
+            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv1), _DetailNormalMapScale);
+        #endif
+        
+        float3 normalLocal = bumpTex.rgb;
+        normalDir = normalize(mul(normalLocal, tangentTransform));  
     #endif
     
     return normalDir;
@@ -151,6 +191,11 @@ float3 NormalDirection(v2f i)
         o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
         o.worldPos = mul(unity_ObjectToWorld, v.vertex);
         TRANSFER_SHADOW(o);
+        
+        #if defined(_DETAILNORMAL_UV1)
+            o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
+        #endif
+        
         return o;
     }
 #endif

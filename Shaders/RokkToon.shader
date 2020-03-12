@@ -70,7 +70,13 @@
         [Enum(Off,0,Additive (spa),1,Multiply (sph),2)] _MatCapMode ("Matcap Mode", Float) = 0
         _MatCapStrength ("Matcap Strength", Range(0, 1)) = 1
         
+        // Alpha to coverage
         [Toggle(_ALPHATOCOVERAGE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
+        
+        // Detail normal
+        [Normal] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" {}
+        _DetailNormalMapScale ("Detail Normal Scale", Float) = 1.0
+        [Enum(UV0,0,UV1,1)] _UVSec ("UV Map for detail normals", Float) = 0
         
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
@@ -106,6 +112,8 @@
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
@@ -142,6 +150,8 @@
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+            
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX

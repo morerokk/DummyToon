@@ -79,6 +79,11 @@ public class RokkToonEditorGUI : ShaderGUI
     // Alpha To Coverage
     private MaterialProperty alphaToCoverageEnabled = null;
 
+    // Detail normal
+    private MaterialProperty detailNormalTex = null;
+    private MaterialProperty detailNormalScale = null;
+    private MaterialProperty detailNormalUvMap = null;
+
     // Internal properties
     private MaterialProperty srcBlend = null;
     private MaterialProperty dstBlend = null;
@@ -420,6 +425,12 @@ public class RokkToonEditorGUI : ShaderGUI
             return;
         }
 
+        editor.TexturePropertySingleLine(new GUIContent("Detail Normal Map", "An additional detail normal map."), detailNormalTex, detailNormalScale);
+        editor.TextureScaleOffsetProperty(detailNormalTex);
+        editor.ShaderProperty(detailNormalUvMap, new GUIContent("UV Map", "Which UV Map to use for the detail normals."));
+
+        EditorGUILayout.Space();
+
         editor.ShaderProperty(alphaToCoverageEnabled, new GUIContent("Alpha To Coverage", "Whether to enable the Alpha To Coverage feature, also known as anti-aliased cutout."));
 
         if (cutoutEnabled.floatValue == 1 && alphaToCoverageEnabled.floatValue == 1)
@@ -511,6 +522,11 @@ public class RokkToonEditorGUI : ShaderGUI
 
         // A2C
         alphaToCoverageEnabled = FindProperty("_AlphaToCoverage", props);
+
+        // Detail normal
+        detailNormalTex = FindProperty("_DetailNormalMap", props);
+        detailNormalScale = FindProperty("_DetailNormalMapScale", props);
+        detailNormalUvMap = FindProperty("_UVSec", props);
 
         // Internal properties
         renderMode = FindProperty("_Mode", props);
