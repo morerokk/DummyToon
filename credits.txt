@@ -1,7 +1,7 @@
 Shader created from scratch by Rokk
 
 Thanks to:
-- ImLeXz, for creating most of the toon ramps
+- ImLeXz, for creating most of the toon ramps, and for figuring out the ramp tinting mechanic
 
 - Neitri, for creating some toon ramps and figuring out how to get the light direction from baked lights
 https://github.com/netri/Neitri-Unity-Shaders
@@ -12,5 +12,5 @@ https://gitlab.com/s-ilent/SCSS
 - Xiexe, for explaining how to sample matcaps in a VR-friendly way
 https://github.com/Xiexe/Xiexes-Unity-Shaders
 
-- Jasper Flick (Catlike Coding) for creating excellent tutorials on writing your own shaders
+- Jasper Flick (Catlike Coding) for creating excellent tutorials on writing your own shaders, and making this shader possible
 https://catlikecoding.com/unity/tutorials/rendering/
