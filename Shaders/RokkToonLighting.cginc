@@ -84,8 +84,6 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
         // Multiply by toon ramp color value
         return albedo * lightColor * ramp.rgb * toonContrast;
     #endif
-    
-
 }
 
 // Fill the light direction and light color parameters with data from SH.
