@@ -4,7 +4,7 @@ v2f vertOutline(appdata v)
     o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
     float outlineWidth = (_OutlineWidth*0.001);
-    #if defined(_OUTLINE_ALPHA_WIDTH_ON)
+    #if defined(_OUTLINE_ALPHA_WIDTH_ON) && !defined(NO_TEXLOD)
         // Scale outline by outline tex alpha
         float4 outlineTex = tex2Dlod(_OutlineTex, float4(o.uv, 0, 0));
         outlineTex *= _OutlineColor;

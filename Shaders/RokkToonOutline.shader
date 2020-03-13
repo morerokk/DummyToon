@@ -120,7 +120,7 @@
             #pragma vertex vert
             #pragma fragment frag
             
-            #pragma target 3.0
+            #pragma target 5.0
 
             #pragma multi_compile_fwdbase_fullshadows
             #pragma multi_compile _ VERTEXLIGHT_ON
@@ -167,7 +167,7 @@
             #pragma vertex vertOutline
             #pragma fragment frag
             
-            #pragma target 3.0
+            #pragma target 5.0
 
             #pragma multi_compile_fwdbase_fullshadows
             #pragma multi_compile _ VERTEXLIGHT_ON
@@ -216,7 +216,7 @@
             #pragma vertex vert
             #pragma fragment frag
             
-            #pragma target 3.0
+            #pragma target 5.0
 
             #pragma multi_compile_fwdadd_fullshadows
             
@@ -250,6 +250,179 @@
             Cull [_Cull]
             
             CGPROGRAM
+            #pragma target 5.0
+            
+            #pragma multi_compile_shadowcaster
+            
+            #pragma shader_feature_local _ALPHATEST_ON
+
+            #pragma vertex vertShadow
+            #pragma fragment fragShadow
+            
+            #include "RokkToonShadowcaster.cginc"
+            
+            ENDCG
+        }
+    }
+    
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" }
+
+        Pass
+        {
+            Name "FORWARD"
+            Tags { "LightMode"="ForwardBase" }
+            
+            Stencil {
+                Ref 8
+                Comp Always
+                Pass [_StencilWriteAction]
+            }
+            
+            Cull [_Cull]
+            ZWrite [_ZWrite]
+            Blend [_SrcBlend] [_DstBlend]
+            
+            AlphaToMask [_AlphaToCoverage]
+        
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            
+            #pragma target 2.0
+
+            #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile _ VERTEXLIGHT_ON
+            
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
+            #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local _EMISSION
+            #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+
+            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
+            
+            #ifndef UNITY_PASS_FORWARDBASE
+                #define UNITY_PASS_FORWARDBASE
+            #endif
+
+            #include "RokkToonCore.cginc"
+            ENDCG
+        }
+        
+        Pass
+        {
+            Name "Outline"
+            Tags { "LightMode"="ForwardBase" }
+            
+            Stencil {
+                Ref 8
+                Comp [_OutlineStencilComp]
+                Pass Keep
+            }
+
+            Cull Front
+            ZWrite [_ZWrite]
+            Blend [_SrcBlend] [_DstBlend]
+            
+            AlphaToMask [_AlphaToCoverage]
+            
+            CGPROGRAM
+            #pragma vertex vertOutline
+            #pragma fragment frag
+            
+            #pragma target 2.0
+
+            #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile _ VERTEXLIGHT_ON
+            
+            #pragma shader_feature_local _OUTLINE_ALPHA_WIDTH_ON
+            #pragma shader_feature_local _OUTLINE_SCREENSPACE
+            
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
+            #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local _EMISSION
+            #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+
+            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
+            
+            #ifndef UNITY_PASS_FORWARDBASE
+                #define UNITY_PASS_FORWARDBASE
+            #endif
+            
+            #define OUTLINE_PASS
+            #define NO_TEXLOD
+
+            #include "RokkToonCore.cginc"
+            
+            #include "RokkToonOutlines.cginc"
+            ENDCG
+        }
+        
+        Pass
+        {
+            Name "FORWARD_DELTA"
+            Tags { "LightMode"="ForwardAdd" }
+            
+            Blend [SrcBlend] One
+            ZWrite Off
+            
+            Cull [_Cull]
+            
+            AlphaToMask [_AlphaToCoverage]
+            
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            
+            #pragma target 2.0
+
+            #pragma multi_compile_fwdadd_fullshadows
+            
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
+            #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+            
+            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
+            
+            #ifndef UNITY_PASS_FORWARDADD
+                #define UNITY_PASS_FORWARDADD
+            #endif          
+
+            #include "RokkToonCore.cginc"
+            ENDCG
+        }
+
+        Pass {
+            Name "ShadowCaster"
+            Tags {
+                "LightMode"="ShadowCaster"
+            }
+            Offset 1, 1
+            
+            Cull [_Cull]
+            
+            CGPROGRAM
+            #pragma target 2.0
+            
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature_local _ALPHATEST_ON

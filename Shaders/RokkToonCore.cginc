@@ -151,22 +151,21 @@ float3 NormalDirection(v2f i)
         
         // Choose the correct UV map set
         #if defined(_DETAILNORMAL_UV0)
-            // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
+            // Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
             float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
         #else
+            // Sample the detail normal with UV1
             float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv1), _DetailNormalMapScale);
         #endif
         
         float3 normalLocal = BlendNormals(bumpTex, detailBumpTex);
         normalDir = normalize(mul(normalLocal, tangentTransform));  
     #elif defined(_NORMALMAP) // Only normal
-        // Regular normal map
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv), _BumpScale);
         float3 normalLocal = bumpTex.rgb;
         normalDir = normalize(mul(normalLocal, tangentTransform));  
     #elif defined(DETAILNORMALMAP) // Only detail normal
-        // Detail normal map
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         
         // Choose the correct UV map set
