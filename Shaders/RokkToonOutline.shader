@@ -311,6 +311,8 @@
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
             #endif
+            
+            #define NO_DERIVATIVES
 
             #include "RokkToonCore.cginc"
             ENDCG
@@ -364,6 +366,7 @@
             
             #define OUTLINE_PASS
             #define NO_TEXLOD
+            #define NO_DERIVATIVES
 
             #include "RokkToonCore.cginc"
             
@@ -405,7 +408,9 @@
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
-            #endif          
+            #endif
+            
+            #define NO_DERIVATIVES
 
             #include "RokkToonCore.cginc"
             ENDCG

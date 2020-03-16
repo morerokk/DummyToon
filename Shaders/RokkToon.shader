@@ -232,7 +232,9 @@
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
-            #endif          
+            #endif
+            
+            #define NO_DERIVATIVES
 
             #include "RokkToonCore.cginc"
             ENDCG
@@ -272,7 +274,9 @@
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
-            #endif          
+            #endif
+            
+            #define NO_DERIVATIVES
 
             #include "RokkToonCore.cginc"
             ENDCG

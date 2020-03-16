@@ -217,7 +217,7 @@ float4 frag (v2f i) : SV_Target
     #endif
     
     // Alpha to coverage
-    #if defined(_ALPHATOCOVERAGE_ON)
+    #if defined(_ALPHATOCOVERAGE_ON) && !defined(NO_DERIVATIVES)
         mainTex.a = (mainTex.a - _Cutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
     #endif
     
