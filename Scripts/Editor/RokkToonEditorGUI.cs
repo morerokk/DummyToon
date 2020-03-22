@@ -431,7 +431,7 @@ public class RokkToonEditorGUI : ShaderGUI
             return;
         }
 
-        editor.ShaderProperty(targetEye, "Target Eye");
+        editor.ShaderProperty(targetEye, new GUIContent("Target Eye", "In VR, this defines which eye the current eye should be looking at, allowing for more natural eye contact. No effect in non-VR."));
 
         editor.RangeProperty(maxLookRange, "Maximum Look Range");
 
