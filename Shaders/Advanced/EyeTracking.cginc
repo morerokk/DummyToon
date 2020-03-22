@@ -58,11 +58,15 @@ v2f vertEyeTracking(appdata v)
     if(_EyeTrackingRotationCorrection == 1)
     {
         v.vertex.xyz = mul(yRotation3dRadians(radians(180)), v.vertex.xyz);
+        v.normal = mul(yRotation3dRadians(radians(180)), v.normal);
     }
     else
     {
         v.vertex.xyz = mul(xRotation3dRadians(radians(-90)), v.vertex.xyz);
+        v.normal = mul(xRotation3dRadians(radians(-90)), v.normal);
+
         v.vertex.xyz = mul(zRotation3dRadians(radians(180)), v.vertex.xyz);
+        v.normal = mul(zRotation3dRadians(radians(180)), v.normal);
     }
     
     // Pre-apply scale
@@ -80,6 +84,7 @@ v2f vertEyeTracking(appdata v)
     
     // Pre-apply scale
     v.vertex.xyz *= float3(scaleX, scaleY, scaleZ);
+    v.normal = normalize(v.normal * float3(scaleX, scaleY, scaleZ));
 
     // The world position of the center of the object
     float3 worldPos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
@@ -138,6 +143,7 @@ v2f vertEyeTracking(appdata v)
 
     // The position of the vertex after the rotation
     float4 newPos = float4(mul(lookatMatrix, v.vertex), 1);
+    float3 newNormal = normalize(mul(lookatMatrix, v.normal));
     // The model matrix without the rotation and scale
     float4x4 matrix_M_noRot = unity_ObjectToWorld;
     matrix_M_noRot[0][0] = 1;
@@ -153,12 +159,14 @@ v2f vertEyeTracking(appdata v)
     matrix_M_noRot[2][2] = 1;
     
     float4 vertWorldPos = mul(matrix_M_noRot, newPos);
+    newNormal = mul(matrix_M_noRot, newNormal);
+    
 
     v2f o;
     // The position of the vertex in clip space ignoring the rotation and scale of the object
     o.pos = mul(UNITY_MATRIX_VP, vertWorldPos);
     o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-    o.normalDir = UnityObjectToWorldNormal(v.normal);
+    o.normalDir = newNormal;
     o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
     o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
