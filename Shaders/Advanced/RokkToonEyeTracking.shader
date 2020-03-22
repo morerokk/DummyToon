@@ -85,6 +85,7 @@
         _EyeTrackingScrollSpeed ("Eye Tracking Pattern Speed", Range(-100, 100)) = 1
         _EyeTrackingBlur ("Eye Tracking Pattern Blur", Range(0,6)) = 0
         [Toggle(_)] _EyeTrackingRotationCorrection ("Blender Rotation Correction", Float) = 1
+        _MaxLookDistance ("Maximum Look Distance", Float) = 10
         
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0

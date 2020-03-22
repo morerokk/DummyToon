@@ -1,5 +1,6 @@
 float _TargetEye;
 float _MaxLookRange;
+float _MaxLookDistance;
 float _EyeTrackingScrollSpeed;
 float _EyeTrackingBlur;
 float _EyeTrackingRotationCorrection;
@@ -32,6 +33,7 @@ inline float3x3 zRotation3dRadians(float rad) {
         0, 0, 1);
 }
 
+// Get the position of the required eye. Can be left, right or center in VR, but is always "center" in non-VR.
 float3 GetEyePos()
 {
     #if defined(USING_STEREO_MATRICES)
@@ -50,19 +52,20 @@ float EyeTrackingCurve(float t)
 
 v2f vertEyeTracking(appdata v)
 {
-    //World pos of mesh origin
-    float3 worldPos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
-    
-    //Fix rotation
-    v.vertex.xyz = mul(yRotation3dRadians(radians(180)), v.vertex.xyz);
-    
-    //Fix blender rotation
+    // Fix wrong mesh rotation
+    // Blender exports are 90 degrees off on the X axis by default
+    // But even with the correct orientation, this shader messes up the initial rotation somewhat.
     if(_EyeTrackingRotationCorrection == 1)
     {
+        v.vertex.xyz = mul(yRotation3dRadians(radians(180)), v.vertex.xyz);
+    }
+    else
+    {
         v.vertex.xyz = mul(xRotation3dRadians(radians(-90)), v.vertex.xyz);
+        v.vertex.xyz = mul(zRotation3dRadians(radians(180)), v.vertex.xyz);
     }
     
-    //Get scale
+    // Pre-apply scale
     float4 modelX = float4(1.0, 0.0, 0.0, 0.0);
     float4 modelY = float4(0.0, 1.0, 0.0, 0.0);
     float4 modelZ = float4(0.0, 0.0, 1.0, 0.0);
@@ -77,27 +80,38 @@ v2f vertEyeTracking(appdata v)
     
     // Pre-apply scale
     v.vertex.xyz *= float3(scaleX, scaleY, scaleZ);
+
+    // The world position of the center of the object
+    float3 worldPos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
+
+    float3 camPos = GetEyePos();
+
+    // Distance between the camera and the center
+    float3 dist = camPos - worldPos;
+
+    // Get camera vector
+    float3 camVect = normalize(worldPos - _WorldSpaceCameraPos);
     
-    // Distance between the camera and the mesh origin
-    float3 worldCamPos = GetEyePos();
-    float3 dist = worldCamPos - worldPos;
-    
-    float3 camVect = normalize(worldPos - worldCamPos);
+    // Get the default looking ahead vector
+    float3 forwardVect = normalize(mul(unity_ObjectToWorld, float4(0,0,-1,1)).xyz);
     
     //Check if the camera is behind the eye
-    float3 behindDir = float3(0,0,1);
+    float3 behindDir = -forwardVect;
     if(dot(camVect, behindDir) > _MaxLookRange)
     {
-        camVect = float3(0,0,-1);
+        camVect = forwardVect;
     }
-    
-    //Look forward or to the camera depending on texture
-    float3 forwardVect = float3(0,0,-1);
-    float lerpValue = EyeTrackingCurve(_Time.y);
-    camVect = normalize(lerp(forwardVect, camVect, saturate(lerpValue)));
-    
+    else
+    {
+        //Look forward or to the camera depending on texture
+        float lerpValue = EyeTrackingCurve(_Time.y);
+        camVect = normalize(lerp(forwardVect, camVect, saturate(lerpValue)));
+    }
+
+    // atan2(dist.x, dist.z) = atan (dist.x / dist.z)
+    // With atan the tree inverts when the camera has the same z position
     float angle = atan2(dist.x, dist.z);
-    
+
     float3x3 rotMatrix;
     float cosinus = cos(angle);
     float sinus = sin(angle);
@@ -106,9 +120,10 @@ v2f vertEyeTracking(appdata v)
     // "Up" should actually match the object rotation so the eyes don't roll around in their sockets
     float3 up = mul(unity_ObjectToWorld, float4(0,1,0,1)).xyz;
 
+    // Create LookAt matrix
     float3 zaxis = camVect;
-    float3 xaxis = normalize(cross(up, camVect));
-    float3 yaxis = cross(camVect, xaxis);
+    float3 xaxis = normalize(cross(up, zaxis));
+    float3 yaxis = cross(zaxis, xaxis);
 
     float3x3 lookatMatrix = {
         xaxis.x,            yaxis.x,            zaxis.x,
@@ -122,9 +137,7 @@ v2f vertEyeTracking(appdata v)
     rotMatrix[2].xyz = float3(- sinus, 0, cosinus);
 
     // The position of the vertex after the rotation
-    //float4 newPos = float4(mul(lookatMatrix, v.vertex * float4(1,1,1,0)), 1);
     float4 newPos = float4(mul(lookatMatrix, v.vertex), 1);
-    
     // The model matrix without the rotation and scale
     float4x4 matrix_M_noRot = unity_ObjectToWorld;
     matrix_M_noRot[0][0] = 1;
@@ -138,10 +151,12 @@ v2f vertEyeTracking(appdata v)
     matrix_M_noRot[2][0] = 0;
     matrix_M_noRot[2][1] = 0;
     matrix_M_noRot[2][2] = 1;
+    
+    float4 vertWorldPos = mul(matrix_M_noRot, newPos);
 
     v2f o;
-    // Model matrix has already been applied
-    o.pos = mul(UNITY_MATRIX_VP, mul(matrix_M_noRot, newPos));
+    // The position of the vertex in clip space ignoring the rotation and scale of the object
+    o.pos = mul(UNITY_MATRIX_VP, vertWorldPos);
     o.uv = TRANSFORM_TEX(v.uv, _MainTex);
     o.normalDir = UnityObjectToWorldNormal(v.normal);
     o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
