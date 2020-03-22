@@ -1,6 +1,6 @@
 float _TargetEye;
-float _MaxLookRange;
-float _MaxLookDistance;
+float _MaxLookRange; // Max rotation
+float _MaxLookDistance; // Max distance from camera until tracking stops. Calculated from object origin.
 float _EyeTrackingScrollSpeed;
 float _EyeTrackingBlur;
 float _EyeTrackingRotationCorrection;
@@ -110,6 +110,11 @@ v2f vertEyeTracking(appdata v)
     {
         //Look forward or to the camera depending on texture
         float lerpValue = EyeTrackingCurve(_Time.y);
+        
+        // Stop looking from a distance
+        float camDist = distance(camPos, worldPos);
+        lerpValue = (1 - smoothstep(_MaxLookDistance, _MaxLookDistance + 1, camDist)) * lerpValue;
+        
         camVect = normalize(lerp(forwardVect, camVect, saturate(lerpValue)));
     }
 

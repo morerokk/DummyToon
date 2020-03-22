@@ -87,6 +87,7 @@ public class RokkToonEditorGUI : ShaderGUI
     //Eye tracking
     private MaterialProperty targetEye = null;
     private MaterialProperty maxLookRange = null;
+    private MaterialProperty maxLookDistance = null;
     private MaterialProperty eyeTrackPatternTexture = null;
     private MaterialProperty eyeTrackSpeed = null;
     private MaterialProperty eyeTrackBlur = null;
@@ -435,6 +436,8 @@ public class RokkToonEditorGUI : ShaderGUI
 
         editor.RangeProperty(maxLookRange, "Maximum Look Range");
 
+        editor.FloatProperty(maxLookDistance, "Maximum Look Distance");
+
         TexturePropertyWithHelp(new GUIContent("Eye Tracking Pattern Texture"), eyeTrackPatternTexture, ref eyeTrackingTextureHelpExpanded, "The eye tracking pattern texture should be a horizontal black and white gradient texture. It scrolls from left to right over time. When the current pixel is black, the eyes will look straight ahead. When the current pixel is white, the eyes will look straight towards the camera. In-between values are possible.");
 
         editor.RangeProperty(eyeTrackSpeed, "Pattern Scroll Speed");
@@ -558,6 +561,7 @@ public class RokkToonEditorGUI : ShaderGUI
         //Eye tracking stuff
         targetEye = FindProperty("_TargetEye", props, false);
         maxLookRange = FindProperty("_MaxLookRange", props, false);
+        maxLookDistance = FindProperty("_MaxLookDistance", props, false);
         eyeTrackPatternTexture = FindProperty("_EyeTrackingPatternTex", props, false);
         eyeTrackSpeed = FindProperty("_EyeTrackingScrollSpeed", props, false);
         eyeTrackBlur = FindProperty("_EyeTrackingBlur", props, false);
