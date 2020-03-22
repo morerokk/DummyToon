@@ -84,6 +84,14 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty detailNormalScale = null;
     private MaterialProperty detailNormalUvMap = null;
 
+    //Eye tracking
+    private MaterialProperty targetEye = null;
+    private MaterialProperty maxLookRange = null;
+    private MaterialProperty eyeTrackPatternTexture = null;
+    private MaterialProperty eyeTrackSpeed = null;
+    private MaterialProperty eyeTrackBlur = null;
+    private MaterialProperty eyeTrackBlenderCorrection = null;
+
     // Internal properties
     private MaterialProperty srcBlend = null;
     private MaterialProperty dstBlend = null;
@@ -103,10 +111,15 @@ public class RokkToonEditorGUI : ShaderGUI
     private bool metallicExpanded = false;
     private bool matcapExpanded = false;
     private bool rimlightExpanded = false;
+    private bool eyeTrackingExpanded = false;
     private bool miscExpanded = false;
 
     private bool rampTintHelpExpanded = false;
     private bool rampMaskHelpExpanded = false;
+
+    private bool eyeTrackingTargetEyeHelpExpanded = false;
+    private bool eyeTrackingTextureHelpExpanded = false;
+    private bool eyeTrackingRotationCorrectionHelpExpanded = false;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
@@ -128,6 +141,11 @@ public class RokkToonEditorGUI : ShaderGUI
         DrawMetallic();
         DrawMatcap();
         DrawRimlight();
+
+        if (HasEyeTracking())
+        {
+            DrawEyeTracking();
+        }
 
         DrawMisc();
 
@@ -216,34 +234,22 @@ public class RokkToonEditorGUI : ShaderGUI
         editor.RangeProperty(indirectLightBoost, "Indirect Lighting Boost");
 
         // Draw the ramp tinting toggle and a help box button horizontally
-        EditorGUILayout.BeginHorizontal();
-        editor.ShaderProperty(rampTintingEnabled, new GUIContent("Ramp Tinting", "Enable the Ramp Tinting feature, which tints shadows to the surface color."));
-        if (GUILayout.Button("?", GUILayout.Width(25)))
-        {
-            rampTintHelpExpanded = !rampTintHelpExpanded;
-        }
-        EditorGUILayout.EndHorizontal();
-
-        if (rampTintHelpExpanded)
-        {
-            EditorGUILayout.HelpBox("Toon ramp tinting is an experimental feature that tints the darker side of the toon ramp towards the surface color. This can help make colors look less washed out on the dark side of the ramp. Works best with greyscale ramps, not recommended with colored ramps.", MessageType.Info);
-        }
+        ShaderPropertyWithHelp(
+            rampTintingEnabled,
+            new GUIContent("Ramp Tinting", "Enable the Ramp Tinting feature, which tints shadows to the surface color."),
+            ref rampTintHelpExpanded,
+            "Toon ramp tinting is an experimental feature that tints the darker side of the toon ramp towards the surface color. This can help make colors look less washed out on the dark side of the ramp. Works best with greyscale ramps, not recommended with colored ramps."
+        );
 
         editor.VectorProperty(staticToonLight, "Fallback light direction");
 
         // Draw the ramp masking toggle and a help box button horizontally
-        EditorGUILayout.BeginHorizontal();
-        editor.ShaderProperty(rampMaskingEnabled, new GUIContent("Ramp Masking", "Enable the Ramp Masking feature, allowing you to use RGB masks to define up to 4 toon ramps on the same material."));
-        if (GUILayout.Button("?", GUILayout.Width(25)))
-        {
-            rampMaskHelpExpanded = !rampMaskHelpExpanded;
-        }
-        EditorGUILayout.EndHorizontal();
-
-        if (rampMaskHelpExpanded)
-        {
-            EditorGUILayout.HelpBox("Toon Ramp Masking is an experimental feature to allow up to 4 different toon ramps and toon values to be used on the same material. The color of the mask texture defines whether the Red, Green, Blue or Default values are used in that particular area.", MessageType.Info);
-        }
+        ShaderPropertyWithHelp(
+            rampMaskingEnabled,
+            new GUIContent("Ramp Masking", "Enable the Ramp Masking feature, allowing you to use RGB masks to define up to 4 toon ramps on the same material."),
+            ref rampMaskHelpExpanded,
+            "Toon Ramp Masking is an experimental feature to allow up to 4 different toon ramps and toon values to be used on the same material. The color of the mask texture defines whether the Red, Green, Blue or Default values are used in that particular area."
+        );
 
         if (rampMaskingEnabled.floatValue == 1)
         {
@@ -417,6 +423,27 @@ public class RokkToonEditorGUI : ShaderGUI
         EditorGUI.EndDisabledGroup();
     }
 
+    private void DrawEyeTracking()
+    {
+        eyeTrackingExpanded = Section("Eye Tracking", eyeTrackingExpanded);
+        if (!eyeTrackingExpanded)
+        {
+            return;
+        }
+
+        editor.ShaderProperty(targetEye, "Target Eye");
+
+        editor.RangeProperty(maxLookRange, "Maximum Look Range");
+
+        TexturePropertyWithHelp(new GUIContent("Eye Tracking Pattern Texture"), eyeTrackPatternTexture, ref eyeTrackingTextureHelpExpanded, "The eye tracking pattern texture should be a horizontal black and white gradient texture. It scrolls from left to right over time. When the current pixel is black, the eyes will look straight ahead. When the current pixel is white, the eyes will look straight towards the camera. In-between values are possible.");
+
+        editor.RangeProperty(eyeTrackSpeed, "Pattern Scroll Speed");
+
+        editor.RangeProperty(eyeTrackBlur, "Pattern Blur");
+
+        ShaderPropertyWithHelp(eyeTrackBlenderCorrection, new GUIContent("Blender rotation correction"), ref eyeTrackingRotationCorrectionHelpExpanded, "Blender FBX exports may be rotated 90 degrees on the X axis depending on export settings. Tick/untick this box if you experience this happening to your mesh.");
+    }
+
     private void DrawMisc()
     {
         miscExpanded = Section("Misc", miscExpanded);
@@ -528,6 +555,14 @@ public class RokkToonEditorGUI : ShaderGUI
         detailNormalScale = FindProperty("_DetailNormalMapScale", props);
         detailNormalUvMap = FindProperty("_UVSec", props);
 
+        //Eye tracking stuff
+        targetEye = FindProperty("_TargetEye", props, false);
+        maxLookRange = FindProperty("_MaxLookRange", props, false);
+        eyeTrackPatternTexture = FindProperty("_EyeTrackingPatternTex", props, false);
+        eyeTrackSpeed = FindProperty("_EyeTrackingScrollSpeed", props, false);
+        eyeTrackBlur = FindProperty("_EyeTrackingBlur", props, false);
+        eyeTrackBlenderCorrection = FindProperty("_EyeTrackingRotationCorrection", props, false);
+
         // Internal properties
         renderMode = FindProperty("_Mode", props);
         srcBlend = FindProperty("_SrcBlend", props);
@@ -539,6 +574,11 @@ public class RokkToonEditorGUI : ShaderGUI
     private bool HasOutlines()
     {
         return outlineWidth != null;
+    }
+
+    private bool HasEyeTracking()
+    {
+        return targetEye != null;
     }
 
     /// <summary>
@@ -610,6 +650,53 @@ public class RokkToonEditorGUI : ShaderGUI
         editor.TextureProperty(prop, label);
         EditorGUIUtility.labelWidth = defaultLabelWidth;
         EditorGUIUtility.fieldWidth = defaultFieldWidth;
+    }
+
+    /// <summary>
+    /// Draws a shader property with a help button and an expandable help box.
+    /// </summary>
+    /// <param name="prop">The shader property to draw with a help box.</param>
+    /// <param name="label">A GUIContent object containing the label of the property.</param>
+    /// <param name="expanded">A ref bool that tracks whether the help box is currently expanded.</param>
+    /// <param name="helpText">The text to put in the help box.</param>
+    private void ShaderPropertyWithHelp(MaterialProperty prop, GUIContent label, ref bool expanded, string helpText)
+    {
+        EditorGUILayout.BeginHorizontal();
+        editor.ShaderProperty(prop, label);
+        if (GUILayout.Button("?", GUILayout.Width(25)))
+        {
+            expanded = !expanded;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (expanded)
+        {
+            EditorGUILayout.HelpBox(helpText, MessageType.Info);
+        }
+    }
+
+    /// <summary>
+    /// Draws a single-line texture property with a help button and an expandable help box.
+    /// </summary>
+    /// <param name="label">A GUIContent object containing the label of the texture.</param>
+    /// <param name="prop">The texture property to draw with a help box.</param>
+    /// <param name="expanded">A ref bool that tracks whether the help box is currently expanded.</param>
+    /// <param name="helpText">The text to put in the help box.</param>
+    private void TexturePropertyWithHelp(GUIContent label, MaterialProperty prop, ref bool expanded, string helpText)
+    {
+        EditorGUILayout.BeginHorizontal();
+        editor.TexturePropertySingleLine(label, prop);
+        if (GUILayout.Button("?", GUILayout.Width(25)))
+        {
+            expanded = !expanded;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (expanded)
+        {
+            EditorGUILayout.HelpBox(helpText, MessageType.Info);
+        }
+
     }
 
     private void SetupKeywords()
@@ -698,9 +785,9 @@ public class RokkToonEditorGUI : ShaderGUI
         }
 
         // Detail normals keywords
-        if(detailNormalTex.textureValue != null)
+        if (detailNormalTex.textureValue != null)
         {
-            if(detailNormalUvMap.floatValue == 0)
+            if (detailNormalUvMap.floatValue == 0)
             {
                 material.EnableKeyword("_DETAILNORMAL_UV0");
             }
