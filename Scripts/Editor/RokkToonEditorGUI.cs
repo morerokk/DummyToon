@@ -118,7 +118,6 @@ public class RokkToonEditorGUI : ShaderGUI
     private bool rampTintHelpExpanded = false;
     private bool rampMaskHelpExpanded = false;
 
-    private bool eyeTrackingTargetEyeHelpExpanded = false;
     private bool eyeTrackingTextureHelpExpanded = false;
     private bool eyeTrackingRotationCorrectionHelpExpanded = false;
 

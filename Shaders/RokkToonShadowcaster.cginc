@@ -11,6 +11,7 @@ struct VertexInputShadow {
     float4 vertex : POSITION;
     float2 texcoord0 : TEXCOORD0;
 };
+
 struct VertexOutputShadow {
     V2F_SHADOW_CASTER;
     float2 uv0 : TEXCOORD1;

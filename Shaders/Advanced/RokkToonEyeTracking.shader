@@ -180,6 +180,30 @@
             #include "EyeTracking.cginc"
             ENDCG
         }
+        Pass {
+            Name "ShadowCaster"
+            Tags {
+                "LightMode"="ShadowCaster"
+            }
+            Offset 1, 1
+            
+            Cull [_Cull]
+            
+            CGPROGRAM
+            #pragma target 5.0
+            
+            #pragma multi_compile_shadowcaster
+            
+            #pragma shader_feature_local _ALPHATEST_ON
+
+            #pragma vertex vertShadowEye
+            #pragma fragment fragShadow
+            
+            #include "../RokkToonShadowcaster.cginc"
+
+            #include "EyeTrackingShadow.cginc"
+            ENDCG
+        }
     }
     CustomEditor "RokkToonEditorGUI"
 }

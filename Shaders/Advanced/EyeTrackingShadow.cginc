@@ -50,23 +50,19 @@ float EyeTrackingCurve(float t)
     return currentCol.r;
 }
 
-v2f vertEyeTracking(appdata v)
-{
-    // Fix wrong mesh rotation
+VertexOutputShadow vertShadowEye (VertexInputShadow v) {
+        // Fix wrong mesh rotation
     // Blender exports are 90 degrees off on the X axis by default
     // But even with the correct orientation, this shader messes up the initial rotation somewhat.
     if(_EyeTrackingRotationCorrection == 1)
     {
         v.vertex.xyz = mul(yRotation3dRadians(radians(180)), v.vertex.xyz);
-        v.normal = mul(yRotation3dRadians(radians(180)), v.normal);
     }
     else
     {
         v.vertex.xyz = mul(xRotation3dRadians(radians(-90)), v.vertex.xyz);
-        v.normal = mul(xRotation3dRadians(radians(-90)), v.normal);
 
         v.vertex.xyz = mul(zRotation3dRadians(radians(180)), v.vertex.xyz);
-        v.normal = mul(zRotation3dRadians(radians(180)), v.normal);
     }
     
     // Pre-apply scale
@@ -82,16 +78,14 @@ v2f vertEyeTracking(appdata v)
     float scaleY = length(modelYInWorld);
     float scaleZ = length(modelZInWorld);
     
-    // Pre-apply scale
     v.vertex.xyz *= float3(scaleX, scaleY, scaleZ);
-    v.normal = normalize(v.normal * float3(scaleX, scaleY, scaleZ));
 
-    // The world position of the center of the object
+    // The world position of the origin point
     float3 worldPos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
 
     float3 camPos = GetEyePos();
 
-    // Distance between the camera and the center
+    // Distance between the camera and the origin
     float3 dist = camPos - worldPos;
 
     // Get camera vector
@@ -99,7 +93,7 @@ v2f vertEyeTracking(appdata v)
     
     // Get the default looking ahead vector
     // To obtain this vector, a forward vector is created and multiplied by unity_ObjectToWorld.
-    // Casting it to float3x3 eliminates translation data and only leaves the rotation and scale of the mesh.
+    // Casting this matrix to float3x3 eliminates translation data and only leaves the rotation and scale of the mesh.
     // Normalizing it will then get rid of any scaling effects.
     float3 forwardVect = normalize(mul((float3x3)unity_ObjectToWorld, float3(0,0,-1)));
     
@@ -151,7 +145,6 @@ v2f vertEyeTracking(appdata v)
 
     // The position of the vertex after the rotation
     float4 newPos = float4(mul(lookatMatrix, v.vertex), 1);
-    float3 newNormal = normalize(mul(lookatMatrix, v.normal));
     // The model matrix without the rotation and scale
     float4x4 matrix_M_noRot = unity_ObjectToWorld;
     matrix_M_noRot[0][0] = 1;
@@ -167,22 +160,14 @@ v2f vertEyeTracking(appdata v)
     matrix_M_noRot[2][2] = 1;
     
     float4 vertWorldPos = mul(matrix_M_noRot, newPos);
-    newNormal = mul(matrix_M_noRot, newNormal);
     
+    // Unitys shadow macros want the data to be in the input struct for some reason.
+    // Because of this, first multiply v.vertex again so it's back in local space.
+    v.vertex = mul(unity_WorldToObject, vertWorldPos);
 
-    v2f o;
-    // The position of the vertex in clip space ignoring the rotation and scale of the object
-    o.pos = mul(UNITY_MATRIX_VP, vertWorldPos);
-    o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-    o.normalDir = newNormal;
-    o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
-    o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-    o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-    TRANSFER_SHADOW(o);
-    
-    #if defined(_DETAILNORMAL_UV1)
-        o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-    #endif
-    
+    VertexOutputShadow o = (VertexOutputShadow)0;
+    o.uv0 = v.texcoord0;                
+    o.pos = UnityObjectToClipPos(v.vertex);
+    TRANSFER_SHADOW_CASTER(o)
     return o;
 }
