@@ -266,8 +266,17 @@ float4 frag (v2f i) : SV_Target
     float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz);
     
     #ifdef UNITY_PASS_FORWARDBASE
-        // Run the lighting function with non-realtime data first
+        // Run the lighting function with non-realtime data first       
         GetBaseLightData(lightDirection, lightColor);
+        
+        // If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
+        // the direction will be smoothly merged.
+        // This makes the lighting look better with sharp toon ramps.
+        if(!all(_WorldSpaceLightPos0 == 0) && attenuation > 0)
+        {
+            SmoothBaseLightData(lightDirection);
+        }
+        
         finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
     #endif
     

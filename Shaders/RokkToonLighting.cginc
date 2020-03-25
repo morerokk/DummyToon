@@ -36,6 +36,7 @@ float3 GIsonarDirection()
     return dir;
 }
 
+
 float3 blendSoftLight(float3 base, float3 blend) {
     return lerp(
         sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend), 
@@ -114,4 +115,12 @@ void GetLightData(float3 worldPos, inout float3 lightDirection, inout float3 lig
             lightColor = _LightColor0.rgb;
         #endif
     #endif
+}
+
+void SmoothBaseLightData(inout float3 lightDirection)
+{
+    float dotProduct = dot(lightDirection, _WorldSpaceLightPos0) * 0.5 + 0.5;
+    float lerpValue = smoothstep(0.8, 0.9, dotProduct);
+    
+    lightDirection = normalize(lerp(lightDirection, _WorldSpaceLightPos0, lerpValue));
 }

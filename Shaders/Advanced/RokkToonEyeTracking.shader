@@ -24,7 +24,7 @@
         _ToonContrast ("Toon Contrast", Range(0, 1)) = 0.5
         _ToonRampOffset ("Toon Ramp Offset", Range(-2,2)) = 0
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
-        _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 1
+        _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 0.8
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
         [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
         
