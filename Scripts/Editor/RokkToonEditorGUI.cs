@@ -26,6 +26,8 @@ public class RokkToonEditorGUI : ShaderGUI
     private MaterialProperty directLightBoost = null;
     private MaterialProperty indirectLightBoost = null;
     private MaterialProperty rampTintingEnabled = null;
+    private MaterialProperty indirectLightDirMergeMin = null;
+    private MaterialProperty indirectLightDirMergeMax = null;
 
     // Metallic and specular
     private MaterialProperty metallicMode = null;
@@ -117,6 +119,7 @@ public class RokkToonEditorGUI : ShaderGUI
 
     private bool rampTintHelpExpanded = false;
     private bool rampMaskHelpExpanded = false;
+    private bool indirectLightMergeHelpExpanded = false;
 
     private bool eyeTrackingTextureHelpExpanded = false;
     private bool eyeTrackingRotationCorrectionHelpExpanded = false;
@@ -232,6 +235,21 @@ public class RokkToonEditorGUI : ShaderGUI
         editor.RangeProperty(saturation, "Saturation");
         editor.RangeProperty(directLightBoost, "Direct Lighting Boost");
         editor.RangeProperty(indirectLightBoost, "Indirect Lighting Boost");
+
+        EditorGUILayout.Space();
+
+        // Light direction merge properties and help box
+        LabelWithHelp(
+            new GUIContent("Indirect Light Direction Merge"),
+            ref indirectLightMergeHelpExpanded,
+            "If the dominant light direction of the ambient lighting is too close to the direction of the most important realtime directional light, their light directions will be merged together. " +
+            "This helps prevent the creation of two different light directions on the same Mixed directional light."
+        );
+
+        editor.RangeProperty(indirectLightDirMergeMin, "Minimum Merge Threshold");
+        editor.RangeProperty(indirectLightDirMergeMax, "Maximum Merge Threshold");
+
+        EditorGUILayout.Space();
 
         // Draw the ramp tinting toggle and a help box button horizontally
         ShaderPropertyWithHelp(
@@ -499,6 +517,8 @@ public class RokkToonEditorGUI : ShaderGUI
         directLightBoost = FindProperty("_DirectLightBoost", props);
         indirectLightBoost = FindProperty("_IndirectLightBoost", props);
         rampTintingEnabled = FindProperty("_RampTinting", props);
+        indirectLightDirMergeMin = FindProperty("_IndirectLightDirMergeMin", props);
+        indirectLightDirMergeMax = FindProperty("_IndirectLightDirMergeMax", props);
 
         // Metallic and specular
         metallicMode = FindProperty("_MetallicMode", props);
@@ -699,7 +719,22 @@ public class RokkToonEditorGUI : ShaderGUI
         {
             EditorGUILayout.HelpBox(helpText, MessageType.Info);
         }
+    }
 
+    private void LabelWithHelp(GUIContent label, ref bool expanded, string helpText)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(label);
+        if (GUILayout.Button("?", GUILayout.Width(25)))
+        {
+            expanded = !expanded;
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (expanded)
+        {
+            EditorGUILayout.HelpBox(helpText, MessageType.Info);
+        }
     }
 
     private void SetupKeywords()

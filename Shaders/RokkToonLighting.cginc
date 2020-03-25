@@ -117,10 +117,13 @@ void GetLightData(float3 worldPos, inout float3 lightDirection, inout float3 lig
     #endif
 }
 
+// If the direction of the baked light is too close to that of the ForwardBase realtime directional light,
+// merge the baked light direction into it.
+// This is a workaround to prevent mixed directional lights from falsely acting like two separate lights in outdoor scenes.
 void SmoothBaseLightData(inout float3 lightDirection)
 {
     float dotProduct = dot(lightDirection, _WorldSpaceLightPos0) * 0.5 + 0.5;
-    float lerpValue = smoothstep(0.8, 0.9, dotProduct);
+    float lerpValue = smoothstep(_IndirectLightDirMergeMin, _IndirectLightDirMergeMax, dotProduct);
     
     lightDirection = normalize(lerp(lightDirection, _WorldSpaceLightPos0, lerpValue));
 }

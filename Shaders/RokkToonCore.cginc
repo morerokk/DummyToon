@@ -30,6 +30,9 @@ float _Saturation;
 float _DirectLightBoost;
 float _IndirectLightBoost;
 
+float _IndirectLightDirMergeMin;
+float _IndirectLightDirMergeMax;
+
 #if defined(_RAMPMASK_ON)
     sampler2D _RampMaskTex;
 
