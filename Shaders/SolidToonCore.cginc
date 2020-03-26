@@ -127,19 +127,19 @@ struct v2f
     #endif
 };
 
-#include "RokkToonLighting.cginc"
-#include "RokkToonRamping.cginc"
+#include "SolidToonLighting.cginc"
+#include "SolidToonRamping.cginc"
 
 #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-    #include "RokkToonMetallicSpecular.cginc"
+    #include "SolidToonMetallicSpecular.cginc"
 #endif
 
 #if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
-    #include "RokkToonMatcap.cginc"
+    #include "SolidToonMatcap.cginc"
 #endif
 
 #if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
-    #include "RokkToonRimlight.cginc"
+    #include "SolidToonRimlight.cginc"
 #endif
 
 float3 NormalDirection(v2f i)

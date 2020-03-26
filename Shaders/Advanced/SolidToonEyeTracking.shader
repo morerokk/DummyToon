@@ -1,4 +1,4 @@
-﻿Shader "Rokk/Advanced/Toon Eye Tracking"
+﻿Shader "Solid Toon/Advanced/Toon Eye Tracking"
 {
     Properties
     {
@@ -136,7 +136,7 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif          
 
-            #include "../RokkToonCore.cginc"
+            #include "../SolidToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -178,7 +178,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "../RokkToonCore.cginc"
+            #include "../SolidToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -202,11 +202,11 @@
             #pragma vertex vertShadowEye
             #pragma fragment fragShadow
             
-            #include "../RokkToonShadowcaster.cginc"
+            #include "../SolidToonShadowcaster.cginc"
 
             #include "EyeTrackingShadow.cginc"
             ENDCG
         }
     }
-    CustomEditor "RokkToonEditorGUI"
+    CustomEditor "SolidToonEditorGUI"
 }

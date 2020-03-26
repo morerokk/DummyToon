@@ -1,4 +1,5 @@
-Shader created from scratch by Rokk
+Shader created from scratch by Hugo Zink
+Rokk#8740
 
 Thanks to:
 - ImLeXz, for creating most of the toon ramps, and for figuring out the ramp tinting mechanic

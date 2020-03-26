@@ -1,4 +1,4 @@
-﻿Shader "Rokk/Toon Outline"
+﻿Shader "Solid Toon/Toon Outline"
 {
     Properties
     {
@@ -145,7 +145,7 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
         
@@ -197,9 +197,9 @@
             
             #define OUTLINE_PASS
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             
-            #include "RokkToonOutlines.cginc"
+            #include "SolidToonOutlines.cginc"
             ENDCG
         }
         
@@ -239,7 +239,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
 
@@ -262,7 +262,7 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "RokkToonShadowcaster.cginc"
+            #include "SolidToonShadowcaster.cginc"
             
             ENDCG
         }
@@ -317,7 +317,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
         
@@ -371,9 +371,9 @@
             #define NO_TEXLOD
             #define NO_DERIVATIVES
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             
-            #include "RokkToonOutlines.cginc"
+            #include "SolidToonOutlines.cginc"
             ENDCG
         }
         
@@ -415,7 +415,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
 
@@ -438,10 +438,10 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "RokkToonShadowcaster.cginc"
+            #include "SolidToonShadowcaster.cginc"
             
             ENDCG
         }
     }
-    CustomEditor "RokkToonEditorGUI"
+    CustomEditor "SolidToonEditorGUI"
 }

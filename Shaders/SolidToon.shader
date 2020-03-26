@@ -1,4 +1,4 @@
-﻿Shader "Rokk/Toon"
+﻿Shader "Solid Toon/Toon"
 {
     Properties
     {
@@ -127,7 +127,7 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif          
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
         
@@ -167,7 +167,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
 
@@ -190,7 +190,7 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "RokkToonShadowcaster.cginc"
+            #include "SolidToonShadowcaster.cginc"
             
             ENDCG
         }
@@ -239,7 +239,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
         
@@ -281,7 +281,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "RokkToonCore.cginc"
+            #include "SolidToonCore.cginc"
             ENDCG
         }
 
@@ -304,10 +304,10 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "RokkToonShadowcaster.cginc"
+            #include "SolidToonShadowcaster.cginc"
             
             ENDCG
         }
     }
-    CustomEditor "RokkToonEditorGUI"
+    CustomEditor "SolidToonEditorGUI"
 }

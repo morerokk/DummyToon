@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-public class RokkToonEditorGUI : ShaderGUI
+public class SolidToonEditorGUI : ShaderGUI
 {
     // Main
     private MaterialProperty mainTex = null;
