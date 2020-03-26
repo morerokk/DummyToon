@@ -1,4 +1,4 @@
-﻿Shader "Solid Toon/Toon Outline"
+﻿Shader "Dummy Toon/Toon"
 {
     Properties
     {
@@ -30,10 +30,10 @@
         
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
-        
+
         _IndirectLightDirMergeMin ("Indirect Light Direction Merge Minimum", Range(0, 1)) = 0.85
         _IndirectLightDirMergeMax ("Indirect Light Direction Merge Maximum", Range(0, 1)) = 0.95
-        
+
         // Metallic and specular
         [Enum(None,0,Metallic,1,Specular,2)] _MetallicMode("Metallic Mode", Float) = 0
         [NoScaleOffset] _MetallicGlossMap("Metallic Map", 2D) = "white" {}
@@ -73,30 +73,18 @@
         [Enum(Off,0,Additive (spa),1,Multiply (sph),2)] _MatCapMode ("Matcap Mode", Float) = 0
         _MatCapStrength ("Matcap Strength", Range(0, 1)) = 1
         
-        // Outline
-        _OutlineWidth ("Outline Width", Float ) = 0
-        _OutlineColor ("Outline Tint", Color) = (0,0,0,1)
-        _OutlineTex ("Outline Texture", 2D) = "white" {}
-        [Toggle(_OUTLINE_SCREENSPACE)] _ScreenSpaceOutline ("Screen-Space Outline", Float ) = 0
-        _ScreenSpaceMinDist ("Minimum Outline Distance", Float ) = 0
-        _ScreenSpaceMaxDist ("Maximum Outline Distance", Float ) = 100
-        [Enum(Normal,8,Outer Only,6)] _OutlineStencilComp ("Outline Mode", Float) = 8
-        [Toggle(_OUTLINE_ALPHA_WIDTH_ON)] _OutlineAlphaWidthEnabled ("Alpha Affects Width", Float) = 1
-        
         // Alpha to coverage
         [Toggle(_ALPHATOCOVERAGE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
         
         // Detail normal
-        [Normal] _DetailNormalMap("Detail Normal Map", 2D) = "bump" {}
-        _DetailNormalMapScale("Detail Normal Scale", Float) = 1.0
+        [Normal] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" {}
+        _DetailNormalMapScale ("Detail Normal Scale", Float) = 1.0
         [Enum(UV0,0,UV1,1)] _UVSec ("UV Map for detail normals", Float) = 0
         
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
-        
-        [HideInInspector] _StencilWriteAction ("__stencilwriteaction", Float) = 0
     }
     SubShader
     {
@@ -106,12 +94,6 @@
         {
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
-            
-            Stencil {
-                Ref 8
-                Comp Always
-                Pass [_StencilWriteAction]
-            }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
@@ -143,63 +125,9 @@
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
-            #endif
+            #endif          
 
-            #include "SolidToonCore.cginc"
-            ENDCG
-        }
-        
-        Pass
-        {
-            Name "Outline"
-            Tags { "LightMode"="ForwardBase" }
-            
-            Stencil {
-                Ref 8
-                Comp [_OutlineStencilComp]
-                Pass Keep
-            }
-
-            Cull Front
-            ZWrite [_ZWrite]
-            Blend [_SrcBlend] [_DstBlend]
-            
-            AlphaToMask [_AlphaToCoverage]
-            
-            CGPROGRAM
-            #pragma vertex vertOutline
-            #pragma fragment frag
-            
-            #pragma target 5.0
-
-            #pragma multi_compile_fwdbase_fullshadows
-            #pragma multi_compile _ VERTEXLIGHT_ON
-            
-            #pragma shader_feature_local _OUTLINE_ALPHA_WIDTH_ON
-            #pragma shader_feature_local _OUTLINE_SCREENSPACE
-            
-            #pragma shader_feature_local _ALPHATEST_ON
-            #pragma shader_feature_local _ALPHABLEND_ON
-            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _EMISSION
-            #pragma shader_feature_local _RAMPMASK_ON
-            #pragma shader_feature_local _RAMPTINT_ON
-            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
-
-            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
-            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
-            
-            #ifndef UNITY_PASS_FORWARDBASE
-                #define UNITY_PASS_FORWARDBASE
-            #endif
-            
-            #define OUTLINE_PASS
-
-            #include "SolidToonCore.cginc"
-            
-            #include "SolidToonOutlines.cginc"
+            #include "DummyToonCore.cginc"
             ENDCG
         }
         
@@ -239,7 +167,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "SolidToonCore.cginc"
+            #include "DummyToonCore.cginc"
             ENDCG
         }
 
@@ -262,12 +190,12 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "SolidToonShadowcaster.cginc"
+            #include "DummyToonShadowcaster.cginc"
             
             ENDCG
         }
     }
-    
+
     SubShader
     {
         Tags { "RenderType"="Opaque" }
@@ -276,12 +204,6 @@
         {
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
-            
-            Stencil {
-                Ref 8
-                Comp Always
-                Pass [_StencilWriteAction]
-            }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
@@ -317,63 +239,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "SolidToonCore.cginc"
-            ENDCG
-        }
-        
-        Pass
-        {
-            Name "Outline"
-            Tags { "LightMode"="ForwardBase" }
-            
-            Stencil {
-                Ref 8
-                Comp [_OutlineStencilComp]
-                Pass Keep
-            }
-
-            Cull Front
-            ZWrite [_ZWrite]
-            Blend [_SrcBlend] [_DstBlend]
-            
-            AlphaToMask [_AlphaToCoverage]
-            
-            CGPROGRAM
-            #pragma vertex vertOutline
-            #pragma fragment frag
-            
-            #pragma target 2.0
-
-            #pragma multi_compile_fwdbase_fullshadows
-            #pragma multi_compile _ VERTEXLIGHT_ON
-            
-            #pragma shader_feature_local _OUTLINE_ALPHA_WIDTH_ON
-            #pragma shader_feature_local _OUTLINE_SCREENSPACE
-            
-            #pragma shader_feature_local _ALPHATEST_ON
-            #pragma shader_feature_local _ALPHABLEND_ON
-            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _EMISSION
-            #pragma shader_feature_local _RAMPMASK_ON
-            #pragma shader_feature_local _RAMPTINT_ON
-            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
-
-            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
-            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
-            
-            #ifndef UNITY_PASS_FORWARDBASE
-                #define UNITY_PASS_FORWARDBASE
-            #endif
-            
-            #define OUTLINE_PASS
-            #define NO_TEXLOD
-            #define NO_DERIVATIVES
-
-            #include "SolidToonCore.cginc"
-            
-            #include "SolidToonOutlines.cginc"
+            #include "DummyToonCore.cginc"
             ENDCG
         }
         
@@ -415,7 +281,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "SolidToonCore.cginc"
+            #include "DummyToonCore.cginc"
             ENDCG
         }
 
@@ -438,10 +304,10 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "SolidToonShadowcaster.cginc"
+            #include "DummyToonShadowcaster.cginc"
             
             ENDCG
         }
     }
-    CustomEditor "SolidToonEditorGUI"
+    CustomEditor "DummyToonEditorGUI"
 }

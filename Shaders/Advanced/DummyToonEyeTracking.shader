@@ -1,4 +1,4 @@
-﻿Shader "Solid Toon/Advanced/Toon Eye Tracking"
+﻿Shader "Dummy Toon/Advanced/Toon Eye Tracking"
 {
     Properties
     {
@@ -136,7 +136,7 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif          
 
-            #include "../SolidToonCore.cginc"
+            #include "../DummyToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -178,7 +178,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "../SolidToonCore.cginc"
+            #include "../DummyToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -202,11 +202,11 @@
             #pragma vertex vertShadowEye
             #pragma fragment fragShadow
             
-            #include "../SolidToonShadowcaster.cginc"
+            #include "../DummyToonShadowcaster.cginc"
 
             #include "EyeTrackingShadow.cginc"
             ENDCG
         }
     }
-    CustomEditor "SolidToonEditorGUI"
+    CustomEditor "DummyToonEditorGUI"
 }

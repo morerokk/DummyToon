@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-public class SolidToonEditorGUI : ShaderGUI
+public class DummyToonEditorGUI : ShaderGUI
 {
     // Main
     private MaterialProperty mainTex = null;

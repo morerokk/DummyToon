@@ -127,19 +127,19 @@ struct v2f
     #endif
 };
 
-#include "SolidToonLighting.cginc"
-#include "SolidToonRamping.cginc"
+#include "DummyToonLighting.cginc"
+#include "DummyToonRamping.cginc"
 
 #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-    #include "SolidToonMetallicSpecular.cginc"
+    #include "DummyToonMetallicSpecular.cginc"
 #endif
 
 #if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
-    #include "SolidToonMatcap.cginc"
+    #include "DummyToonMatcap.cginc"
 #endif
 
 #if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
-    #include "SolidToonRimlight.cginc"
+    #include "DummyToonRimlight.cginc"
 #endif
 
 float3 NormalDirection(v2f i)
