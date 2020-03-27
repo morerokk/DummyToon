@@ -166,6 +166,14 @@ public class DummyToonEditorGUI : ShaderGUI
         base.AssignNewShaderToMaterial(material, oldShader, newShader);
 
         SetupBlendModes(material);
+
+        // Fix invalid properties carried over from Noenoe
+        if(oldShader.name.ToUpperInvariant().Contains("NOENOE"))
+        {
+            material.SetFloat("_Intensity", 1.3f);
+            material.SetFloat("_Saturation", 1f);
+            material.SetFloat("_ToonContrast", 0.5f);
+        }
     }
 
     private void DrawMain()

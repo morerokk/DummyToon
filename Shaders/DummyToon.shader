@@ -31,8 +31,8 @@
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
 
-        _IndirectLightDirMergeMin ("Indirect Light Direction Merge Minimum", Range(0, 1)) = 0.85
-        _IndirectLightDirMergeMax ("Indirect Light Direction Merge Maximum", Range(0, 1)) = 0.95
+        _IndirectLightDirMergeMin ("Indirect Light Direction Merge Minimum", Range(0, 1)) = 0.65
+        _IndirectLightDirMergeMax ("Indirect Light Direction Merge Maximum", Range(0, 1)) = 0.75
 
         // Metallic and specular
         [Enum(None,0,Metallic,1,Specular,2)] _MetallicMode("Metallic Mode", Float) = 0
