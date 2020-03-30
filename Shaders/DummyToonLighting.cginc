@@ -106,7 +106,7 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
     
     #if defined(_RAMPTINT_ON)
         // Soft-blend the ramp and albedo
-        return blendSoftLight(albedo * lightColor, ramp) * toonContrast;
+        return blendSoftLight(albedo * lightColor, ramp.rgb) * toonContrast;
     #else
         // Multiply by toon ramp color value
         return albedo * lightColor * ramp.rgb * toonContrast;
