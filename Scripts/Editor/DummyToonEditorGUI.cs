@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,6 +29,7 @@ public class DummyToonEditorGUI : ShaderGUI
     private MaterialProperty rampTintingEnabled = null;
     private MaterialProperty indirectLightDirMergeMin = null;
     private MaterialProperty indirectLightDirMergeMax = null;
+    private MaterialProperty rampAntiAliasingEnabled = null;
 
     // Metallic and specular
     private MaterialProperty metallicMode = null;
@@ -120,6 +122,7 @@ public class DummyToonEditorGUI : ShaderGUI
     private bool rampTintHelpExpanded = false;
     private bool rampMaskHelpExpanded = false;
     private bool indirectLightMergeHelpExpanded = false;
+    private bool rampAntiAliasingHelpExpanded = false;
 
     private bool eyeTrackingTextureHelpExpanded = false;
     private bool eyeTrackingRotationCorrectionHelpExpanded = false;
@@ -168,7 +171,7 @@ public class DummyToonEditorGUI : ShaderGUI
         SetupBlendModes(material);
 
         // Fix invalid properties carried over from Noenoe
-        if(oldShader.name.ToUpperInvariant().Contains("NOENOE"))
+        if (oldShader.name.ToUpperInvariant().Contains("NOENOE"))
         {
             material.SetFloat("_Intensity", 1.3f);
             material.SetFloat("_Saturation", 1f);
@@ -258,6 +261,14 @@ public class DummyToonEditorGUI : ShaderGUI
         editor.RangeProperty(indirectLightDirMergeMax, "Maximum Merge Threshold");
 
         EditorGUILayout.Space();
+
+        // Draw the ramp AA toggle and a help box button horizontally
+        ShaderPropertyWithHelp(
+            rampAntiAliasingEnabled,
+            new GUIContent("Ramp Anti-Aliasing", "Enable ramp anti-aliasing, which can eliminate jagged edges on sharper toon ramps."),
+            ref rampAntiAliasingHelpExpanded,
+            "Enables anti-aliasing on toon ramp textures, which can help eliminate jagged edges on sharper toon ramps. The filter mode of the ramp texture must not be set to Point."
+        );
 
         // Draw the ramp tinting toggle and a help box button horizontally
         ShaderPropertyWithHelp(
@@ -527,6 +538,7 @@ public class DummyToonEditorGUI : ShaderGUI
         rampTintingEnabled = FindProperty("_RampTinting", props);
         indirectLightDirMergeMin = FindProperty("_IndirectLightDirMergeMin", props);
         indirectLightDirMergeMax = FindProperty("_IndirectLightDirMergeMax", props);
+        rampAntiAliasingEnabled = FindProperty("_RampAntiAliasingEnabled", props);
 
         // Metallic and specular
         metallicMode = FindProperty("_MetallicMode", props);
@@ -654,19 +666,36 @@ public class DummyToonEditorGUI : ShaderGUI
         return prop.textureValue != null && prop.textureValue.wrapMode != TextureWrapMode.Clamp;
     }
 
+    private bool TextureIsPointFiltered(MaterialProperty prop)
+    {
+        return prop.textureValue != null && prop.textureValue.filterMode == FilterMode.Point;
+    }
+
     /// <summary>
     /// Draws a texture property specifically meant for Toon Ramps. Can warn the user if the toon ramp texture is not set to Clamp.
+    /// Also warns the user if ramp anti-aliasing is enabled but the texture uses point filtering.
     /// </summary>
     /// <param name="guiContent">A GUIContent object to use for the label.</param>
-    /// <param name="rampProperty">The material property to make the texture for. Has to be a texture.</param>
+    /// <param name="rampProperty">The material property to draw the texture for. Has to be a texture property.</param>
     private void ToonRampProperty(GUIContent guiContent, MaterialProperty rampProperty)
     {
+        if (rampProperty.type != MaterialProperty.PropType.Texture)
+        {
+            throw new ArgumentOutOfRangeException("rampProperty", rampProperty, "rampProperty parameter must be a texture!");
+        }
+
         editor.TexturePropertySingleLine(guiContent, rampProperty);
 
-        //Display warning if repeat mode is not set to clamp.
+        // Display warning if wrap mode is not set to clamp.
         if (TextureIsNotSetToClamp(rampProperty))
         {
             EditorGUILayout.HelpBox("Toon Ramp texture wrap mode should be set to Clamp. You may experience lighting artifacts otherwise.", MessageType.Warning);
+        }
+
+        // Display warning if ramp anti-aliasing is enabled but the toon ramp filter mode is Point.
+        if (rampAntiAliasingEnabled.floatValue == 1 && TextureIsPointFiltered(rampProperty))
+        {
+            EditorGUILayout.HelpBox("Ramp anti-aliasing is enabled, but the filtering mode of this ramp texture is set to Point.", MessageType.Warning);
         }
     }
 
@@ -677,6 +706,11 @@ public class DummyToonEditorGUI : ShaderGUI
     /// <param name="label">The label to give the texture property.</param>
     private void TextureProperty(MaterialProperty prop, string label)
     {
+        if (prop.type != MaterialProperty.PropType.Texture)
+        {
+            throw new ArgumentOutOfRangeException("prop", prop, "prop parameter must be a texture!");
+        }
+
         editor.SetDefaultGUIWidths();
         editor.TextureProperty(prop, label);
         EditorGUIUtility.labelWidth = defaultLabelWidth;
@@ -715,6 +749,11 @@ public class DummyToonEditorGUI : ShaderGUI
     /// <param name="helpText">The text to put in the help box.</param>
     private void TexturePropertyWithHelp(GUIContent label, MaterialProperty prop, ref bool expanded, string helpText)
     {
+        if (prop.type != MaterialProperty.PropType.Texture)
+        {
+            throw new ArgumentOutOfRangeException("prop", prop, "prop parameter must be a texture!");
+        }
+
         EditorGUILayout.BeginHorizontal();
         editor.TexturePropertySingleLine(label, prop);
         if (GUILayout.Button("?", GUILayout.Width(25)))
@@ -772,6 +811,12 @@ public class DummyToonEditorGUI : ShaderGUI
         if (rampMaskingEnabled.floatValue == 1)
         {
             material.EnableKeyword("_RAMPMASK_ON");
+        }
+
+        // Ramp anti-aliasing keyword
+        if (rampAntiAliasingEnabled.floatValue == 1)
+        {
+            material.EnableKeyword("_RAMPANTIALIASING_ON");
         }
 
         // Add Metallic or Specular keyword if used.

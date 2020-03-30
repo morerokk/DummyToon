@@ -27,6 +27,7 @@
         _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 0.8
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
         [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
+        [Toggle(_RAMPANTIALIASING_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
         
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
@@ -126,8 +127,9 @@
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
-            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+            #pragma shader_feature_local _RAMPANTIALIASING_ON
 
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
@@ -168,8 +170,9 @@
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _RAMPANTIALIASING_ON
+
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
-            
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
             #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX

@@ -45,6 +45,30 @@ float3 blendSoftLight(float3 base, float3 blend) {
     );
 }
 
+float2 AAToonRampUV(float dotProduct, float4 texelsize)
+{
+    float pixelSize = max(texelsize.z, texelsize.w);
+    dotProduct *= pixelSize;
+    float2 duv = float2(ddx(dotProduct), ddy(dotProduct));
+    float rf = rsqrt(dot(duv, duv));
+    float x = floor(dotProduct);
+    x = x - max(0, .5 - rf * (dotProduct - floor(dotProduct)));
+    x = x + max(0, .5 - rf * (ceil(dotProduct) - dotProduct));
+    x = (x + .5) / pixelSize;
+    return x.xx;
+}
+
+float2 GetToonRampUV(float dotProduct, float4 texelsize, float offset)
+{
+    // Turn ndotl into UV's for toon ramp
+    // Sample toon ramp diagonally to cover horizontal and vertical ramps (thanks Rero)
+    #if defined(_RAMPANTIALIASING_ON) && !defined(NO_DERIVATIVES)
+        return saturate(AAToonRampUV(dotProduct, texelsize) + offset);
+    #else
+        return saturate(float2(dotProduct, dotProduct) + offset);
+    #endif
+}
+
 // Simple lambert lighting
 float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lightColor, float4 ToonRampMaskColor, float toonContrast, float toonRampOffset)
 {
@@ -52,29 +76,31 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
     // Remap -1,1 range to 0,1
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
     
-    // Turn ndotl into UV's for toon ramp
-    // Sample toon ramp diagonally to cover horizontal and vertical ramps (thanks Rero)
-    float2 rampUV = saturate(float2(dotProduct, dotProduct) + toonRampOffset);
-    
     #if defined(_RAMPMASK_ON)
         float4 ramp;
+        float2 rampUV;
         if(ToonRampMaskColor.r > 0.5)
         {
+            rampUV = GetToonRampUV(dotProduct, _RampR_TexelSize, toonRampOffset);
             ramp = tex2D(_RampR, rampUV);
         }
         else if(ToonRampMaskColor.g > 0.5)
         {
+            rampUV = GetToonRampUV(dotProduct, _RampG_TexelSize, toonRampOffset);
             ramp = tex2D(_RampG, rampUV);
         }
         else if(ToonRampMaskColor.b > 0.5)
         {
+            rampUV = GetToonRampUV(dotProduct, _RampB_TexelSize, toonRampOffset);
             ramp = tex2D(_RampB, rampUV);
         }
         else
         {
+            rampUV = GetToonRampUV(dotProduct, _Ramp_TexelSize, toonRampOffset);
             ramp = tex2D(_Ramp, rampUV);
         }
     #else
+        float2 rampUV = GetToonRampUV(dotProduct, _Ramp_TexelSize, toonRampOffset);
         float4 ramp = tex2D(_Ramp, rampUV);
     #endif
     

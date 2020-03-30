@@ -20,6 +20,7 @@ float _Cutoff;
 #endif
 
 sampler2D _Ramp;
+float4 _Ramp_TexelSize;
 float _ToonContrast;
 float _ToonRampOffset;
 float3 _StaticToonLight;
@@ -37,18 +38,21 @@ float _IndirectLightDirMergeMax;
     sampler2D _RampMaskTex;
 
     sampler2D _RampR;
+    float4 _RampR_TexelSize;
     float _ToonContrastR;
     float _ToonRampOffsetR;
     float _IntensityR;
     float _SaturationR;
     
     sampler2D _RampG;
+    float4 _RampG_TexelSize;
     float _ToonContrastG;
     float _ToonRampOffsetG;
     float _IntensityG;
     float _SaturationG;
     
     sampler2D _RampB;
+    float4 _RampB_TexelSize;
     float _ToonContrastB;
     float _ToonRampOffsetB;
     float _IntensityB;
