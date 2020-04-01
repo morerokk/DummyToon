@@ -1,4 +1,4 @@
-void MetallicSpecularGloss(float3 worldPos, float2 uv, float3 normalDirection, inout float3 color)
+void MetallicSpecularGloss(float3 worldPos, float2 uv, float3 normalDirection, float3 albedo, inout float3 color)
 {
     // In forwardbase, apply the metallic or specular.
     // But in forwardadd, dim the final color as the metallic value increases.
@@ -42,7 +42,7 @@ void MetallicSpecularGloss(float3 worldPos, float2 uv, float3 normalDirection, i
                     reflectionColor = DecodeHDR(reflectionData, unity_SpecCube0_HDR);
                 }
                 
-                reflectionColor *= color;
+                reflectionColor *= albedo;
             #endif
         #elif defined(_SPECGLOSSMAP)
             //Specular workflow

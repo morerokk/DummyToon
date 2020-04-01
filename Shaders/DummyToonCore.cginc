@@ -292,6 +292,7 @@ float4 frag (v2f i) : SV_Target
     
     // Apply current light
     // If the current light is black, it will have no effect. Skip it to save on calculations and texture samples.
+    UNITY_BRANCH
     if(any(_LightColor0.rgb != 0))
     {
         finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
@@ -299,7 +300,7 @@ float4 frag (v2f i) : SV_Target
     
     // Apply metallic
     #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-        MetallicSpecularGloss(i.worldPos.xyz, i.uv, normalDir, finalColor);
+        MetallicSpecularGloss(i.worldPos.xyz, i.uv, normalDir, albedo, finalColor);
     #endif
     
     // Apply emission
