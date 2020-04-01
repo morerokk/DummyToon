@@ -279,7 +279,7 @@ float4 frag (v2f i) : SV_Target
         // If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
         // the direction will be smoothly merged.
         // This makes the lighting look better with sharp toon ramps.
-        if(!all(_WorldSpaceLightPos0 == 0) && attenuation > 0)
+        if(any(_WorldSpaceLightPos0))
         {
             SmoothBaseLightData(lightDirection);
         }
@@ -293,7 +293,7 @@ float4 frag (v2f i) : SV_Target
     // Apply current light
     // If the current light is black, it will have no effect. Skip it to save on calculations and texture samples.
     UNITY_BRANCH
-    if(any(_LightColor0.rgb != 0))
+    if(any(_LightColor0.rgb))
     {
         finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
     }
