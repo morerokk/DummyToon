@@ -117,28 +117,37 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
 // This ensures that there is always some toon shading going on.
 void GetBaseLightData(inout float3 lightDirection, inout float3 lightColor)
 {
-    lightDirection = GIsonarDirection();
+    #if defined(_OVERRIDEWORLDLIGHTDIR_ON)
+        lightDirection = _StaticToonLight;
+    #else
+        lightDirection = GIsonarDirection();
+    #endif
     lightColor = ShadeSH9(float4(0,0,0,1));
 }
 
 // Fill the light direction and light color parameters.
 void GetLightData(float3 worldPos, inout float3 lightDirection, inout float3 lightColor)
 {
-    #ifdef UNITY_PASS_FORWARDBASE
-        // Take directional light direction and color
-        lightDirection = normalize(_WorldSpaceLightPos0.xyz);
+    #if defined(_OVERRIDEWORLDLIGHTDIR_ON)
+        lightDirection = _StaticToonLight;
         lightColor = _LightColor0.rgb;
     #else
-        // Pass is forwardadd
-        // Check if the light is directional or point/spot.
-        // Directional lights get their pos interpreted as direction
-        // Other lights get their direction calculated from their pos
-        #if defined(DIRECTIONAL) || defined(DIRECTIONAL_COOKIE)
+        #ifdef UNITY_PASS_FORWARDBASE
+            // Take directional light direction and color
             lightDirection = normalize(_WorldSpaceLightPos0.xyz);
             lightColor = _LightColor0.rgb;
         #else
-            lightDirection = normalize(_WorldSpaceLightPos0.xyz - worldPos);
-            lightColor = _LightColor0.rgb;
+            // Pass is forwardadd
+            // Check if the light is directional or point/spot.
+            // Directional lights get their pos interpreted as direction
+            // Other lights get their direction calculated from their pos
+            #if defined(DIRECTIONAL) || defined(DIRECTIONAL_COOKIE)
+                lightDirection = normalize(_WorldSpaceLightPos0.xyz);
+                lightColor = _LightColor0.rgb;
+            #else
+                lightDirection = normalize(_WorldSpaceLightPos0.xyz - worldPos);
+                lightColor = _LightColor0.rgb;
+            #endif
         #endif
     #endif
 }

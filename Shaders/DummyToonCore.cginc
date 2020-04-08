@@ -269,7 +269,7 @@ float4 frag (v2f i) : SV_Target
     float3 lightDirection;
     float3 lightColor;
     
-    // Fill the finalcolor with indirect light data
+    // Fill the finalcolor with indirect light data (SH and vertex lights)
     float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz);
     
     #ifdef UNITY_PASS_FORWARDBASE
@@ -279,10 +279,12 @@ float4 frag (v2f i) : SV_Target
         // If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
         // the direction will be smoothly merged.
         // This makes the lighting look better with sharp toon ramps.
-        if(any(_WorldSpaceLightPos0))
-        {
-            SmoothBaseLightData(lightDirection);
-        }
+        #if !defined(_OVERRIDEWORLDLIGHTDIR_ON)
+            if(any(_WorldSpaceLightPos0))
+            {
+                SmoothBaseLightData(lightDirection);
+            }
+        #endif
         
         finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
     #endif
@@ -292,11 +294,15 @@ float4 frag (v2f i) : SV_Target
     
     // Apply current light
     // If the current light is black, it will have no effect. Skip it to save on calculations and texture samples.
-    UNITY_BRANCH
-    if(any(_LightColor0.rgb))
-    {
+    #ifdef UNITY_PASS_FORWARDBASE
+        UNITY_BRANCH
+        if(any(_LightColor0.rgb))
+        {
+            finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
+        }
+    #else
         finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
-    }
+    #endif
     
     // Apply metallic
     #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)

@@ -28,6 +28,7 @@
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
         [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
         [Toggle(_RAMPANTIALIASING_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
+        [Toggle(_OVERRIDEWORLDLIGHTDIR_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
         
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
@@ -137,6 +138,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -188,6 +190,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -233,6 +236,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -309,6 +313,7 @@
             #pragma shader_feature_local _EMISSION
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -362,6 +367,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -409,6 +415,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP

@@ -30,6 +30,7 @@ public class DummyToonEditorGUI : ShaderGUI
     private MaterialProperty indirectLightDirMergeMin = null;
     private MaterialProperty indirectLightDirMergeMax = null;
     private MaterialProperty rampAntiAliasingEnabled = null;
+    private MaterialProperty overrideWorldLightDirection = null;
 
     // Metallic and specular
     private MaterialProperty metallicMode = null;
@@ -279,6 +280,7 @@ public class DummyToonEditorGUI : ShaderGUI
         );
 
         editor.VectorProperty(staticToonLight, "Fallback light direction");
+        editor.ShaderProperty(overrideWorldLightDirection, new GUIContent("Always use fallback", "Whether the fallback light direction should *always* be used."));
 
         // Draw the ramp masking toggle and a help box button horizontally
         ShaderPropertyWithHelp(
@@ -539,6 +541,7 @@ public class DummyToonEditorGUI : ShaderGUI
         indirectLightDirMergeMin = FindProperty("_IndirectLightDirMergeMin", props);
         indirectLightDirMergeMax = FindProperty("_IndirectLightDirMergeMax", props);
         rampAntiAliasingEnabled = FindProperty("_RampAntiAliasingEnabled", props);
+        overrideWorldLightDirection = FindProperty("_OverrideWorldLightDir", props);
 
         // Metallic and specular
         metallicMode = FindProperty("_MetallicMode", props);
@@ -817,6 +820,12 @@ public class DummyToonEditorGUI : ShaderGUI
         if (rampAntiAliasingEnabled.floatValue == 1)
         {
             material.EnableKeyword("_RAMPANTIALIASING_ON");
+        }
+
+        // Override world light dir keyword
+        if (overrideWorldLightDirection.floatValue == 1)
+        {
+            material.EnableKeyword("_OVERRIDEWORLDLIGHTDIR_ON");
         }
 
         // Add Metallic or Specular keyword if used.
