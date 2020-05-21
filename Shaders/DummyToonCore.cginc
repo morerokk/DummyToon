@@ -59,6 +59,11 @@ float _IndirectLightDirMergeMax;
     float _SaturationB;
 #endif
 
+#if defined(_ADDITIVERAMP_ON)
+    sampler2D _AdditiveRamp;
+    float4 _AdditiveRamp_TexelSize;
+#endif
+
 #if defined(_METALLICGLOSSMAP)
     sampler2D _MetallicGlossMap;
 #endif
@@ -286,7 +291,7 @@ float4 frag (v2f i) : SV_Target
             }
         #endif
         
-        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
+        finalColor += ToonLightingBase(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
     #endif
     
     // Fill lightDirection and lightColor with current light data

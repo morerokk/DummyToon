@@ -29,6 +29,8 @@
         [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
         [Toggle(_RAMPANTIALIASING_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
         [Toggle(_OVERRIDEWORLDLIGHTDIR_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
+        [Toggle(_ADDITIVERAMP_ON)] _AdditiveRampEnabled ("Use Additive Ramp", Float) = 0
+        [NoScaleOffset] _AdditiveRamp ("Additive Toon Ramp", 2D) = "white" {}
         
         _Intensity ("Intensity", Range(0, 5)) = 1.3
         _Saturation ("Saturation", Range(0, 5)) = 1
@@ -121,6 +123,7 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _ADDITIVERAMP_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -163,6 +166,7 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _ADDITIVERAMP_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -234,6 +238,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _ADDITIVERAMP_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -277,6 +282,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _ADDITIVERAMP_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP

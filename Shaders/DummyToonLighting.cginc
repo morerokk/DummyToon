@@ -76,6 +76,56 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
     // Remap -1,1 range to 0,1
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
     
+    // If additive ramping is used, always sample the additive ramp
+    #ifdef _ADDITIVERAMP_ON
+        float2 rampUV = GetToonRampUV(dotProduct, _AdditiveRamp_TexelSize, toonRampOffset);
+        float4 ramp = tex2D(_AdditiveRamp, rampUV);
+    #else
+        #if defined(_RAMPMASK_ON)
+            float4 ramp;
+            float2 rampUV;
+            if(ToonRampMaskColor.r > 0.5)
+            {
+                rampUV = GetToonRampUV(dotProduct, _RampR_TexelSize, toonRampOffset);
+                ramp = tex2D(_RampR, rampUV);
+            }
+            else if(ToonRampMaskColor.g > 0.5)
+            {
+                rampUV = GetToonRampUV(dotProduct, _RampG_TexelSize, toonRampOffset);
+                ramp = tex2D(_RampG, rampUV);
+            }
+            else if(ToonRampMaskColor.b > 0.5)
+            {
+                rampUV = GetToonRampUV(dotProduct, _RampB_TexelSize, toonRampOffset);
+                ramp = tex2D(_RampB, rampUV);
+            }
+            else
+            {
+                rampUV = GetToonRampUV(dotProduct, _Ramp_TexelSize, toonRampOffset);
+                ramp = tex2D(_Ramp, rampUV);
+            }
+        #else
+            float2 rampUV = GetToonRampUV(dotProduct, _Ramp_TexelSize, toonRampOffset);
+            float4 ramp = tex2D(_Ramp, rampUV);
+        #endif
+    #endif
+    
+    #if defined(_RAMPTINT_ON)
+        // Soft-blend the ramp and albedo
+        return blendSoftLight(albedo * lightColor, ramp.rgb) * toonContrast;
+    #else
+        // Multiply by toon ramp color value
+        return albedo * lightColor * ramp.rgb * toonContrast;
+    #endif
+}
+
+// Same as above, but without additive ramping support (only used for base lighting function)
+float3 ToonLightingBase(float3 albedo, float3 normalDir, float3 lightDir, float3 lightColor, float4 ToonRampMaskColor, float toonContrast, float toonRampOffset)
+{
+    // Get dot product
+    // Remap -1,1 range to 0,1
+    float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
+
     #if defined(_RAMPMASK_ON)
         float4 ramp;
         float2 rampUV;

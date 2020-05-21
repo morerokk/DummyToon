@@ -2,7 +2,22 @@ fileFormatVersion: 2
 guid: c5fbcbf57c88dda44b315bedf24a84e7
 ShaderImporter:
   externalObjects: {}
-  defaultTextures: []
+  defaultTextures:
+  - _MainTex: {instanceID: 0}
+  - _BumpMap: {instanceID: 0}
+  - _EmissionMap: {instanceID: 0}
+  - _Ramp: {fileID: 2800000, guid: e9b2e3debb91f8a4581576bf71b2bf99, type: 3}
+  - _AdditiveRamp: {fileID: 2800000, guid: 14e2e3ca0af910e44886540cae74cbd3, type: 3}
+  - _MetallicGlossMap: {instanceID: 0}
+  - _SpecGlossMap: {instanceID: 0}
+  - _RampMaskTex: {instanceID: 0}
+  - _RampR: {instanceID: 0}
+  - _RampG: {instanceID: 0}
+  - _RampB: {instanceID: 0}
+  - _RimTex: {instanceID: 0}
+  - _MatCap: {instanceID: 0}
+  - _DetailNormalMap: {instanceID: 0}
+  - _EyeTrackingPatternTex: {instanceID: 0}
   nonModifiableTextures: []
   userData: 
   assetBundleName: 

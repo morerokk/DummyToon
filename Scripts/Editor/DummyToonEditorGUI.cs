@@ -31,6 +31,8 @@ public class DummyToonEditorGUI : ShaderGUI
     private MaterialProperty indirectLightDirMergeMax = null;
     private MaterialProperty rampAntiAliasingEnabled = null;
     private MaterialProperty overrideWorldLightDirection = null;
+    private MaterialProperty additiveRampEnabled = null;
+    private MaterialProperty additiveRamp = null;
 
     // Metallic and specular
     private MaterialProperty metallicMode = null;
@@ -124,6 +126,7 @@ public class DummyToonEditorGUI : ShaderGUI
     private bool rampMaskHelpExpanded = false;
     private bool indirectLightMergeHelpExpanded = false;
     private bool rampAntiAliasingHelpExpanded = false;
+    private bool additiveRampHelpExpanded = false;
 
     private bool eyeTrackingTextureHelpExpanded = false;
     private bool eyeTrackingRotationCorrectionHelpExpanded = false;
@@ -293,6 +296,19 @@ public class DummyToonEditorGUI : ShaderGUI
         if (rampMaskingEnabled.floatValue == 1)
         {
             DrawRampMasking();
+        }
+
+        // Draw the additive ramping toggle and a help box button horizontally
+        ShaderPropertyWithHelp(
+            additiveRampEnabled,
+            new GUIContent("Additive Ramp", "Enable the Additive Ramp that is used for realtime lights."),
+            ref additiveRampHelpExpanded,
+            "If enabled, the Additive Toon Ramp will always be used for realtime lights instead. This ignores ramp masking."
+        );
+
+        if(additiveRampEnabled.floatValue == 1)
+        {
+            editor.TexturePropertySingleLine(new GUIContent("Additive Toon Ramp", "The ramp texture to use for realtime lights."), additiveRamp);
         }
     }
 
@@ -542,6 +558,8 @@ public class DummyToonEditorGUI : ShaderGUI
         indirectLightDirMergeMax = FindProperty("_IndirectLightDirMergeMax", props);
         rampAntiAliasingEnabled = FindProperty("_RampAntiAliasingEnabled", props);
         overrideWorldLightDirection = FindProperty("_OverrideWorldLightDir", props);
+        additiveRampEnabled = FindProperty("_AdditiveRampEnabled", props);
+        additiveRamp = FindProperty("_AdditiveRamp", props);
 
         // Metallic and specular
         metallicMode = FindProperty("_MetallicMode", props);
@@ -826,6 +844,12 @@ public class DummyToonEditorGUI : ShaderGUI
         if (overrideWorldLightDirection.floatValue == 1)
         {
             material.EnableKeyword("_OVERRIDEWORLDLIGHTDIR_ON");
+        }
+
+        // Additive Ramping keyword
+        if(additiveRampEnabled.floatValue == 1)
+        {
+            material.EnableKeyword("_ADDITIVERAMP_ON");
         }
 
         // Add Metallic or Specular keyword if used.
