@@ -154,7 +154,7 @@
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
             
-            Blend [SrcBlend] One
+            Blend [_SrcBlend] One
             ZWrite Off
             
             Cull [_Cull]
