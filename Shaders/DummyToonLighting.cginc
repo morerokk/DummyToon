@@ -77,7 +77,7 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
     
     // If additive ramping is used, always sample the additive ramp
-    #ifdef _ADDITIVERAMP_ON
+    #if defined(_ADDITIVERAMP_ALWAYS) || (defined(_ADDITIVERAMP_FORWARDADD_ONLY) && defined(UNITY_PASS_FORWARDADD))
         float2 rampUV = GetToonRampUV(dotProduct, _AdditiveRamp_TexelSize, toonRampOffset);
         float4 ramp = tex2D(_AdditiveRamp, rampUV);
     #else

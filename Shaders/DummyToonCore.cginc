@@ -59,7 +59,7 @@ float _IndirectLightDirMergeMax;
     float _SaturationB;
 #endif
 
-#if defined(_ADDITIVERAMP_ON)
+#if defined(_ADDITIVERAMP_FORWARDADD_ONLY) || defined(_ADDITIVERAMP_ALWAYS)
     sampler2D _AdditiveRamp;
     float4 _AdditiveRamp_TexelSize;
 #endif
@@ -195,6 +195,7 @@ float3 NormalDirection(v2f i)
     return normalDir;
 }
 
+// Prevent name conflict in outline pass
 #ifndef OUTLINE_PASS
     v2f vert (appdata v)
     {
@@ -319,7 +320,7 @@ float4 frag (v2f i) : SV_Target
         float4 emissive = tex2D(_EmissionMap, i.uv);
         emissive *= _EmissionColor;
         
-        finalColor += emissive;
+        finalColor += emissive.rgb;
     #endif
     
     #if defined(_ALPHABLEND_ON) || defined(_ALPHATOCOVERAGE_ON)

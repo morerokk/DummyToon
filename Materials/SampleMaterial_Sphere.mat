@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: SampleMaterial_Sphere
   m_Shader: {fileID: 4800000, guid: afb232933361f1a43bc429759aab0b77, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _ADDITIVERAMP_FORWARDADD_ONLY
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,7 +20,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AdditiveRamp:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 14e2e3ca0af910e44886540cae74cbd3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -64,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Ramp:
-        m_Texture: {fileID: 2800000, guid: 1f611a928cf25f046a8ee5026ecbb0ab, type: 3}
+        m_Texture: {fileID: 2800000, guid: acd418199308d1841b52eeef2f8b6905, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RampB:
@@ -92,7 +92,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _AdditiveRampEnabled: 0
+    - _AdditiveRampEnabled: 1
+    - _AdditiveRampMode: 1
     - _AlphaToCoverage: 0
     - _BumpScale: 1
     - _Cull: 0
@@ -105,8 +106,8 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _IndirectLightBoost: 1.3
-    - _IndirectLightDirMergeMax: 0.7
-    - _IndirectLightDirMergeMin: 0.6
+    - _IndirectLightDirMergeMax: 0.85
+    - _IndirectLightDirMergeMin: 0.65
     - _Intensity: 1.3
     - _IntensityB: 1.3
     - _IntensityG: 1.3
