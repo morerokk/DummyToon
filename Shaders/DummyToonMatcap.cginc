@@ -12,7 +12,7 @@ void Matcap(float3 viewDir, float3 normalDir, inout float3 albedo)
     float2 matcapUv = matcapSample(upVector, viewDir, normalDir);
     float4 matcapCol = tex2D(_MatCap, matcapUv);
 
-    #if defined(_MATCAP_ADD)
+    #if defined(_SUNDISK_NONE)
         float3 matcapResult = albedo + matcapCol.rgb;
     #else
         float3 matcapResult = albedo * matcapCol.rgb;

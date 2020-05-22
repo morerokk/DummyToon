@@ -11,7 +11,7 @@ float _Cutoff;
     float _BumpScale;
 #endif
 
-#if defined(_DETAILNORMAL_UV0) || defined(_DETAILNORMAL_UV1)
+#if defined(_DETAIL_MULX2) || defined(_REQUIRE_UV2)
     #define DETAILNORMALMAP
 
     sampler2D _DetailNormalMap;
@@ -34,7 +34,7 @@ float _IndirectLightBoost;
 float _IndirectLightDirMergeMin;
 float _IndirectLightDirMergeMax;
 
-#if defined(_RAMPMASK_ON)
+#if defined(_COLORADDSUBDIFF_ON)
     sampler2D _RampMaskTex;
 
     sampler2D _RampR;
@@ -59,7 +59,7 @@ float _IndirectLightDirMergeMax;
     float _SaturationB;
 #endif
 
-#if defined(_ADDITIVERAMP_FORWARDADD_ONLY) || defined(_ADDITIVERAMP_ALWAYS)
+#if defined(_PARALLAXMAP) || defined(_SPECULARHIGHLIGHTS_OFF)
     sampler2D _AdditiveRamp;
     float4 _AdditiveRamp_TexelSize;
 #endif
@@ -82,12 +82,12 @@ float _Glossiness;
     float4 _EmissionColor;
 #endif
 
-#if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+#if defined(_SUNDISK_NONE) || defined(_SUNDISK_SIMPLE)
     sampler2D _MatCap;
     float _MatCapStrength;
 #endif
 
-#if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
+#if defined(_SUNDISK_HIGH_QUALITY) || defined(_GLOSSYREFLECTIONS_OFF)
     sampler2D _RimTex;
     float4 _RimLightColor;
     float _RimLightMode;
@@ -117,7 +117,7 @@ struct appdata
     float3 normal : NORMAL;
     float4 tangent : TANGENT;
     float2 uv : TEXCOORD0;
-    #if defined(_DETAILNORMAL_UV1)
+    #if defined(_REQUIRE_UV2)
         float2 uv1 : TEXCOORD1;
     #endif
 };
@@ -131,7 +131,7 @@ struct v2f
     float3 bitangentDir : TEXCOORD3;
     float4 worldPos : TEXCOORD4;
     SHADOW_COORDS(5)
-    #if defined(_DETAILNORMAL_UV1)
+    #if defined(_REQUIRE_UV2)
         float2 uv1 : TEXCOORD6;
     #endif
 };
@@ -143,11 +143,11 @@ struct v2f
     #include "DummyToonMetallicSpecular.cginc"
 #endif
 
-#if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+#if defined(_SUNDISK_NONE) || defined(_SUNDISK_SIMPLE)
     #include "DummyToonMatcap.cginc"
 #endif
 
-#if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
+#if defined(_SUNDISK_HIGH_QUALITY) || defined(_GLOSSYREFLECTIONS_OFF)
     #include "DummyToonRimlight.cginc"
 #endif
 
@@ -162,7 +162,7 @@ float3 NormalDirection(v2f i)
         float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv), _BumpScale);
         
         // Choose the correct UV map set
-        #if defined(_DETAILNORMAL_UV0)
+        #if defined(_DETAIL_MULX2)
             // Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
             float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
         #else
@@ -181,7 +181,7 @@ float3 NormalDirection(v2f i)
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         
         // Choose the correct UV map set
-        #if defined(_DETAILNORMAL_UV0)
+        #if defined(_DETAIL_MULX2)
             // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
             float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
         #else
@@ -208,7 +208,7 @@ float3 NormalDirection(v2f i)
         o.worldPos = mul(unity_ObjectToWorld, v.vertex);
         TRANSFER_SHADOW(o);
         
-        #if defined(_DETAILNORMAL_UV1)
+        #if defined(_REQUIRE_UV2)
             o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
         #endif
         
@@ -230,7 +230,7 @@ float4 frag (v2f i) : SV_Target
     #endif
     
     // Alpha to coverage
-    #if defined(_ALPHATOCOVERAGE_ON) && !defined(NO_DERIVATIVES)
+    #if defined(_ALPHAMODULATE_ON) && !defined(NO_DERIVATIVES)
         mainTex.a = (mainTex.a - _Cutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
     #endif
     
@@ -258,12 +258,12 @@ float4 frag (v2f i) : SV_Target
     float3 normalDir = NormalDirection(i);
     
     // Matcap
-    #if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+    #if defined(_SUNDISK_NONE) || defined(_SUNDISK_SIMPLE)
         Matcap(viewDir, normalDir, albedo);
     #endif
     
     // Rimlight
-    #if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
+    #if defined(_SUNDISK_HIGH_QUALITY) || defined(_GLOSSYREFLECTIONS_OFF)
         Rimlight(i.uv, viewDir, normalDir, albedo);
     #endif
     
@@ -285,7 +285,7 @@ float4 frag (v2f i) : SV_Target
         // If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
         // the direction will be smoothly merged.
         // This makes the lighting look better with sharp toon ramps.
-        #if !defined(_OVERRIDEWORLDLIGHTDIR_ON)
+        #if !defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
             if(any(_WorldSpaceLightPos0))
             {
                 SmoothBaseLightData(lightDirection);
@@ -323,7 +323,7 @@ float4 frag (v2f i) : SV_Target
         finalColor += emissive.rgb;
     #endif
     
-    #if defined(_ALPHABLEND_ON) || defined(_ALPHATOCOVERAGE_ON)
+    #if defined(_ALPHABLEND_ON) || defined(_ALPHAMODULATE_ON)
         float finalAlpha = mainTex.a;
     #else
         float finalAlpha = 1;

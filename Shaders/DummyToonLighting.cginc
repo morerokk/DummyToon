@@ -62,7 +62,7 @@ float2 GetToonRampUV(float dotProduct, float4 texelsize, float offset)
 {
     // Turn ndotl into UV's for toon ramp
     // Sample toon ramp diagonally to cover horizontal and vertical ramps (thanks Rero)
-    #if defined(_RAMPANTIALIASING_ON) && !defined(NO_DERIVATIVES)
+    #if defined(_MAPPING_6_FRAMES_LAYOUT) && !defined(NO_DERIVATIVES)
         return saturate(AAToonRampUV(dotProduct, texelsize) + offset);
     #else
         return saturate(float2(dotProduct, dotProduct) + offset);
@@ -77,11 +77,11 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
     
     // If additive ramping is used, always sample the additive ramp
-    #if defined(_ADDITIVERAMP_ALWAYS) || (defined(_ADDITIVERAMP_FORWARDADD_ONLY) && defined(UNITY_PASS_FORWARDADD))
+    #if defined(_SPECULARHIGHLIGHTS_OFF) || (defined(_PARALLAXMAP) && defined(UNITY_PASS_FORWARDADD))
         float2 rampUV = GetToonRampUV(dotProduct, _AdditiveRamp_TexelSize, toonRampOffset);
         float4 ramp = tex2D(_AdditiveRamp, rampUV);
     #else
-        #if defined(_RAMPMASK_ON)
+        #if defined(_COLORADDSUBDIFF_ON)
             float4 ramp;
             float2 rampUV;
             if(ToonRampMaskColor.r > 0.5)
@@ -110,7 +110,7 @@ float3 ToonLighting(float3 albedo, float3 normalDir, float3 lightDir, float3 lig
         #endif
     #endif
     
-    #if defined(_RAMPTINT_ON)
+    #if defined(_FADING_ON)
         // Soft-blend the ramp and albedo
         return blendSoftLight(albedo * lightColor, ramp.rgb) * toonContrast;
     #else
@@ -126,7 +126,7 @@ float3 ToonLightingBase(float3 albedo, float3 normalDir, float3 lightDir, float3
     // Remap -1,1 range to 0,1
     float dotProduct = dot(normalDir, lightDir) * 0.5 + 0.5;
 
-    #if defined(_RAMPMASK_ON)
+    #if defined(_COLORADDSUBDIFF_ON)
         float4 ramp;
         float2 rampUV;
         if(ToonRampMaskColor.r > 0.5)
@@ -154,7 +154,7 @@ float3 ToonLightingBase(float3 albedo, float3 normalDir, float3 lightDir, float3
         float4 ramp = tex2D(_Ramp, rampUV);
     #endif
     
-    #if defined(_RAMPTINT_ON)
+    #if defined(_FADING_ON)
         // Soft-blend the ramp and albedo
         return blendSoftLight(albedo * lightColor, ramp.rgb) * toonContrast;
     #else
@@ -167,7 +167,7 @@ float3 ToonLightingBase(float3 albedo, float3 normalDir, float3 lightDir, float3
 // This ensures that there is always some toon shading going on.
 void GetBaseLightData(inout float3 lightDirection, inout float3 lightColor)
 {
-    #if defined(_OVERRIDEWORLDLIGHTDIR_ON)
+    #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
         lightDirection = _StaticToonLight;
     #else
         lightDirection = GIsonarDirection();
@@ -178,7 +178,7 @@ void GetBaseLightData(inout float3 lightDirection, inout float3 lightColor)
 // Fill the light direction and light color parameters.
 void GetLightData(float3 worldPos, inout float3 lightDirection, inout float3 lightColor)
 {
-    #if defined(_OVERRIDEWORLDLIGHTDIR_ON)
+    #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
         lightDirection = _StaticToonLight;
         lightColor = _LightColor0.rgb;
     #else

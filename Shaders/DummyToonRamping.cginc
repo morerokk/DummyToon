@@ -1,7 +1,7 @@
 // Get correct ramp texture and contrast, intensity and saturation based on the ramp mask texture
 void GetToonVars(float2 uv, inout float IntensityVar, inout float SaturationVar, inout float ToonContrastVar, inout float ToonRampOffsetVar, inout float4 ToonRampMaskColor)
 {
-    #if defined(_RAMPMASK_ON)
+    #if defined(_COLORADDSUBDIFF_ON)
         ToonRampMaskColor = tex2D(_RampMaskTex, uv);
         
         if(ToonRampMaskColor.r > 0.5)

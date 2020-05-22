@@ -828,35 +828,35 @@ public class DummyToonEditorGUI : ShaderGUI
         // Add ramp tinting keyword
         if (rampTintingEnabled.floatValue == 1)
         {
-            material.EnableKeyword("_RAMPTINT_ON");
+            material.EnableKeyword("_FADING_ON");
         }
 
         // Add ramp masking keyword
         if (rampMaskingEnabled.floatValue == 1)
         {
-            material.EnableKeyword("_RAMPMASK_ON");
+            material.EnableKeyword("_COLORADDSUBDIFF_ON");
         }
 
         // Ramp anti-aliasing keyword
         if (rampAntiAliasingEnabled.floatValue == 1)
         {
-            material.EnableKeyword("_RAMPANTIALIASING_ON");
+            material.EnableKeyword("_MAPPING_6_FRAMES_LAYOUT");
         }
 
         // Override world light dir keyword
         if (overrideWorldLightDirection.floatValue == 1)
         {
-            material.EnableKeyword("_OVERRIDEWORLDLIGHTDIR_ON");
+            material.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
         }
 
         // Additive Ramping keyword
         if(additiveRampMode.floatValue == 1)
         {
-            material.EnableKeyword("_ADDITIVERAMP_FORWARDADD_ONLY");
+            material.EnableKeyword("_PARALLAXMAP");
         }
         else if(additiveRampMode.floatValue == 2)
         {
-            material.EnableKeyword("_ADDITIVERAMP_ALWAYS");
+            material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
         }
 
         // Add Metallic or Specular keyword if used.
@@ -880,39 +880,39 @@ public class DummyToonEditorGUI : ShaderGUI
         // Matcap keywords
         if (matCapMode.floatValue == 1)
         {
-            material.EnableKeyword("_MATCAP_ADD");
+            material.EnableKeyword("_SUNDISK_NONE");
         }
         else if (matCapMode.floatValue == 2)
         {
-            material.EnableKeyword("_MATCAP_MULTIPLY");
+            material.EnableKeyword("_SUNDISK_SIMPLE");
         }
 
         // Outline alpha width keyword
         if (HasOutlines() && outlineAlphaWidthEnabled.floatValue == 1)
         {
-            material.EnableKeyword("_OUTLINE_ALPHA_WIDTH_ON");
+            material.EnableKeyword("_COLORCOLOR_ON");
         }
 
         // Screenspace outline keyword
         if (HasOutlines() && outlineScreenspaceEnabled.floatValue == 1)
         {
-            material.EnableKeyword("_OUTLINE_SCREENSPACE");
+            material.EnableKeyword("_COLOROVERLAY_ON");
         }
 
         // Rimlight keyword
         if (rimLightMode.floatValue == 1)
         {
-            material.EnableKeyword("_RIMLIGHT_ADD");
+            material.EnableKeyword("_SUNDISK_HIGH_QUALITY");
         }
         else if (rimLightMode.floatValue == 2)
         {
-            material.EnableKeyword("_RIMLIGHT_MIX");
+            material.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
         }
 
         // A2C keyword
         if (alphaToCoverageEnabled.floatValue == 1)
         {
-            material.EnableKeyword("_ALPHATOCOVERAGE_ON");
+            material.EnableKeyword("_ALPHAMODULATE_ON");
         }
 
         // Detail normals keywords
@@ -920,11 +920,11 @@ public class DummyToonEditorGUI : ShaderGUI
         {
             if (detailNormalUvMap.floatValue == 0)
             {
-                material.EnableKeyword("_DETAILNORMAL_UV0");
+                material.EnableKeyword("_DETAIL_MULX2");
             }
             else
             {
-                material.EnableKeyword("_DETAILNORMAL_UV1");
+                material.EnableKeyword("_REQUIRE_UV2");
             }
         }
     }
