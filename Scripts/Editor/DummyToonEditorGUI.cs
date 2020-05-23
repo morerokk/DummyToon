@@ -813,6 +813,12 @@ public class DummyToonEditorGUI : ShaderGUI
         // Delete all keywords first
         material.shaderKeywords = new string[] { };
 
+        // Transparency keyword
+        if (renderMode.floatValue == 2)
+        {
+            material.EnableKeyword("_ALPHABLEND_ON");
+        }
+
         // Add normal map keyword if used.
         if (material.GetTexture("_BumpMap"))
         {
