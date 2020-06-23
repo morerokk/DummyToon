@@ -18,6 +18,7 @@
         
         [NoScaleOffset] _EmissionMap("Emission Map", 2D) = "white" {}
         [HDR] _EmissionColor("Emission Color", Color) = (0,0,0)
+        [Toggle(_)] _EmissionMapIsTint("Emission Map is tint", Float) = 0
         
         // Toon lighting
         [NoScaleOffset] _Ramp ("Toon Ramp", 2D) = "white" {}
@@ -143,7 +144,7 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif          
 
-            #include "../DummyToonCore.cginc"
+            #include "../Includes/DummyToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -188,7 +189,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "../DummyToonCore.cginc"
+            #include "../Includes/DummyToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -212,7 +213,7 @@
             #pragma vertex vertShadowEye
             #pragma fragment fragShadow
             
-            #include "../DummyToonShadowcaster.cginc"
+            #include "../Includes/DummyToonShadowcaster.cginc"
 
             #include "EyeTrackingShadow.cginc"
             ENDCG

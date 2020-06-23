@@ -80,6 +80,8 @@ float _Glossiness;
 #if defined(_EMISSION)
     sampler2D _EmissionMap;
     float4 _EmissionColor;
+
+    float _EmissionMapIsTint;
 #endif
 
 #if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
@@ -319,6 +321,12 @@ float4 frag (v2f i) : SV_Target
     #if defined(UNITY_PASS_FORWARDBASE) && defined(_EMISSION)
         float4 emissive = tex2D(_EmissionMap, i.uv);
         emissive *= _EmissionColor;
+        
+        UNITY_BRANCH
+        if(_EmissionMapIsTint == 1)
+        {
+            emissive.rgb *= mainTex.rgb;
+        }
         
         finalColor += emissive.rgb;
     #endif

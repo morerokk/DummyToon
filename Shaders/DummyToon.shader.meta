@@ -7,7 +7,7 @@ ShaderImporter:
   - _BumpMap: {instanceID: 0}
   - _EmissionMap: {instanceID: 0}
   - _Ramp: {fileID: 2800000, guid: e9b2e3debb91f8a4581576bf71b2bf99, type: 3}
-  - _AdditiveRamp: {fileID: 2800000, guid: 14e2e3ca0af910e44886540cae74cbd3, type: 3}
+  - _AdditiveRamp: {fileID: 2800000, guid: e9b2e3debb91f8a4581576bf71b2bf99, type: 3}
   - _MetallicGlossMap: {instanceID: 0}
   - _SpecGlossMap: {instanceID: 0}
   - _RampMaskTex: {instanceID: 0}

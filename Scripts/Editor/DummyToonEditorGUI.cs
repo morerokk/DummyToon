@@ -12,6 +12,7 @@ public class DummyToonEditorGUI : ShaderGUI
     private MaterialProperty cutoff = null;
     private MaterialProperty emissionMap = null;
     private MaterialProperty emissionColor = null;
+    private MaterialProperty emissionIsTint = null;
     private MaterialProperty cullMode = null;
     private MaterialProperty renderMode = null;
     private MaterialProperty zWrite = null;
@@ -122,6 +123,7 @@ public class DummyToonEditorGUI : ShaderGUI
     private bool eyeTrackingExpanded = false;
     private bool miscExpanded = false;
 
+    private bool emissionTintHelpExpanded = false;
     private bool rampTintHelpExpanded = false;
     private bool rampMaskHelpExpanded = false;
     private bool indirectLightMergeHelpExpanded = false;
@@ -198,6 +200,14 @@ public class DummyToonEditorGUI : ShaderGUI
 
         editor.TexturePropertySingleLine(new GUIContent("Emission Map"), emissionMap, emissionColor);
 
+        ShaderPropertyWithHelp(
+            emissionIsTint,
+            new GUIContent("Tinted Emission", "If enabled, the emission is maintex * emission rather than just emission."),
+            ref emissionTintHelpExpanded,
+            "If enabled, the emission color is determined by main texture * emission. Useful for emission maps that are just solid colors.\r\n\r\n" +
+            "If disabled, the emission map is used as-is."
+        );
+
         editor.ShaderProperty(cullMode, new GUIContent("Sidedness", "Which sides of the mesh should be rendered."));
 
         EditorGUI.BeginChangeCheck();
@@ -212,11 +222,6 @@ public class DummyToonEditorGUI : ShaderGUI
         if (EditorGUI.EndChangeCheck())
         {
             SetupBlendModes();
-        }
-
-        if (cutoutEnabled.floatValue == 1 && alphaToCoverageEnabled.floatValue == 1)
-        {
-            EditorGUILayout.HelpBox("Cutout and Alpha To Coverage are enabled at the same time. This is likely not intentional.", MessageType.Warning);
         }
 
         if (cutoutEnabled.floatValue == 1)
@@ -520,11 +525,6 @@ public class DummyToonEditorGUI : ShaderGUI
 
         editor.ShaderProperty(alphaToCoverageEnabled, new GUIContent("Alpha To Coverage", "Whether to enable the Alpha To Coverage feature, also known as anti-aliased cutout."));
 
-        if (cutoutEnabled.floatValue == 1 && alphaToCoverageEnabled.floatValue == 1)
-        {
-            EditorGUILayout.HelpBox("Cutout and Alpha To Coverage are enabled at the same time. This is likely not intentional.", MessageType.Warning);
-        }
-
         if (alphaToCoverageEnabled.floatValue == 1)
         {
             editor.RangeProperty(cutoff, "Alpha Cutoff");
@@ -544,6 +544,7 @@ public class DummyToonEditorGUI : ShaderGUI
         cutoff = FindProperty("_Cutoff", props);
         emissionMap = FindProperty("_EmissionMap", props);
         emissionColor = FindProperty("_EmissionColor", props);
+        emissionIsTint = FindProperty("_EmissionMapIsTint", props);
         cullMode = FindProperty("_Cull", props);
         cutoutEnabled = FindProperty("_CutoutEnabled", props);
 
