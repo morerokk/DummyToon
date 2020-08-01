@@ -1,6 +1,8 @@
 # Dummy Toon Shader
 A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline.
 
+**This is the Unity 2018/VRChat branch of the shader. Please use the master branch/regular releases if you are on Unity 2019 and up.**
+
 ## Features
 * Solid toon shading that looks good and consistent in a large variety of different lighting setups
 * Supports baked lighting, realtime lighting, shadows, vertex lights and anything else you can expect a Unity scene to have.
