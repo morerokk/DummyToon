@@ -18,6 +18,7 @@
         
         [NoScaleOffset] _EmissionMap("Emission Map", 2D) = "white" {}
         [HDR] _EmissionColor("Emission Color", Color) = (0,0,0)
+        [Toggle(_)] _EmissionMapIsTint("Emission Map is tint", Float) = 0
         
         // Toon lighting
         [NoScaleOffset] _Ramp ("Toon Ramp", 2D) = "white" {}
@@ -134,7 +135,7 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif          
 
-            #include "DummyToonCore.cginc"
+            #include "Includes/DummyToonCore.cginc"
             ENDCG
         }
         
@@ -177,7 +178,7 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "DummyToonCore.cginc"
+            #include "Includes/DummyToonCore.cginc"
             ENDCG
         }
 
@@ -200,7 +201,7 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "DummyToonShadowcaster.cginc"
+            #include "Includes/DummyToonShadowcaster.cginc"
             
             ENDCG
         }
@@ -218,8 +219,6 @@
             Cull [_Cull]
             ZWrite [_ZWrite]
             Blend [_SrcBlend] [_DstBlend]
-            
-            AlphaToMask [_AlphaToCoverage]
         
             CGPROGRAM
             #pragma vertex vert
@@ -232,7 +231,6 @@
             
             #pragma shader_feature _ALPHATEST_ON
             #pragma shader_feature _ALPHABLEND_ON
-            #pragma shader_feature _ALPHAMODULATE_ON
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _EMISSION
             #pragma shader_feature _COLORADDSUBDIFF_ON
@@ -251,7 +249,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "DummyToonCore.cginc"
+            #include "Includes/DummyToonCore.cginc"
             ENDCG
         }
         
@@ -265,8 +263,6 @@
             
             Cull [_Cull]
             
-            AlphaToMask [_AlphaToCoverage]
-            
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -277,7 +273,6 @@
             
             #pragma shader_feature _ALPHATEST_ON
             #pragma shader_feature _ALPHABLEND_ON
-            #pragma shader_feature _ALPHAMODULATE_ON
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _COLORADDSUBDIFF_ON
             #pragma shader_feature _FADING_ON
@@ -295,7 +290,7 @@
             
             #define NO_DERIVATIVES
 
-            #include "DummyToonCore.cginc"
+            #include "Includes/DummyToonCore.cginc"
             ENDCG
         }
 
@@ -318,7 +313,7 @@
             #pragma vertex vertShadow
             #pragma fragment fragShadow
             
-            #include "DummyToonShadowcaster.cginc"
+            #include "Includes/DummyToonShadowcaster.cginc"
             
             ENDCG
         }

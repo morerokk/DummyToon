@@ -18,6 +18,7 @@
         
         [NoScaleOffset] _EmissionMap("Emission Map", 2D) = "white" {}
         [HDR] _EmissionColor("Emission Color", Color) = (0,0,0)
+        [Toggle(_)] _EmissionMapIsTint("Emission Map is tint", Float) = 0
         
         // Toon lighting
         [NoScaleOffset] _Ramp ("Toon Ramp", 2D) = "white" {}
@@ -26,9 +27,9 @@
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
         _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 0.8
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
-        [Toggle(_FADING_ON)] _RampTinting ("Ramp Tinting", Float) = 0
-        [Toggle(_MAPPING_6_FRAMES_LAYOUT)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
-        [Toggle(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
+        [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
+        [Toggle(_RAMPANTIALIASING_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
+        [Toggle(_OVERRIDEWORLDLIGHTDIR_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
         [Enum(None,0,Additive Only,1,Always,2)] _AdditiveRampMode ("Additive Ramp Mode", Float) = 0
         [NoScaleOffset] _AdditiveRamp ("Additive Toon Ramp", 2D) = "white" {}
         
@@ -47,7 +48,7 @@
         [HDR] _SpecColor("Specular Color", Color) = (1,1,1,1)
         
         // Toon ramp masking
-        [Toggle(_COLORADDSUBDIFF_ON)] _RampMaskEnabled ("Ramp Masking", Float) = 0
+        [Toggle(_RAMPMASK_ON)] _RampMaskEnabled ("Ramp Masking", Float) = 0
         [NoScaleOffset] _RampMaskTex ("Ramp Mask", 2D) = "black"
         [NoScaleOffset] _RampR ("Ramp (R)", 2D) = "white" {}
         _ToonContrastR ("Toon Contrast (R)", Range(0, 1)) = 0.5
@@ -78,7 +79,7 @@
         _MatCapStrength ("Matcap Strength", Range(0, 1)) = 1
         
         // Alpha to coverage
-        [Toggle(_ALPHAMODULATE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
+        [Toggle(_ALPHATOCOVERAGE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
         
         // Detail normal
         [Normal] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" {}
@@ -123,27 +124,27 @@
             #pragma multi_compile_fwdbase_fullshadows
             #pragma multi_compile _ VERTEXLIGHT_ON
             
-            #pragma shader_feature _ALPHATEST_ON
-            #pragma shader_feature _ALPHABLEND_ON
-            #pragma shader_feature _ALPHAMODULATE_ON
-            #pragma shader_feature _NORMALMAP
-            #pragma shader_feature _EMISSION
-            #pragma shader_feature _COLORADDSUBDIFF_ON
-            #pragma shader_feature _FADING_ON
-            #pragma shader_feature _MAPPING_6_FRAMES_LAYOUT
-            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
+            #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local _EMISSION
+            #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
-            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
-            #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature _ _SUNDISK_NONE _SUNDISK_SIMPLE
-            #pragma shader_feature _ _SUNDISK_HIGH_QUALITY _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature _ _PARALLAXMAP _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
+            #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
             #endif          
 
-            #include "../DummyToonCore.cginc"
+            #include "../Includes/DummyToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -169,26 +170,26 @@
 
             #pragma multi_compile_fwdadd_fullshadows
             
-            #pragma shader_feature _ALPHATEST_ON
-            #pragma shader_feature _ALPHABLEND_ON
-            #pragma shader_feature _ALPHAMODULATE_ON
-            #pragma shader_feature _NORMALMAP
-            #pragma shader_feature _COLORADDSUBDIFF_ON
-            #pragma shader_feature _FADING_ON
-            #pragma shader_feature _MAPPING_6_FRAMES_LAYOUT
-            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _ALPHABLEND_ON
+            #pragma shader_feature_local _ALPHATOCOVERAGE_ON
+            #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local _RAMPMASK_ON
+            #pragma shader_feature_local _RAMPTINT_ON
+            #pragma shader_feature_local _RAMPANTIALIASING_ON
+            #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
 
-            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
-            #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature _ _SUNDISK_NONE _SUNDISK_SIMPLE
-            #pragma shader_feature _ _SUNDISK_HIGH_QUALITY _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature _ _PARALLAXMAP _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
+            #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
+            #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "../DummyToonCore.cginc"
+            #include "../Includes/DummyToonCore.cginc"
             
             #include "EyeTracking.cginc"
             ENDCG
@@ -207,12 +208,12 @@
             
             #pragma multi_compile_shadowcaster
             
-            #pragma shader_feature _ALPHATEST_ON
+            #pragma shader_feature_local _ALPHATEST_ON
 
             #pragma vertex vertShadowEye
             #pragma fragment fragShadow
             
-            #include "../DummyToonShadowcaster.cginc"
+            #include "../Includes/DummyToonShadowcaster.cginc"
 
             #include "EyeTrackingShadow.cginc"
             ENDCG

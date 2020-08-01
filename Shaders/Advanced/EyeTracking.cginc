@@ -180,7 +180,7 @@ v2f vertEyeTracking(appdata v)
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
     TRANSFER_SHADOW(o);
     
-    #if defined(_REQUIRE_UV2)
+    #if defined(_DETAILNORMAL_UV1)
         o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
     #endif
     
