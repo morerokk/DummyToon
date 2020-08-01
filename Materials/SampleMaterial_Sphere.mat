@@ -102,6 +102,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DirectLightBoost: 0.8
     - _DstBlend: 0
+    - _EmissionMapIsTint: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
