@@ -178,9 +178,10 @@ v2f vertEyeTracking(appdata v)
     o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
     o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+    o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
     TRANSFER_SHADOW(o);
     
-    #if defined(_DETAILNORMAL_UV1)
+    #if defined(_DETAIL_MULX2)
         o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
     #endif
     

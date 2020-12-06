@@ -27,9 +27,9 @@
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
         _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 0.8
         _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
-        [Toggle(_FADING_ON)] _RampTinting ("Ramp Tinting", Float) = 0
-        [Toggle(_MAPPING_6_FRAMES_LAYOUT)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
-        [Toggle(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
+        [Toggle(_COLORCOLOR_ON)] _RampTinting ("Ramp Tinting", Float) = 0
+        [Toggle(_COLOROVERLAY_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
+        [Toggle(_FADING_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
         [Enum(None,0,Additive Only,1,Always,2)] _AdditiveRampMode ("Additive Ramp Mode", Float) = 0
         [NoScaleOffset] _AdditiveRamp ("Additive Toon Ramp", 2D) = "white" {}
         
@@ -77,6 +77,9 @@
         [NoScaleOffset] _MatCap ("Matcap Texture", 2D) = "white" {}
         [Enum(Off,0,Additive (spa),1,Multiply (sph),2)] _MatCapMode ("Matcap Mode", Float) = 0
         _MatCapStrength ("Matcap Strength", Range(0, 1)) = 1
+        _MatCapColor ("Matcap Color Tint", Color) = (1,1,1,1)
+        _MatCapTintTex ("Matcap Color Texture", 2D) = "white" {}
+        [Enum(Surface,0,Object,1)] _MatCapOrigin("Matcap Origin", Float) = 0
         
         // Alpha to coverage
         [Toggle(_ALPHAMODULATE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
@@ -121,15 +124,16 @@
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _EMISSION
             #pragma shader_feature _COLORADDSUBDIFF_ON
+            #pragma shader_feature _COLORCOLOR_ON
+            #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _MAPPING_6_FRAMES_LAYOUT
-            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _SUNDISK_NONE
 
-            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
+            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature _ _SUNDISK_NONE _SUNDISK_SIMPLE
-            #pragma shader_feature _ _SUNDISK_HIGH_QUALITY _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature _ _PARALLAXMAP _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
@@ -164,15 +168,16 @@
             #pragma shader_feature _ALPHAMODULATE_ON
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _COLORADDSUBDIFF_ON
+            #pragma shader_feature _COLORCOLOR_ON
+            #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _MAPPING_6_FRAMES_LAYOUT
-            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _SUNDISK_NONE
 
-            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
+            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature _ _SUNDISK_NONE _SUNDISK_SIMPLE
-            #pragma shader_feature _ _SUNDISK_HIGH_QUALITY _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature _ _PARALLAXMAP _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
@@ -234,14 +239,15 @@
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _EMISSION
             #pragma shader_feature _COLORADDSUBDIFF_ON
+            #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _SUNDISK_NONE
 
-            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
+            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature _ _SUNDISK_NONE _SUNDISK_SIMPLE
-            #pragma shader_feature _ _SUNDISK_HIGH_QUALITY _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature _ _PARALLAXMAP _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
@@ -275,14 +281,15 @@
             #pragma shader_feature _ALPHABLEND_ON
             #pragma shader_feature _NORMALMAP
             #pragma shader_feature _COLORADDSUBDIFF_ON
+            #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _SUNDISK_NONE
 
-            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
+            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature _ _SUNDISK_NONE _SUNDISK_SIMPLE
-            #pragma shader_feature _ _SUNDISK_HIGH_QUALITY _GLOSSYREFLECTIONS_OFF
-            #pragma shader_feature _ _PARALLAXMAP _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
@@ -318,5 +325,5 @@
             ENDCG
         }
     }
-    CustomEditor "DummyToonEditorGUI"
+    CustomEditor "Rokk.DummyToon.Editor.DummyToonEditorGUI"
 }

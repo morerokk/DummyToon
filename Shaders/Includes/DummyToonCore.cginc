@@ -11,7 +11,7 @@ float _Cutoff;
     float _BumpScale;
 #endif
 
-#if defined(_DETAIL_MULX2) || defined(_REQUIRE_UV2)
+#if defined(_REQUIRE_UV2) || defined(_DETAIL_MULX2)
     #define DETAILNORMALMAP
 
     sampler2D _DetailNormalMap;
@@ -59,7 +59,7 @@ float _IndirectLightDirMergeMax;
     float _SaturationB;
 #endif
 
-#if defined(_PARALLAXMAP) || defined(_SPECULARHIGHLIGHTS_OFF)
+#if defined(_GLOSSYREFLECTIONS_OFF) || defined(_SPECULARHIGHLIGHTS_OFF)
     sampler2D _AdditiveRamp;
     float4 _AdditiveRamp_TexelSize;
 #endif
@@ -84,12 +84,18 @@ float _Glossiness;
     float _EmissionMapIsTint;
 #endif
 
-#if defined(_SUNDISK_NONE) || defined(_SUNDISK_SIMPLE)
+#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
     sampler2D _MatCap;
     float _MatCapStrength;
+
+    float4 _MatCapColor;
+    #if defined(_SUNDISK_NONE)
+        sampler2D _MatCapTintTex;
+    #endif
+    float _MatCapOrigin;
 #endif
 
-#if defined(_SUNDISK_HIGH_QUALITY) || defined(_GLOSSYREFLECTIONS_OFF)
+#if defined(_TERRAIN_NORMAL_MAP) || defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
     sampler2D _RimTex;
     float4 _RimLightColor;
     float _RimLightMode;
@@ -119,23 +125,25 @@ struct appdata
     float3 normal : NORMAL;
     float4 tangent : TANGENT;
     float2 uv : TEXCOORD0;
-    #if defined(_REQUIRE_UV2)
+    #if defined(_DETAIL_MULX2)
         float2 uv1 : TEXCOORD1;
     #endif
 };
 
 struct v2f
 {
-    float2 uv : TEXCOORD0;
+    #if defined(_DETAIL_MULX2)
+        float4 uv : TEXCOORD0;
+    #else
+        float2 uv : TEXCOORD0;
+    #endif
     float4 pos : SV_POSITION;
     float3 normalDir : TEXCOORD1;
     float3 tangentDir : TEXCOORD2;
     float3 bitangentDir : TEXCOORD3;
     float4 worldPos : TEXCOORD4;
-    SHADOW_COORDS(5)
-    #if defined(_REQUIRE_UV2)
-        float2 uv1 : TEXCOORD6;
-    #endif
+    float4 objWorldPos : TEXCOORD5;
+    SHADOW_COORDS(6)
 };
 
 #include "DummyToonLighting.cginc"
@@ -145,11 +153,11 @@ struct v2f
     #include "DummyToonMetallicSpecular.cginc"
 #endif
 
-#if defined(_SUNDISK_NONE) || defined(_SUNDISK_SIMPLE)
+#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
     #include "DummyToonMatcap.cginc"
 #endif
 
-#if defined(_SUNDISK_HIGH_QUALITY) || defined(_GLOSSYREFLECTIONS_OFF)
+#if defined(_TERRAIN_NORMAL_MAP) || defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
     #include "DummyToonRimlight.cginc"
 #endif
 
@@ -161,33 +169,33 @@ float3 NormalDirection(v2f i)
     #if defined(_NORMALMAP) && defined(DETAILNORMALMAP) // Both normal and detail normal
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         
-        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv), _BumpScale);
+        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
         
         // Choose the correct UV map set
-        #if defined(_DETAIL_MULX2)
+        #if defined(_REQUIRE_UV2)
             // Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
-            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
+            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
         #else
             // Sample the detail normal with UV1
-            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv1), _DetailNormalMapScale);
+            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
         #endif
         
         float3 normalLocal = BlendNormals(bumpTex, detailBumpTex);
         normalDir = normalize(mul(normalLocal, tangentTransform));  
     #elif defined(_NORMALMAP) // Only normal
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
-        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv), _BumpScale);
+        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
         float3 normalLocal = bumpTex.rgb;
         normalDir = normalize(mul(normalLocal, tangentTransform));  
     #elif defined(DETAILNORMALMAP) // Only detail normal
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         
         // Choose the correct UV map set
-        #if defined(_DETAIL_MULX2)
+        #if defined(_REQUIRE_UV2)
             // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
-            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv, _DetailNormalMap)), _DetailNormalMapScale);
+            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
         #else
-            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv1), _DetailNormalMapScale);
+            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
         #endif
         
         float3 normalLocal = bumpTex.rgb;
@@ -203,14 +211,22 @@ float3 NormalDirection(v2f i)
     {
         v2f o;
         o.pos = UnityObjectToClipPos(v.vertex);
-        o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+        // If used, pack UV0 and UV1 into a single float4
+        #if defined(_DETAIL_MULX2)
+            float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
+            float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
+            o.uv = float4(uv0, uv1)
+        #else
+            o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+        #endif
         o.normalDir = UnityObjectToWorldNormal(v.normal);
         o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
         o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
         o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+        o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
         TRANSFER_SHADOW(o);
         
-        #if defined(_REQUIRE_UV2)
+        #if defined(_DETAIL_MULX2)
             o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
         #endif
         
@@ -224,10 +240,10 @@ float4 frag (v2f i) : SV_Target
 
     // Sample main texture
     #ifdef OUTLINE_PASS
-        float4 mainTex = tex2D(_OutlineTex, i.uv);
+        float4 mainTex = tex2D(_OutlineTex, i.uv.xy);
         mainTex *= _OutlineColor;
     #else
-        float4 mainTex = tex2D(_MainTex, i.uv);
+        float4 mainTex = tex2D(_MainTex, i.uv.xy);
         mainTex *= _Color;
     #endif
     
@@ -247,7 +263,7 @@ float4 frag (v2f i) : SV_Target
     float ToonContrastVar;
     float ToonRampOffsetVar;
     float4 ToonRampMaskColor;
-    GetToonVars(i.uv, IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, ToonRampMaskColor);
+    GetToonVars(i.uv.xy, IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, ToonRampMaskColor);
     
     // Obtain albedo from main texture and multiply by intensity
     float3 albedo = mainTex.rgb * IntensityVar;
@@ -260,13 +276,25 @@ float4 frag (v2f i) : SV_Target
     float3 normalDir = NormalDirection(i);
     
     // Matcap
-    #if defined(_SUNDISK_NONE) || defined(_SUNDISK_SIMPLE)
-        Matcap(viewDir, normalDir, albedo);
+    #if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
+        // Matcap origin
+        // If 0, viewdir to surface is used
+        // If 1, viewdir to object center is used
+        float3 matcapViewDir;
+        if (_MatCapOrigin == 1)
+        {
+            matcapViewDir = normalize(_WorldSpaceCameraPos.xyz - i.objWorldPos.xyz);
+        }
+        else
+        {
+            matcapViewDir = viewDir;
+        }
+        Matcap(matcapViewDir, normalDir, i.uv.xy, albedo);
     #endif
     
     // Rimlight
-    #if defined(_SUNDISK_HIGH_QUALITY) || defined(_GLOSSYREFLECTIONS_OFF)
-        Rimlight(i.uv, viewDir, normalDir, albedo);
+    #if defined(_TERRAIN_NORMAL_MAP) || defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
+        Rimlight(i.uv.xy, viewDir, normalDir, albedo);
     #endif
     
     // Lighting
@@ -287,7 +315,7 @@ float4 frag (v2f i) : SV_Target
         // If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
         // the direction will be smoothly merged.
         // This makes the lighting look better with sharp toon ramps.
-        #if !defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
+        #if !defined(_FADING_ON)
             if(any(_WorldSpaceLightPos0))
             {
                 SmoothBaseLightData(lightDirection);
@@ -314,12 +342,12 @@ float4 frag (v2f i) : SV_Target
     
     // Apply metallic
     #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-        MetallicSpecularGloss(i.worldPos.xyz, i.uv, normalDir, albedo, finalColor);
+        MetallicSpecularGloss(i.worldPos.xyz, i.uv.xy, normalDir, albedo, finalColor);
     #endif
     
     // Apply emission
     #if defined(UNITY_PASS_FORWARDBASE) && defined(_EMISSION)
-        float4 emissive = tex2D(_EmissionMap, i.uv);
+        float4 emissive = tex2D(_EmissionMap, i.uv.xy);
         emissive *= _EmissionColor;
         
         UNITY_BRANCH

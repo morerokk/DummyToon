@@ -11,7 +11,7 @@ void Rimlight(float2 uv, float3 viewDir, float3 normalDir, inout float3 albedo)
     
     float3 rimColor = rimTex.rgb * smoothstep(1 - _RimWidth, 1.0, rim);
     
-    #if defined(_SUNDISK_HIGH_QUALITY)
+    #if defined(_TERRAIN_NORMAL_MAP)
         albedo += (rimColor * rimTex.a);
     #else   
         albedo = lerp(albedo, rimColor, rim * rimTex.a);
