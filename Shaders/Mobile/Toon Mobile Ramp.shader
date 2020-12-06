@@ -182,5 +182,5 @@
             ENDCG
         }
     }
-    CustomEditor "DummyToonMobileEditorGUI"
+    CustomEditor "Rokk.DummyToon.Editor.DummyToonMobileEditorGUI"
 }

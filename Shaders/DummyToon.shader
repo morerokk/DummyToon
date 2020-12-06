@@ -77,6 +77,9 @@
         [NoScaleOffset] _MatCap ("Matcap Texture", 2D) = "white" {}
         [Enum(Off,0,Additive (spa),1,Multiply (sph),2)] _MatCapMode ("Matcap Mode", Float) = 0
         _MatCapStrength ("Matcap Strength", Range(0, 1)) = 1
+        _MatCapColor ("Matcap Color Tint", Color) = (1,1,1,1)
+        _MatCapTintTex ("Matcap Color Texture", 2D) = "white" {}
+        [Enum(Surface,0,Object,1)] _MatCapOrigin("Matcap Origin", Float) = 0
         
         // Alpha to coverage
         [Toggle(_ALPHATOCOVERAGE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
@@ -124,6 +127,7 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _MATCAPTINTTEX_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -167,6 +171,7 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _MATCAPTINTTEX_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -236,6 +241,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _MATCAPTINTTEX_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -277,6 +283,7 @@
             #pragma shader_feature_local _RAMPMASK_ON
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _MATCAPTINTTEX_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -318,5 +325,5 @@
             ENDCG
         }
     }
-    CustomEditor "DummyToonEditorGUI"
+    CustomEditor "Rokk.DummyToon.Editor.DummyToonEditorGUI"
 }
