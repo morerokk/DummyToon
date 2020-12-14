@@ -215,7 +215,7 @@ float3 NormalDirection(v2f i)
         #if defined(_DETAIL_MULX2)
             float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
             float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-            o.uv = float4(uv0, uv1)
+            o.uv = float4(uv0, uv1);
         #else
             o.uv = TRANSFORM_TEX(v.uv, _MainTex);
         #endif
@@ -225,10 +225,6 @@ float3 NormalDirection(v2f i)
         o.worldPos = mul(unity_ObjectToWorld, v.vertex);
         o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
         TRANSFER_SHADOW(o);
-        
-        #if defined(_DETAIL_MULX2)
-            o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-        #endif
         
         return o;
     }

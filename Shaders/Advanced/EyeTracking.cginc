@@ -173,7 +173,14 @@ v2f vertEyeTracking(appdata v)
     v2f o;
     // The position of the vertex in clip space ignoring the rotation and scale of the object
     o.pos = mul(UNITY_MATRIX_VP, vertWorldPos);
-    o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+    // If used, pack UV0 and UV1 into a single float4
+    #if defined(_DETAIL_MULX2)
+        float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
+        float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
+        o.uv = float4(uv0, uv1);
+    #else
+        o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+    #endif
     o.normalDir = newNormal;
     o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
     o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);

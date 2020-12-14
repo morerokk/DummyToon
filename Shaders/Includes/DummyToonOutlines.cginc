@@ -6,7 +6,7 @@ v2f vertOutline(appdata v)
     #if defined(_DETAIL_MULX2)
         float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
         float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-        o.uv = float4(uv0, uv1)
+        o.uv = float4(uv0, uv1);
     #else
         o.uv = TRANSFORM_TEX(v.uv, _MainTex);
     #endif

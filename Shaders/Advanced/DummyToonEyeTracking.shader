@@ -97,6 +97,16 @@
         _EyeTrackingBlur ("Eye Tracking Pattern Blur", Range(0,6)) = 0
         [Toggle(_)] _EyeTrackingRotationCorrection ("Blender Rotation Correction", Float) = 1
         _MaxLookDistance ("Maximum Look Distance", Float) = 3.5
+
+        // Stencils
+        [IntRange] _StencilRef ("Stencil Value", Range(0, 255)) = 0
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilPassOp ("Pass Op", Float) = 0 // Keep
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilFailOp ("Fail Op", Float) = 0
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilZFailOp ("ZFail Op", Float) = 0
+        [Enum(UnityEngine.Rendering.CompareFunction)] _StencilCompareFunction ("Compare Function", Float) = 8 // Always
+
+        // ZTest
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4 // LEqual
         
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
@@ -105,15 +115,25 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "DisableBatching"="true" }
 
         Pass
         {
             Name "FORWARD"
-            Tags { "LightMode"="ForwardBase" }
+            Tags { "LightMode"="ForwardBase" "DisableBatching"="true" }
+
+            Stencil
+            {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
+            ZTest [_ZTest]
             Blend [_SrcBlend] [_DstBlend]
             
             AlphaToMask [_AlphaToCoverage]
@@ -157,9 +177,19 @@
         {
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
+
+            Stencil
+            {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Blend [_SrcBlend] One
             ZWrite Off
+            ZTest [_ZTest]
             
             Cull [_Cull]
             

@@ -1,7 +1,5 @@
 # Dummy Toon Shader
-A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline.
-
-**This is the Unity 2018/VRChat branch of the shader. Please use the master branch/regular releases if you are on Unity 2019 and up.**
+A toon shader for Unity. Supports the Forward rendering pipeline.
 
 ## Features
 * Solid toon shading that looks good and consistent in a large variety of different lighting setups
@@ -19,6 +17,6 @@ A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline.
 ## Installation
 Grab the latest release from the "Releases" tab of this repository. Download and import the unity package. If your Unity version is older than the package, download this repository as zip instead, and extract it to your assets folder.
 
-This shader only works in Unity 2019 and up, due to the reliance on local shader keywords.
+This branch of the shader works in Unity 2018 and up, and probably on 5.6 and Unity 2017 too. Please get the master branch/regular release if you're on Unity 2019, due to local shader keywords!
 
 For more information on the shader or how to use features, make sure to check the Wiki tab of this repository.
