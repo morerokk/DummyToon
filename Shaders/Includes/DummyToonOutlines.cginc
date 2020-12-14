@@ -14,7 +14,7 @@ v2f vertOutline(appdata v)
     float outlineWidth = (_OutlineWidth*0.001);
     #if defined(_PARALLAXMAP) && !defined(NO_TEXLOD)
         // Scale outline by outline tex alpha
-        float4 outlineTex = tex2Dlod(_OutlineTex, float4(o.uv, 0, 0));
+        float4 outlineTex = tex2Dlod(_OutlineTex, float4(o.uv.xy, 0, 0));
         outlineTex *= _OutlineColor;
         outlineWidth *= outlineTex.a;
     #endif

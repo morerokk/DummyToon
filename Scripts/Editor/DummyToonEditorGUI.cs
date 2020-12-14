@@ -691,7 +691,7 @@ namespace Rokk.DummyToon.Editor
 
         private bool HasStencils()
         {
-            return stencilRef != null;
+            return stencilPassOp != null;
         }
 
         private bool HasZTest()
