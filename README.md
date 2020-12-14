@@ -1,5 +1,5 @@
 # Dummy Toon Shader
-A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline.
+A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline. For earlier versions of Unity, check the `unity2018` branch.
 
 ## Features
 * Solid toon shading that looks good and consistent in a large variety of different lighting setups
