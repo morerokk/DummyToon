@@ -106,6 +106,16 @@ namespace Rokk.DummyToon.Editor
         private MaterialProperty eyeTrackBlur = null;
         private MaterialProperty eyeTrackBlenderCorrection = null;
 
+        // Stencils
+        private MaterialProperty stencilRef = null;
+        private MaterialProperty stencilPassOp = null;
+        private MaterialProperty stencilFailOp = null;
+        private MaterialProperty stencilZFailOp = null;
+        private MaterialProperty stencilCompareFunction = null;
+
+        // ZTest
+        private MaterialProperty zTest = null;
+
         // Internal properties
         private MaterialProperty srcBlend = null;
         private MaterialProperty dstBlend = null;
@@ -532,6 +542,25 @@ namespace Rokk.DummyToon.Editor
                 EditorGUILayout.HelpBox("When using Alpha To Coverage, ensure that the main texture has \"Mip Maps Preserve Coverage\" enabled in the import settings.", MessageType.Info);
             }
 
+            if (HasStencils())
+            {
+                EditorGUILayout.Space();
+
+                EditorGUILayout.LabelField(new GUIContent("Stencil Options"), EditorStyles.boldLabel);
+                editor.ShaderProperty(stencilRef, new GUIContent("Stencil Ref Value", "The stencil reference value to use for comparisons."));
+                editor.ShaderProperty(stencilPassOp, new GUIContent("Stencil Pass Op", "What to do with the reference value if the compare function is true."));
+                editor.ShaderProperty(stencilFailOp, new GUIContent("Stencil Fail Op", "What to do with the reference value if the compare function is false."));
+                editor.ShaderProperty(stencilZFailOp, new GUIContent("Stencil ZFail Op", "What to do with the reference value if the stencil test passes, but the Z test fails."));
+                editor.ShaderProperty(stencilCompareFunction, new GUIContent("Stencil Compare Function", "The comparison function to use for stencil operations."));
+
+                EditorGUILayout.Space();
+            }
+
+            if (HasZTest())
+            {
+                editor.ShaderProperty(zTest, new GUIContent("ZTest", "Depth testing function. LEqual by default, do not touch unless you know what you're doing!"));
+            }
+
             editor.RenderQueueField();
         }
 
@@ -628,6 +657,16 @@ namespace Rokk.DummyToon.Editor
             detailNormalScale = FindProperty("_DetailNormalMapScale");
             detailNormalUvMap = FindProperty("_UVSec");
 
+            // Stencils
+            stencilRef = FindProperty("_StencilRef", false);
+            stencilPassOp = FindProperty("_StencilPassOp", false);
+            stencilFailOp = FindProperty("_StencilFailOp", false);
+            stencilZFailOp = FindProperty("_StencilZFailOp", false);
+            stencilCompareFunction = FindProperty("_StencilCompareFunction", false);
+
+            // ZTest
+            zTest = FindProperty("_ZTest", false);
+
             //Eye tracking stuff
             targetEye = FindProperty("_TargetEye", false);
             maxLookRange = FindProperty("_MaxLookRange", false);
@@ -648,6 +687,16 @@ namespace Rokk.DummyToon.Editor
         private bool HasOutlines()
         {
             return outlineWidth != null;
+        }
+
+        private bool HasStencils()
+        {
+            return stencilRef != null;
+        }
+
+        private bool HasZTest()
+        {
+            return zTest != null;
         }
 
         private bool HasEyeTracking()
