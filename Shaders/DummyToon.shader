@@ -98,6 +98,13 @@
 
         // ZTest
         [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4 // LEqual
+
+        // Vertex Offset
+        [Toggle(_PARALLAXMAP)] _VertexOffsetEnabled ("Enable Vertex Offset", Float) = 0
+        _VertexOffsetPos ("Local Position Offset", Vector) = (0,0,0,0)
+        _VertexOffsetRot ("Rotation", Vector) = (0,0,0,0)
+        _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
+        _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
         
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
@@ -112,15 +119,6 @@
         {
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
-
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp [_StencilCompareFunction]
-                Pass [_StencilPassOp]
-                Fail [_StencilFailOp]
-                ZFail [_StencilZFailOp]
-            }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
@@ -147,13 +145,14 @@
             #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _SUNDISK_NONE
+            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _PARALLAXMAP
 
-            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
+            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature _SUNDISK_NONE
             #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
-            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _MAPPING_6_FRAMES_LAYOUT
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
@@ -167,19 +166,10 @@
         {
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
-
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp [_StencilCompareFunction]
-                Pass [_StencilPassOp]
-                Fail [_StencilFailOp]
-                ZFail [_StencilZFailOp]
-            }
             
             Blend [_SrcBlend] One
-            ZWrite Off
             ZTest [_ZTest]
+            ZWrite Off
             
             Cull [_Cull]
             
@@ -201,13 +191,14 @@
             #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _SUNDISK_NONE
+            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _PARALLAXMAP
 
-            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
+            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature _SUNDISK_NONE
             #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
-            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _MAPPING_6_FRAMES_LAYOUT
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
@@ -232,6 +223,7 @@
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature _ALPHATEST_ON
+            #pragma shader_feature _PARALLAXMAP
 
             #pragma vertex vertShadow
             #pragma fragment fragShadow
@@ -250,15 +242,6 @@
         {
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
-
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp [_StencilCompareFunction]
-                Pass [_StencilPassOp]
-                Fail [_StencilFailOp]
-                ZFail [_StencilZFailOp]
-            }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
@@ -281,19 +264,21 @@
             #pragma shader_feature _COLORADDSUBDIFF_ON
             #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _SUNDISK_NONE
+            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _PARALLAXMAP
 
-            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
+            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature _SUNDISK_NONE
             #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
-            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _MAPPING_6_FRAMES_LAYOUT
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
             #endif
             
             #define NO_DERIVATIVES
+            #define NO_ISFRONTFACE // D3D10 and later (Shader Models above 3.0) have no VFACE and instead use SV_IsFrontFace
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -303,15 +288,6 @@
         {
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
-
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp [_StencilCompareFunction]
-                Pass [_StencilPassOp]
-                Fail [_StencilFailOp]
-                ZFail [_StencilZFailOp]
-            }
             
             Blend [_SrcBlend] One
             ZWrite Off
@@ -333,19 +309,21 @@
             #pragma shader_feature _COLORADDSUBDIFF_ON
             #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _FADING_ON
-            #pragma shader_feature _SUNDISK_NONE
+            #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #pragma shader_feature _PARALLAXMAP
 
-            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
+            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature _SUNDISK_NONE
             #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
-            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _MAPPING_6_FRAMES_LAYOUT
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
             #endif
             
             #define NO_DERIVATIVES
+            #define NO_ISFRONTFACE
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -366,6 +344,7 @@
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature _ALPHATEST_ON
+            #pragma shader_feature _PARALLAXMAP
 
             #pragma vertex vertShadow
             #pragma fragment fragShadow

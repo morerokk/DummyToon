@@ -106,6 +106,13 @@ namespace Rokk.DummyToon.Editor
         private MaterialProperty eyeTrackBlur = null;
         private MaterialProperty eyeTrackBlenderCorrection = null;
 
+        // Vertex Offset
+        private MaterialProperty vertexOffsetEnabled = null;
+        private MaterialProperty vertexOffsetPos = null;
+        private MaterialProperty vertexOffsetRot = null;
+        private MaterialProperty vertexOffsetScale = null;
+        private MaterialProperty vertexOffsetPosWorld = null;
+
         // Stencils
         private MaterialProperty stencilRef = null;
         private MaterialProperty stencilPassOp = null;
@@ -129,6 +136,7 @@ namespace Rokk.DummyToon.Editor
         private bool matcapExpanded = false;
         private bool rimlightExpanded = false;
         private bool eyeTrackingExpanded = false;
+        private bool vertexOffsetExpanded = false;
         private bool miscExpanded = false;
 
         private bool emissionTintHelpExpanded = false;
@@ -138,6 +146,7 @@ namespace Rokk.DummyToon.Editor
         private bool rampAntiAliasingHelpExpanded = false;
         private bool additiveRampHelpExpanded = false;
         private bool matCapOriginHelpExpanded = false;
+        private bool vertexOffsetHelpExpanded = false;
 
         private bool eyeTrackingTextureHelpExpanded = false;
         private bool eyeTrackingRotationCorrectionHelpExpanded = false;
@@ -159,6 +168,11 @@ namespace Rokk.DummyToon.Editor
             if (HasEyeTracking())
             {
                 DrawEyeTracking();
+            }
+
+            if (HasVertexOffset())
+            {
+                DrawVertexOffset();
             }
 
             DrawMisc();
@@ -520,6 +534,31 @@ namespace Rokk.DummyToon.Editor
             ShaderPropertyWithHelp(eyeTrackBlenderCorrection, new GUIContent("Blender rotation correction"), ref eyeTrackingRotationCorrectionHelpExpanded, "Blender FBX exports may be rotated 90 degrees on the X axis depending on export settings. Tick/untick this box if you experience this happening to your mesh.");
         }
 
+        private void DrawVertexOffset()
+        {
+            vertexOffsetExpanded = Section("Vertex Offset", vertexOffsetExpanded);
+            if(!vertexOffsetExpanded)
+            {
+                return;
+            }
+
+            ShaderPropertyWithHelp(
+                vertexOffsetEnabled,
+                new GUIContent("Vertex Offset"),
+                ref vertexOffsetHelpExpanded,
+                "Enables the Vertex Offset feature, allowing you to visually displace the model, without changing the actual position of the object."
+            );
+
+            EditorGUI.BeginDisabledGroup(vertexOffsetEnabled.floatValue == 0);
+
+            editor.VectorProperty(vertexOffsetPos, "Local Position Offset");
+            editor.VectorProperty(vertexOffsetRot, "Rotation");
+            editor.VectorProperty(vertexOffsetScale, "Scale");
+            editor.VectorProperty(vertexOffsetPosWorld, "World Position Offset");
+
+            EditorGUI.EndDisabledGroup();
+        }
+
         private void DrawMisc()
         {
             miscExpanded = Section("Misc", miscExpanded);
@@ -542,7 +581,7 @@ namespace Rokk.DummyToon.Editor
                 EditorGUILayout.HelpBox("When using Alpha To Coverage, ensure that the main texture has \"Mip Maps Preserve Coverage\" enabled in the import settings.", MessageType.Info);
             }
 
-            if(HasStencils())
+            if (HasStencils())
             {
                 EditorGUILayout.Space();
 
@@ -556,7 +595,7 @@ namespace Rokk.DummyToon.Editor
                 EditorGUILayout.Space();
             }
 
-            if(HasZTest())
+            if (HasZTest())
             {
                 editor.ShaderProperty(zTest, new GUIContent("ZTest", "Depth testing function. LEqual by default, do not touch unless you know what you're doing!"));
             }
@@ -676,6 +715,13 @@ namespace Rokk.DummyToon.Editor
             eyeTrackBlur = FindProperty("_EyeTrackingBlur", false);
             eyeTrackBlenderCorrection = FindProperty("_EyeTrackingRotationCorrection", false);
 
+            // Vertex offset
+            vertexOffsetEnabled = FindProperty("_VertexOffsetEnabled");
+            vertexOffsetPos = FindProperty("_VertexOffsetPos");
+            vertexOffsetRot = FindProperty("_VertexOffsetRot");
+            vertexOffsetScale = FindProperty("_VertexOffsetScale");
+            vertexOffsetPosWorld = FindProperty("_VertexOffsetPosWorld");
+
             // Internal properties
             renderMode = FindProperty("_Mode");
             srcBlend = FindProperty("_SrcBlend");
@@ -702,6 +748,11 @@ namespace Rokk.DummyToon.Editor
         private bool HasEyeTracking()
         {
             return targetEye != null;
+        }
+
+        private bool HasVertexOffset()
+        {
+            return vertexOffsetPos != null;
         }
 
         private void SetupKeywords()
@@ -754,11 +805,11 @@ namespace Rokk.DummyToon.Editor
             // Additive Ramping keyword
             if (additiveRampMode.floatValue == 1)
             {
-                material.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
+                material.EnableKeyword("_TERRAIN_NORMAL_MAP");
             }
             else if (additiveRampMode.floatValue == 2)
             {
-                material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                material.EnableKeyword("_MAPPING_6_FRAMES_LAYOUT");
             }
 
             // Add Metallic or Specular keyword if used.
@@ -779,42 +830,38 @@ namespace Rokk.DummyToon.Editor
                 material.EnableKeyword("_EMISSION");
             }
 
-            // Matcap keywords
-            if (matCapMode.floatValue == 1)
+            // Matcap keyword
+            if (matCapMode.floatValue != 0)
             {
-                material.EnableKeyword("_SUNDISK_SIMPLE");
-            }
-            else if (matCapMode.floatValue == 2)
-            {
-                material.EnableKeyword("_SUNDISK_HIGH_QUALITY");
+                material.EnableKeyword("_SUNDISK_NONE");
             }
 
             // Matcap tint texture keyword
             if (matCapTintTex.textureValue != null && matCapMode.floatValue != 0)
             {
-                material.EnableKeyword("_SUNDISK_NONE");
+                material.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
             }
 
             // Outline alpha width keyword
             if (HasOutlines() && outlineAlphaWidthEnabled.floatValue == 1)
             {
-                material.EnableKeyword("_PARALLAXMAP");
+                material.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
             }
 
             // Screenspace outline keyword
             if (HasOutlines() && outlineScreenspaceEnabled.floatValue == 1)
             {
-                material.EnableKeyword("_MAPPING_6_FRAMES_LAYOUT");
+                material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
             }
 
             // Rimlight keyword
             if (rimLightMode.floatValue == 1)
             {
-                material.EnableKeyword("_TERRAIN_NORMAL_MAP");
+                material.EnableKeyword("_SUNDISK_SIMPLE");
             }
             else if (rimLightMode.floatValue == 2)
             {
-                material.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+                material.EnableKeyword("_SUNDISK_HIGH_QUALITY");
             }
 
             // A2C keyword
@@ -828,12 +875,18 @@ namespace Rokk.DummyToon.Editor
             {
                 if (detailNormalUvMap.floatValue == 0)
                 {
-                    material.EnableKeyword("_REQUIRE_UV2");
+                    material.EnableKeyword("_DETAIL_MULX2");
                 }
                 else
                 {
-                    material.EnableKeyword("_DETAIL_MULX2");
+                    material.EnableKeyword("_REQUIRE_UV2");
                 }
+            }
+
+            // Vertex offset
+            if(vertexOffsetEnabled.floatValue == 1)
+            {
+                material.EnableKeyword("_PARALLAXMAP");
             }
         }
 

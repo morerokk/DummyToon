@@ -88,15 +88,13 @@
         [Normal] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" {}
         _DetailNormalMapScale ("Detail Normal Scale", Float) = 1.0
         [Enum(UV0,0,UV1,1)] _UVSec ("UV Map for detail normals", Float) = 0
-        
-        // Eye tracking
-        [Enum(Left,0,Center,1,Right,2)] _TargetEye("Target Eye", Float) = 1
-        _MaxLookRange ("Max Look Range", Range(0,1)) = 0.4
-        _EyeTrackingPatternTex ("Eye Tracking Pattern Texture", 2D) = "white" {}
-        _EyeTrackingScrollSpeed ("Eye Tracking Pattern Speed", Range(-100, 100)) = 1
-        _EyeTrackingBlur ("Eye Tracking Pattern Blur", Range(0,6)) = 0
-        [Toggle(_)] _EyeTrackingRotationCorrection ("Blender Rotation Correction", Float) = 1
-        _MaxLookDistance ("Maximum Look Distance", Float) = 3.5
+
+        // Vertex Offset
+        [Toggle(_PARALLAXMAP)] _VertexOffsetEnabled ("Enable Vertex Offset", Float) = 0
+        _VertexOffsetPos ("Local Position Offset", Vector) = (0,0,0,0)
+        _VertexOffsetRot ("Rotation", Vector) = (0,0,0,0)
+        _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
+        _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
 
         // Stencils
         [IntRange] _StencilRef ("Stencil Value", Range(0, 255)) = 0
@@ -108,6 +106,15 @@
         // ZTest
         [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4 // LEqual
         
+        // Eye tracking
+        [Enum(Left,0,Center,1,Right,2)] _TargetEye("Target Eye", Float) = 1
+        _MaxLookRange ("Max Look Range", Range(0,1)) = 0.4
+        _EyeTrackingPatternTex ("Eye Tracking Pattern Texture", 2D) = "white" {}
+        _EyeTrackingScrollSpeed ("Eye Tracking Pattern Speed", Range(-100, 100)) = 1
+        _EyeTrackingBlur ("Eye Tracking Pattern Blur", Range(0,6)) = 0
+        [Toggle(_)] _EyeTrackingRotationCorrection ("Blender Rotation Correction", Float) = 1
+        _MaxLookDistance ("Maximum Look Distance", Float) = 3.5
+        
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
@@ -115,21 +122,12 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" "DisableBatching"="true" }
+        Tags { "RenderType"="Opaque" }
 
         Pass
         {
             Name "FORWARD"
-            Tags { "LightMode"="ForwardBase" "DisableBatching"="true" }
-
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp [_StencilCompareFunction]
-                Pass [_StencilPassOp]
-                Fail [_StencilFailOp]
-                ZFail [_StencilZFailOp]
-            }
+            Tags { "LightMode"="ForwardBase" }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
@@ -156,16 +154,17 @@
             #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
+            #pragma shader_feature _PARALLAXMAP
 
-            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
+            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature _SUNDISK_NONE
             #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
-            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _MAPPING_6_FRAMES_LAYOUT
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
-            #endif          
+            #endif
 
             #include "../Includes/DummyToonCore.cginc"
             
@@ -177,15 +176,6 @@
         {
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
-
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp [_StencilCompareFunction]
-                Pass [_StencilPassOp]
-                Fail [_StencilFailOp]
-                ZFail [_StencilZFailOp]
-            }
             
             Blend [_SrcBlend] One
             ZWrite Off
@@ -211,12 +201,13 @@
             #pragma shader_feature _COLORCOLOR_ON
             #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
+            #pragma shader_feature _PARALLAXMAP
 
-            #pragma shader_feature _ _REQUIRE_UV2 _DETAIL_MULX2
+            #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
+            #pragma shader_feature _ _MATCAP_ADD _MATCAP_MULTIPLY
             #pragma shader_feature _ _SUNDISK_SIMPLE _SUNDISK_HIGH_QUALITY
-            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-            #pragma shader_feature _ _GLOSSYREFLECTIONS_OFF _SPECULARHIGHLIGHTS_OFF
+            #pragma shader_feature _ _TERRAIN_NORMAL_MAP _MAPPING_6_FRAMES_LAYOUT
             
             #ifndef UNITY_PASS_FORWARDADD
                 #define UNITY_PASS_FORWARDADD
@@ -242,9 +233,12 @@
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature _ALPHATEST_ON
+            #pragma shader_feature _PARALLAXMAP
 
             #pragma vertex vertShadowEye
             #pragma fragment fragShadow
+
+            #define EYE_TRACKING
             
             #include "../Includes/DummyToonShadowcaster.cginc"
 

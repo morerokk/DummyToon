@@ -4,8 +4,8 @@
     {
         [NoScaleOffset] _MainTex ("Main Texture", 2D) = "white" {}
         _Color ("Color", Color) = (1,1,1,1)
-        [Toggle(_EMISSION)] _GuessLightDir ("Guess Light Dir", Float) = 1.0
-        [Toggle(_COLORADDSUBDIFF_ON)] _UseVertexColor ("Use Vertex Colors", Float) = 0.0
+        [Toggle(_GUESSLIGHTDIR_ON)] _GuessLightDir ("Guess Light Dir", Float) = 1.0
+        [Toggle(_VERTEXCOLOR_ON)] _UseVertexColor ("Use Vertex Colors", Float) = 0.0
     }
     SubShader
     {
@@ -30,21 +30,20 @@
             #pragma multi_compile_fwdbase
             #pragma multi_compile _ VERTEXLIGHT_ON
             
-            // Same as _EMISSION but can be set globally through script.
+            // Same as _GUESSLIGHTDIR_ON but can be set globally through script.
             #pragma multi_compile _ _GUESSLIGHTDIR_GLOBAL_ON
             
-            // Is actually GUESSLIGHTDIR_ON
-            #pragma shader_feature _EMISSION
+            #pragma shader_feature _GUESSLIGHTDIR_ON
             
-            #pragma shader_feature _COLORCOLOR_ON
-            #pragma shader_feature _COLOROVERLAY_ON
-            #pragma shader_feature _COLORADDSUBDIFF_ON
+            #pragma shader_feature _COLOR_ON
+            #pragma shader_feature _MAINTEX_ON
+            #pragma shader_feature _VERTEXCOLOR_ON
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
             #endif
             
-            #if defined(_COLOROVERLAY_ON)
+            #if defined(_MAINTEX_ON)
                 uniform sampler2D _MainTex;
             #endif
             
@@ -65,7 +64,7 @@
                 float3 pos : POSITION;
                 half3 normal : NORMAL;
                 float2 uv : TEXCOORD0;
-                #if defined(_COLORADDSUBDIFF_ON)
+                #if defined(_VERTEXCOLOR_ON)
                     fixed4 color : COLOR;
                 #endif
             };
@@ -76,7 +75,7 @@
                 float2 uv : TEXCOORD0;
                 half4 lighting : TEXCOORD1;
                 half3 lightColor : TEXCOORD2;
-                #if defined(_COLORADDSUBDIFF_ON)
+                #if defined(_VERTEXCOLOR_ON)
                     fixed4 vertexColor : TEXCOORD3;
                 #endif
             };
@@ -87,7 +86,7 @@
                 o.pos = UnityObjectToClipPos(i.pos);
                 o.uv = i.uv;
                 
-                #if defined(_COLORADDSUBDIFF_ON)
+                #if defined(_VERTEXCOLOR_ON)
                     o.vertexColor = i.color;
                 #endif
                 
@@ -110,7 +109,7 @@
                     );
                 #endif
                 
-                #if defined(_EMISSION) || defined(_GUESSLIGHTDIR_GLOBAL_ON)
+                #if defined(_GUESSLIGHTDIR_ON) || defined(_GUESSLIGHTDIR_GLOBAL_ON)
                     // Try to guess the light dir and color from SH
                     float3 lightDir = Unity_SafeNormalize(unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz);
                     float3 lightColor = baseLightCol;
@@ -134,10 +133,10 @@
             
             fixed4 frag(v2f i) : SV_TARGET
             {
-                #if defined(_COLOROVERLAY_ON) && defined(_COLORCOLOR_ON)
+                #if defined(_MAINTEX_ON) && defined(_COLOR_ON)
                     // Both color and tex are used
                     fixed4 col = tex2D(_MainTex, i.uv) * _Color;
-                #elif defined(_COLOROVERLAY_ON)
+                #elif defined(_MAINTEX_ON)
                     // Only tex is used
                     fixed4 col = tex2D(_MainTex, i.uv);
                 #else
@@ -145,7 +144,7 @@
                     fixed4 col = _Color;
                 #endif
                 
-                #if defined(_COLORADDSUBDIFF_ON)
+                #if defined(_VERTEXCOLOR_ON)
                     col *= i.vertexColor;
                 #endif
                 

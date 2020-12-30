@@ -6,7 +6,7 @@ float _EyeTrackingBlur;
 float _EyeTrackingRotationCorrection;
 sampler2D _EyeTrackingPatternTex;
 
-inline float3x3 xRotation3dRadians(float rad) {
+inline float3x3 xRotation3dRadiansEye(float rad) {
     float s = sin(rad);
     float c = cos(rad);
     return float3x3(
@@ -15,7 +15,7 @@ inline float3x3 xRotation3dRadians(float rad) {
         0, -s, c);
 }
 
-inline float3x3 yRotation3dRadians(float rad) {
+inline float3x3 yRotation3dRadiansEye(float rad) {
     float s = sin(rad);
     float c = cos(rad);
     return float3x3(
@@ -24,7 +24,7 @@ inline float3x3 yRotation3dRadians(float rad) {
         s, 0, c);
 }
  
-inline float3x3 zRotation3dRadians(float rad) {
+inline float3x3 zRotation3dRadiansEye(float rad) {
     float s = sin(rad);
     float c = cos(rad);
     return float3x3(
@@ -52,21 +52,26 @@ float EyeTrackingCurve(float t)
 
 v2f vertEyeTracking(appdata v)
 {
+    // If vertex offset is enabled, apply that first
+    #if defined(_PARALLAXMAP)
+        VertexOffset(v);
+    #endif
+
     // Fix wrong mesh rotation
     // Blender exports are 90 degrees off on the X axis by default
     // But even with the correct orientation, this shader messes up the initial rotation somewhat.
     if(_EyeTrackingRotationCorrection == 1)
     {
-        v.vertex.xyz = mul(yRotation3dRadians(radians(180)), v.vertex.xyz);
-        v.normal = mul(yRotation3dRadians(radians(180)), v.normal);
+        v.vertex.xyz = mul(yRotation3dRadiansEye(radians(180)), v.vertex.xyz);
+        v.normal = mul(yRotation3dRadiansEye(radians(180)), v.normal);
     }
     else
     {
-        v.vertex.xyz = mul(xRotation3dRadians(radians(-90)), v.vertex.xyz);
-        v.normal = mul(xRotation3dRadians(radians(-90)), v.normal);
+        v.vertex.xyz = mul(xRotation3dRadiansEye(radians(-90)), v.vertex.xyz);
+        v.normal = mul(xRotation3dRadiansEye(radians(-90)), v.normal);
 
-        v.vertex.xyz = mul(zRotation3dRadians(radians(180)), v.vertex.xyz);
-        v.normal = mul(zRotation3dRadians(radians(180)), v.normal);
+        v.vertex.xyz = mul(zRotation3dRadiansEye(radians(180)), v.vertex.xyz);
+        v.normal = mul(zRotation3dRadiansEye(radians(180)), v.normal);
     }
     
     // Pre-apply scale
@@ -174,7 +179,7 @@ v2f vertEyeTracking(appdata v)
     // The position of the vertex in clip space ignoring the rotation and scale of the object
     o.pos = mul(UNITY_MATRIX_VP, vertWorldPos);
     // If used, pack UV0 and UV1 into a single float4
-    #if defined(_DETAIL_MULX2)
+    #if defined(_REQUIRE_UV2)
         float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
         float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
         o.uv = float4(uv0, uv1);
@@ -187,10 +192,6 @@ v2f vertEyeTracking(appdata v)
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
     o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
     TRANSFER_SHADOW(o);
-    
-    #if defined(_DETAIL_MULX2)
-        o.uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-    #endif
     
     return o;
 }

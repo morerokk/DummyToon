@@ -6,7 +6,7 @@ float _EyeTrackingBlur;
 float _EyeTrackingRotationCorrection;
 sampler2D _EyeTrackingPatternTex;
 
-inline float3x3 xRotation3dRadians(float rad) {
+inline float3x3 xRotation3dRadiansEyeShadow(float rad) {
     float s = sin(rad);
     float c = cos(rad);
     return float3x3(
@@ -15,7 +15,7 @@ inline float3x3 xRotation3dRadians(float rad) {
         0, -s, c);
 }
 
-inline float3x3 yRotation3dRadians(float rad) {
+inline float3x3 yRotation3dRadiansEyeShadow(float rad) {
     float s = sin(rad);
     float c = cos(rad);
     return float3x3(
@@ -24,7 +24,7 @@ inline float3x3 yRotation3dRadians(float rad) {
         s, 0, c);
 }
  
-inline float3x3 zRotation3dRadians(float rad) {
+inline float3x3 zRotation3dRadiansEyeShadow(float rad) {
     float s = sin(rad);
     float c = cos(rad);
     return float3x3(
@@ -51,18 +51,22 @@ float EyeTrackingCurve(float t)
 }
 
 VertexOutputShadow vertShadowEye (VertexInputShadow v) {
-        // Fix wrong mesh rotation
+    #if defined(_PARALLAXMAP)
+        VertexOffset(v);
+    #endif
+
+    // Fix wrong mesh rotation
     // Blender exports are 90 degrees off on the X axis by default
     // But even with the correct orientation, this shader messes up the initial rotation somewhat.
     if(_EyeTrackingRotationCorrection == 1)
     {
-        v.vertex.xyz = mul(yRotation3dRadians(radians(180)), v.vertex.xyz);
+        v.vertex.xyz = mul(yRotation3dRadiansEyeShadow(radians(180)), v.vertex.xyz);
     }
     else
     {
-        v.vertex.xyz = mul(xRotation3dRadians(radians(-90)), v.vertex.xyz);
+        v.vertex.xyz = mul(xRotation3dRadiansEyeShadow(radians(-90)), v.vertex.xyz);
 
-        v.vertex.xyz = mul(zRotation3dRadians(radians(180)), v.vertex.xyz);
+        v.vertex.xyz = mul(zRotation3dRadiansEyeShadow(radians(180)), v.vertex.xyz);
     }
     
     // Pre-apply scale

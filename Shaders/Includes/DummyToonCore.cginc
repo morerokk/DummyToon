@@ -11,7 +11,7 @@ float _Cutoff;
     float _BumpScale;
 #endif
 
-#if defined(_REQUIRE_UV2) || defined(_DETAIL_MULX2)
+#if defined(_DETAIL_MULX2) || defined(_REQUIRE_UV2)
     #define DETAILNORMALMAP
 
     sampler2D _DetailNormalMap;
@@ -59,7 +59,7 @@ float _IndirectLightDirMergeMax;
     float _SaturationB;
 #endif
 
-#if defined(_GLOSSYREFLECTIONS_OFF) || defined(_SPECULARHIGHLIGHTS_OFF)
+#if defined(_TERRAIN_NORMAL_MAP) || defined(_MAPPING_6_FRAMES_LAYOUT)
     sampler2D _AdditiveRamp;
     float4 _AdditiveRamp_TexelSize;
 #endif
@@ -84,18 +84,20 @@ float _Glossiness;
     float _EmissionMapIsTint;
 #endif
 
-#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
+#if defined(_SUNDISK_NONE)
+    float _MatCapMode;
+
     sampler2D _MatCap;
     float _MatCapStrength;
 
     float4 _MatCapColor;
-    #if defined(_SUNDISK_NONE)
+    #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
         sampler2D _MatCapTintTex;
     #endif
     float _MatCapOrigin;
 #endif
 
-#if defined(_TERRAIN_NORMAL_MAP) || defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
+#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
     sampler2D _RimTex;
     float4 _RimLightColor;
     float _RimLightMode;
@@ -116,6 +118,13 @@ float _Glossiness;
     float4 _Color;
 #endif
 
+#if defined(_PARALLAXMAP)
+    float3 _VertexOffsetPos;
+    float3 _VertexOffsetRot;
+    float3 _VertexOffsetScale;
+    float3 _VertexOffsetPosWorld;
+#endif
+
 // Most textures reuse the tiling and offset values of the main texture, so this should always be available
 float4 _MainTex_ST;
 
@@ -125,15 +134,15 @@ struct appdata
     float3 normal : NORMAL;
     float4 tangent : TANGENT;
     float2 uv : TEXCOORD0;
-    #if defined(_DETAIL_MULX2)
+    #if defined(_REQUIRE_UV2)
         float2 uv1 : TEXCOORD1;
     #endif
 };
 
 struct v2f
 {
-    #if defined(_DETAIL_MULX2)
-        float4 uv : TEXCOORD0;
+    #if defined(_REQUIRE_UV2)
+        float4 uv : TEXCOORD0; // Pack UV0 and UV1 into the same interpolator, if UV1 exists
     #else
         float2 uv : TEXCOORD0;
     #endif
@@ -153,12 +162,16 @@ struct v2f
     #include "DummyToonMetallicSpecular.cginc"
 #endif
 
-#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
+#if defined(_SUNDISK_NONE)
     #include "DummyToonMatcap.cginc"
 #endif
 
-#if defined(_TERRAIN_NORMAL_MAP) || defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
+#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
     #include "DummyToonRimlight.cginc"
+#endif
+
+#if defined(_PARALLAXMAP)
+    #include "DummyToonVertexOffset.cginc"
 #endif
 
 float3 NormalDirection(v2f i)
@@ -172,7 +185,7 @@ float3 NormalDirection(v2f i)
         float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
         
         // Choose the correct UV map set
-        #if defined(_REQUIRE_UV2)
+        #if defined(_DETAIL_MULX2)
             // Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
             float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
         #else
@@ -191,7 +204,7 @@ float3 NormalDirection(v2f i)
         float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
         
         // Choose the correct UV map set
-        #if defined(_REQUIRE_UV2)
+        #if defined(_DETAIL_MULX2)
             // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
             float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
         #else
@@ -209,10 +222,15 @@ float3 NormalDirection(v2f i)
 #ifndef OUTLINE_PASS
     v2f vert (appdata v)
     {
+        // If vertex offset is enabled, apply that first
+        #if defined(_PARALLAXMAP)
+            VertexOffset(v);
+        #endif
+
         v2f o;
         o.pos = UnityObjectToClipPos(v.vertex);
-        // If used, pack UV0 and UV1 into a single float4
-        #if defined(_DETAIL_MULX2)
+        // If UV1 is used, pack UV0 and UV1 into a single float4
+        #if defined(_REQUIRE_UV2)
             float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
             float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
             o.uv = float4(uv0, uv1);
@@ -230,7 +248,12 @@ float3 NormalDirection(v2f i)
     }
 #endif
 
+// Use SV_IsFrontFace semantic in shader model 5.0, this is not available in 2.0 so is not used
+#ifdef NO_ISFRONTFACE
 float4 frag (v2f i) : SV_Target
+#else
+float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
+#endif
 {
     float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
 
@@ -270,9 +293,15 @@ float4 frag (v2f i) : SV_Target
 
     // Get normal direction from vertex normals (and normal maps if applicable)
     float3 normalDir = NormalDirection(i);
+
+    // If this is a backface, reverse the normal direction
+    #ifndef NO_ISFRONTFACE
+        float faceSign = facing ? 1 : -1;
+        normalDir *= faceSign;
+    #endif
     
     // Matcap
-    #if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
+    #if defined(_SUNDISK_NONE)
         // Matcap origin
         // If 0, viewdir to surface is used
         // If 1, viewdir to object center is used
@@ -289,7 +318,7 @@ float4 frag (v2f i) : SV_Target
     #endif
     
     // Rimlight
-    #if defined(_TERRAIN_NORMAL_MAP) || defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
+    #if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
         Rimlight(i.uv.xy, viewDir, normalDir, albedo);
     #endif
     

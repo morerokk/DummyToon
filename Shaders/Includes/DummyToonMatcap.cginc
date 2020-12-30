@@ -12,7 +12,7 @@ void Matcap(float3 viewDir, float3 normalDir, float2 uv, inout float3 albedo)
     float2 matcapUv = matcapSample(upVector, viewDir, normalDir);
     float4 matcapCol = tex2D(_MatCap, matcapUv);
     
-    #if defined(_SUNDISK_NONE)
+    #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
         float4 matcapTint = tex2D(_MatCapTintTex, uv);
         matcapCol.rgb *= matcapTint.rgb * _MatCapColor.rgb;
         float strength = _MatCapStrength * matcapTint.a * _MatCapColor.a;
@@ -21,11 +21,17 @@ void Matcap(float3 viewDir, float3 normalDir, float2 uv, inout float3 albedo)
         float strength = _MatCapStrength * _MatCapColor.a;
     #endif
 
-    #if defined(_SUNDISK_SIMPLE)
-        float3 matcapResult = albedo + matcapCol.rgb;
-    #else
-        float3 matcapResult = albedo * matcapCol.rgb;
-    #endif
+    // Check if the mode is additive or multiplicative, then apply the result
+    float3 matcapResult;
+    if(_MatCapMode == 1)
+    {
+        matcapResult = albedo + matcapCol.rgb;
+    }
+    else
+    {
+        matcapResult = albedo * matcapCol.rgb;
+    }
 
+    // Lerp between the existing albedo and the matcap result, based on strength
     albedo = lerp(albedo, matcapResult, strength);
 }
