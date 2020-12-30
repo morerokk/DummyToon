@@ -98,6 +98,13 @@
         [Normal] _DetailNormalMap("Detail Normal Map", 2D) = "bump" {}
         _DetailNormalMapScale("Detail Normal Scale", Float) = 1.0
         [Enum(UV0,0,UV1,1)] _UVSec ("UV Map for detail normals", Float) = 0
+
+        // Vertex Offset
+        [Toggle(_VERTEXOFFSET_ON)] _VertexOffsetEnabled ("Enable Vertex Offset", Float) = 0
+        _VertexOffsetPos ("Local Position Offset", Vector) = (0,0,0,0)
+        _VertexOffsetRot ("Rotation", Vector) = (0,0,0,0)
+        _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
+        _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
         
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
@@ -146,10 +153,11 @@
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
@@ -200,10 +208,11 @@
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
@@ -248,10 +257,11 @@
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
@@ -278,6 +288,7 @@
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma vertex vertShadow
             #pragma fragment fragShadow
@@ -324,10 +335,11 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
@@ -336,6 +348,7 @@
             #endif
             
             #define NO_DERIVATIVES
+            #define NO_ISFRONTFACE
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -377,10 +390,11 @@
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
@@ -391,6 +405,7 @@
             #define OUTLINE_PASS
             #define NO_TEXLOD
             #define NO_DERIVATIVES
+            #define NO_ISFRONTFACE
 
             #include "Includes/DummyToonCore.cginc"
             
@@ -424,10 +439,11 @@
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
@@ -436,6 +452,7 @@
             #endif
             
             #define NO_DERIVATIVES
+            #define NO_ISFRONTFACE
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -456,6 +473,7 @@
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma vertex vertShadow
             #pragma fragment fragShadow

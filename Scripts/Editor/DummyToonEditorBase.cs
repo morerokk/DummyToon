@@ -28,6 +28,8 @@ namespace Rokk.DummyToon.Editor
         /// <param name="props">An array of material properties to find.</param>
         protected virtual void FindProperties(MaterialProperty[] props)
         {
+            ClearFoundProperties();
+
             foreach (MaterialProperty prop in props)
             {
                 materialProperties[prop.name] = prop;
@@ -62,6 +64,14 @@ namespace Rokk.DummyToon.Editor
         protected virtual MaterialProperty FindProperty(string name)
         {
             return FindProperty(name, true);
+        }
+
+        /// <summary>
+        /// Clear all earlier found properties, to prevent caching properties that no longer exist.
+        /// </summary>
+        protected virtual void ClearFoundProperties()
+        {
+            materialProperties.Clear();
         }
 
         /// <summary>

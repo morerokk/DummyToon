@@ -1,3 +1,7 @@
+// NOTE: Thanks to Dj Lukis.LT #4639
+// For providing slightly more accurate code for getting the ambient light color
+// (Replaces ShadeSH9(float4(0,0,0,1)))
+
 // Indirect lighting, consists of SH and vertex lights
 // In ForwardAdd, there is no indirect lighting.
 float3 IndirectToonLighting(float3 albedo, float3 normalDir, float3 worldPos)
@@ -5,7 +9,10 @@ float3 IndirectToonLighting(float3 albedo, float3 normalDir, float3 worldPos)
     #ifdef UNITY_PASS_FORWARDBASE
         // Apply SH
         // The sample direction is zero to sample flatly, for a toonier look
-        float3 lighting = albedo * ShadeSH9(float4(0,0,0,1));
+
+        // what
+        //float3 lighting = albedo * ShadeSH9(float4(0,0,0,1));
+        float3 lighting = albedo * (float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w) + float3(unity_SHBr.z, unity_SHBg.z, unity_SHBb.z) / 3.0);
         
         // Apply vertex lights
         #if defined(VERTEXLIGHT_ON)
@@ -16,7 +23,6 @@ float3 IndirectToonLighting(float3 albedo, float3 normalDir, float3 worldPos)
                     unity_4LightAtten0, worldPos, normalDir
             );
         #endif
-    
     #else
         // In additive passes, start with zero as base
         float3 lighting = float3(0,0,0);
@@ -172,7 +178,10 @@ void GetBaseLightData(inout float3 lightDirection, inout float3 lightColor)
     #else
         lightDirection = GIsonarDirection();
     #endif
-    lightColor = ShadeSH9(float4(0,0,0,1));
+
+    // What
+    //lightColor = ShadeSH9(float4(0,0,0,1));
+    lightColor = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w) + float3(unity_SHBr.z, unity_SHBg.z, unity_SHBb.z) / 3.0;
 }
 
 // Fill the light direction and light color parameters.

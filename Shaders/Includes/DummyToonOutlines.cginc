@@ -1,5 +1,10 @@
 v2f vertOutline(appdata v)
 {
+    // If vertex offset is enabled, apply that first
+    #if defined(_VERTEXOFFSET_ON)
+        VertexOffset(v);
+    #endif
+
     v2f o;
 
     // If used, pack UV0 and UV1 into a single float4

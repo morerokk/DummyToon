@@ -84,7 +84,9 @@ float _Glossiness;
     float _EmissionMapIsTint;
 #endif
 
-#if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+#if defined(_MATCAP_ON)
+    float _MatCapMode;
+
     sampler2D _MatCap;
     float _MatCapStrength;
 
@@ -116,6 +118,13 @@ float _Glossiness;
     float4 _Color;
 #endif
 
+#if defined(_VERTEXOFFSET_ON)
+    float3 _VertexOffsetPos;
+    float3 _VertexOffsetRot;
+    float3 _VertexOffsetScale;
+    float3 _VertexOffsetPosWorld;
+#endif
+
 // Most textures reuse the tiling and offset values of the main texture, so this should always be available
 float4 _MainTex_ST;
 
@@ -133,7 +142,7 @@ struct appdata
 struct v2f
 {
     #if defined(_DETAILNORMAL_UV1)
-        float4 uv : TEXCOORD0;
+        float4 uv : TEXCOORD0; // Pack UV0 and UV1 into the same interpolator, if UV1 exists
     #else
         float2 uv : TEXCOORD0;
     #endif
@@ -153,12 +162,16 @@ struct v2f
     #include "DummyToonMetallicSpecular.cginc"
 #endif
 
-#if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+#if defined(_MATCAP_ON)
     #include "DummyToonMatcap.cginc"
 #endif
 
 #if defined(_RIMLIGHT_ADD) || defined(_RIMLIGHT_MIX)
     #include "DummyToonRimlight.cginc"
+#endif
+
+#if defined(_VERTEXOFFSET_ON)
+    #include "DummyToonVertexOffset.cginc"
 #endif
 
 float3 NormalDirection(v2f i)
@@ -209,9 +222,14 @@ float3 NormalDirection(v2f i)
 #ifndef OUTLINE_PASS
     v2f vert (appdata v)
     {
+        // If vertex offset is enabled, apply that first
+        #if defined(_VERTEXOFFSET_ON)
+            VertexOffset(v);
+        #endif
+
         v2f o;
         o.pos = UnityObjectToClipPos(v.vertex);
-        // If used, pack UV0 and UV1 into a single float4
+        // If UV1 is used, pack UV0 and UV1 into a single float4
         #if defined(_DETAILNORMAL_UV1)
             float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
             float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
@@ -230,7 +248,12 @@ float3 NormalDirection(v2f i)
     }
 #endif
 
+// Use SV_IsFrontFace semantic in shader model 5.0, this is not available in 2.0 so is not used
+#ifdef NO_ISFRONTFACE
 float4 frag (v2f i) : SV_Target
+#else
+float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
+#endif
 {
     float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
 
@@ -270,9 +293,15 @@ float4 frag (v2f i) : SV_Target
 
     // Get normal direction from vertex normals (and normal maps if applicable)
     float3 normalDir = NormalDirection(i);
+
+    // If this is a backface, reverse the normal direction
+    #ifndef NO_ISFRONTFACE
+        float faceSign = facing ? 1 : -1;
+        normalDir *= faceSign;
+    #endif
     
     // Matcap
-    #if defined(_MATCAP_ADD) || defined(_MATCAP_MULTIPLY)
+    #if defined(_MATCAP_ON)
         // Matcap origin
         // If 0, viewdir to surface is used
         // If 1, viewdir to object center is used

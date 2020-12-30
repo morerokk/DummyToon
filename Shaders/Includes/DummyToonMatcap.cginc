@@ -21,11 +21,17 @@ void Matcap(float3 viewDir, float3 normalDir, float2 uv, inout float3 albedo)
         float strength = _MatCapStrength * _MatCapColor.a;
     #endif
 
-    #if defined(_MATCAP_ADD)
-        float3 matcapResult = albedo + matcapCol.rgb;
-    #else
-        float3 matcapResult = albedo * matcapCol.rgb;
-    #endif
+    // Check if the mode is additive or multiplicative, then apply the result
+    float3 matcapResult;
+    if(_MatCapMode == 1)
+    {
+        matcapResult = albedo + matcapCol.rgb;
+    }
+    else
+    {
+        matcapResult = albedo * matcapCol.rgb;
+    }
 
+    // Lerp between the existing albedo and the matcap result, based on strength
     albedo = lerp(albedo, matcapResult, strength);
 }

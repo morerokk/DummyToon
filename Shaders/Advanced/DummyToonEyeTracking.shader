@@ -89,6 +89,13 @@
         _DetailNormalMapScale ("Detail Normal Scale", Float) = 1.0
         [Enum(UV0,0,UV1,1)] _UVSec ("UV Map for detail normals", Float) = 0
 
+        // Vertex Offset
+        [Toggle(_VERTEXOFFSET_ON)] _VertexOffsetEnabled ("Enable Vertex Offset", Float) = 0
+        _VertexOffsetPos ("Local Position Offset", Vector) = (0,0,0,0)
+        _VertexOffsetRot ("Rotation", Vector) = (0,0,0,0)
+        _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
+        _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
+
         // Stencils
         [IntRange] _StencilRef ("Stencil Value", Range(0, 255)) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilPassOp ("Pass Op", Float) = 0 // Keep
@@ -147,16 +154,17 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
-            #pragma shader_feature_local _ _MATCAP_ADD _MATCAP_MULTIPLY
+            #pragma shader_feature_local _MATCAP_ON
             #pragma shader_feature_local _ _RIMLIGHT_ADD _RIMLIGHT_MIX
             #pragma shader_feature_local _ _ADDITIVERAMP_FORWARDADD_ONLY _ADDITIVERAMP_ALWAYS
             
             #ifndef UNITY_PASS_FORWARDBASE
                 #define UNITY_PASS_FORWARDBASE
-            #endif          
+            #endif
 
             #include "../Includes/DummyToonCore.cginc"
             
@@ -193,6 +201,7 @@
             #pragma shader_feature_local _RAMPTINT_ON
             #pragma shader_feature_local _RAMPANTIALIASING_ON
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -224,9 +233,12 @@
             #pragma multi_compile_shadowcaster
             
             #pragma shader_feature_local _ALPHATEST_ON
+            #pragma shader_feature_local _VERTEXOFFSET_ON
 
             #pragma vertex vertShadowEye
             #pragma fragment fragShadow
+
+            #define EYE_TRACKING
             
             #include "../Includes/DummyToonShadowcaster.cginc"
 
