@@ -22,6 +22,6 @@ This shader only works in Unity 2019 and up, due to the reliance on local shader
 
 For more information on the shader or how to use features, make sure to check the Wiki tab of this repository.
 
-#Third Party
+## Third Party
 This shader has optional built-in support for some third-party libraries or shaders. These are automatically detected.
 * **[Kaj Shader Optimizer](https://github.com/DarthShader/Kaj-Unity-Shaders):** When the shader optimizer is installed, a button is automatically added to the shader inspector that allows you to automatically "lock in" the material, generating a new auto-optimized shader. This gives a nice performance boost on the GPU, and bakes the enabled material keywords directly into the shader.
