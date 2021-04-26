@@ -1,0 +1,14 @@
+{
+    "name": "Rokk.DummyToon.Editor.ShaderOptimizerKeywordSetter",
+    "references": [],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ]
+}

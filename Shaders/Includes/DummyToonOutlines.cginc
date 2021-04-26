@@ -37,7 +37,13 @@ v2f vertOutline(appdata v)
     o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
     o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-    o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
+    #ifndef LIMITED_INTERPOLATORS
+        o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
+    #endif
+
     TRANSFER_SHADOW(o);
+
+    UNITY_TRANSFER_FOG(o, o.pos);
+
     return o;
 }

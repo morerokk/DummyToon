@@ -25,8 +25,8 @@
         _ToonContrast ("Toon Contrast", Range(0, 1)) = 0.5
         _ToonRampOffset ("Toon Ramp Offset", Range(-2,2)) = 0
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
-        _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 0.8
-        _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
+        _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 1
+        _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1
         [Toggle(_RAMPTINT_ON)] _RampTinting ("Ramp Tinting", Float) = 0
         [Toggle(_RAMPANTIALIASING_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
         [Toggle(_OVERRIDEWORLDLIGHTDIR_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
@@ -106,6 +106,15 @@
         _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
         _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
         
+        // Hue Shift
+        [Toggle(_HUESHIFT_ON)] _HueShiftEnabled ("Enable Hue Shift", Float) = 0
+        _HueShiftAmount ("Hue Shift Amount", Range(0,1)) = 0
+        _HueShiftMask ("Hue Shift Mask", 2D) = "white" {}
+        _HueShiftAmountOverTime ("Hue Shift Amount Over Time", Float) = 0
+        
+        // Kaj shader optimizer
+        [ShaderOptimizerLockButton] _ShaderOptimized ("Shader Optimized", Int) = 0
+        
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
@@ -119,6 +128,14 @@
         {
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
+            
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Cull [_Cull]
             ZWrite [_ZWrite]
@@ -134,6 +151,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature_local _ALPHATEST_ON
@@ -147,6 +165,7 @@
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
             #pragma shader_feature_local _VERTEXOFFSET_ON
+            #pragma shader_feature_local _HUESHIFT_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -167,6 +186,14 @@
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
             
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
+            
             Blend [_SrcBlend] One
             ZTest [_ZTest]
             ZWrite Off
@@ -182,6 +209,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fog
             
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _ALPHABLEND_ON
@@ -193,6 +221,7 @@
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
             #pragma shader_feature_local _VERTEXOFFSET_ON
+            #pragma shader_feature_local _HUESHIFT_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -214,6 +243,15 @@
                 "LightMode"="ShadowCaster"
             }
             Offset 1, 1
+            
+            // Not sure how "correct" stencils on shadowcasters are, but leaving it out doesn't feel right. If this is a problem, I recommend disabling Cast/Receive shadows on the mesh!
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Cull [_Cull]
             
@@ -243,6 +281,14 @@
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
             
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
+            
             Cull [_Cull]
             ZWrite [_ZWrite]
             ZTest [_ZTest]
@@ -255,6 +301,7 @@
             #pragma target 2.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature_local _ALPHATEST_ON
@@ -266,6 +313,7 @@
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
             #pragma shader_feature_local _VERTEXOFFSET_ON
+            #pragma shader_feature_local _HUESHIFT_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -277,8 +325,9 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif
             
-            #define NO_DERIVATIVES
+            #define NO_DERIVATIVES // Shader Model 2.0 does not support derivatives (ddx/ddy/fwidth)
             #define NO_ISFRONTFACE // D3D10 and later (Shader Models above 3.0) have no VFACE and instead use SV_IsFrontFace
+            #define LIMITED_INTERPOLATORS // Shader Model 2.0 only supports up to 8 interpolators
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -288,6 +337,14 @@
         {
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
+            
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Blend [_SrcBlend] One
             ZWrite Off
@@ -302,6 +359,7 @@
             #pragma target 2.0
 
             #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fog
             
             #pragma shader_feature_local _ALPHATEST_ON
             #pragma shader_feature_local _ALPHABLEND_ON
@@ -311,6 +369,7 @@
             #pragma shader_feature_local _OVERRIDEWORLDLIGHTDIR_ON
             #pragma shader_feature_local _MATCAPTINTTEX_ON
             #pragma shader_feature_local _VERTEXOFFSET_ON
+            #pragma shader_feature_local _HUESHIFT_ON
 
             #pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
             #pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -324,6 +383,7 @@
             
             #define NO_DERIVATIVES
             #define NO_ISFRONTFACE
+            #define LIMITED_INTERPOLATORS
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -335,6 +395,14 @@
                 "LightMode"="ShadowCaster"
             }
             Offset 1, 1
+            
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Cull [_Cull]
             
