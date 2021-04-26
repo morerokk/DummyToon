@@ -10,6 +10,7 @@ A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline. Fo
 * Outlines
 * Matcaps
 * Rimlight
+* Hue Shifting
 * Custom toon ramps, supporting up to 4 different toon ramps on the same material, helping keep the amount of drawcalls down
 * Experimental "eye tracking" feature, which allows a character to dynamically look at the camera and back forward using only a shader
 * Custom editor GUI with integrated help boxes and a clean interface
