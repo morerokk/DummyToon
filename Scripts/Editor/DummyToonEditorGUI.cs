@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,126 +9,123 @@ namespace Rokk.DummyToon.Editor
     public class DummyToonEditorGUI : DummyToonEditorBase
     {
         // Main
-        private MaterialProperty mainTex = null;
-        private MaterialProperty color = null;
-        private MaterialProperty bumpMap = null;
-        private MaterialProperty bumpScale = null;
-        private MaterialProperty cutoff = null;
-        private MaterialProperty emissionMap = null;
-        private MaterialProperty emissionColor = null;
-        private MaterialProperty emissionIsTint = null;
-        private MaterialProperty cullMode = null;
-        private MaterialProperty renderMode = null;
-        private MaterialProperty zWrite = null;
-        private MaterialProperty cutoutEnabled = null;
+        protected MaterialProperty mainTex = null;
+        protected MaterialProperty color = null;
+        protected MaterialProperty bumpMap = null;
+        protected MaterialProperty bumpScale = null;
+        protected MaterialProperty cutoff = null;
+        protected MaterialProperty emissionMap = null;
+        protected MaterialProperty emissionColor = null;
+        protected MaterialProperty emissionIsTint = null;
+        protected MaterialProperty cullMode = null;
+        protected MaterialProperty renderMode = null;
+        protected MaterialProperty zWrite = null;
+        protected MaterialProperty cutoutEnabled = null;
 
         // Toon lighting
-        private MaterialProperty ramp = null;
-        private MaterialProperty toonContrast = null;
-        private MaterialProperty toonRampOffset = null;
-        private MaterialProperty staticToonLight = null;
-        private MaterialProperty intensity = null;
-        private MaterialProperty saturation = null;
-        private MaterialProperty directLightBoost = null;
-        private MaterialProperty indirectLightBoost = null;
-        private MaterialProperty rampTintingEnabled = null;
-        private MaterialProperty indirectLightDirMergeMin = null;
-        private MaterialProperty indirectLightDirMergeMax = null;
-        private MaterialProperty rampAntiAliasingEnabled = null;
-        private MaterialProperty overrideWorldLightDirection = null;
-        private MaterialProperty additiveRampMode = null;
-        private MaterialProperty additiveRamp = null;
+        protected MaterialProperty ramp = null;
+        protected MaterialProperty toonContrast = null;
+        protected MaterialProperty toonRampOffset = null;
+        protected MaterialProperty staticToonLight = null;
+        protected MaterialProperty intensity = null;
+        protected MaterialProperty saturation = null;
+        protected MaterialProperty directLightBoost = null;
+        protected MaterialProperty indirectLightBoost = null;
+        protected MaterialProperty rampTintingEnabled = null;
+        protected MaterialProperty indirectLightDirMergeMin = null;
+        protected MaterialProperty indirectLightDirMergeMax = null;
+        protected MaterialProperty rampAntiAliasingEnabled = null;
+        protected MaterialProperty overrideWorldLightDirection = null;
+        protected MaterialProperty additiveRampMode = null;
+        protected MaterialProperty additiveRamp = null;
 
         // Metallic and specular
-        private MaterialProperty metallicMode = null;
-        private MaterialProperty metallicMapTex = null;
-        private MaterialProperty metallic = null;
-        private MaterialProperty smoothness = null;
-        private MaterialProperty specularTex = null;
-        private MaterialProperty specularColor = null;
+        protected MaterialProperty metallicMode = null;
+        protected MaterialProperty metallicMapTex = null;
+        protected MaterialProperty metallic = null;
+        protected MaterialProperty smoothness = null;
+        protected MaterialProperty specularTex = null;
+        protected MaterialProperty specularColor = null;
 
         // Ramp masking
-        private MaterialProperty rampMaskingEnabled = null;
-        private MaterialProperty rampMaskTex = null;
-        private MaterialProperty rampR = null;
-        private MaterialProperty toonContrastR = null;
-        private MaterialProperty toonRampOffsetR = null;
-        private MaterialProperty intensityR = null;
-        private MaterialProperty saturationR = null;
-        private MaterialProperty rampG = null;
-        private MaterialProperty toonContrastG = null;
-        private MaterialProperty toonRampOffsetG = null;
-        private MaterialProperty intensityG = null;
-        private MaterialProperty saturationG = null;
-        private MaterialProperty rampB = null;
-        private MaterialProperty toonContrastB = null;
-        private MaterialProperty toonRampOffsetB = null;
-        private MaterialProperty intensityB = null;
-        private MaterialProperty saturationB = null;
+        protected MaterialProperty rampMaskingEnabled = null;
+        protected MaterialProperty rampMaskTex = null;
+        protected MaterialProperty rampR = null;
+        protected MaterialProperty toonContrastR = null;
+        protected MaterialProperty toonRampOffsetR = null;
+        protected MaterialProperty intensityR = null;
+        protected MaterialProperty saturationR = null;
+        protected MaterialProperty rampG = null;
+        protected MaterialProperty toonContrastG = null;
+        protected MaterialProperty toonRampOffsetG = null;
+        protected MaterialProperty intensityG = null;
+        protected MaterialProperty saturationG = null;
+        protected MaterialProperty rampB = null;
+        protected MaterialProperty toonContrastB = null;
+        protected MaterialProperty toonRampOffsetB = null;
+        protected MaterialProperty intensityB = null;
+        protected MaterialProperty saturationB = null;
 
         // Rimlight
-        private MaterialProperty rimLightMode = null;
-        private MaterialProperty rimLightColor = null;
-        private MaterialProperty rimTex = null;
-        private MaterialProperty rimWidth = null;
-        private MaterialProperty rimInvert = null;
+        protected MaterialProperty rimLightMode = null;
+        protected MaterialProperty rimLightColor = null;
+        protected MaterialProperty rimTex = null;
+        protected MaterialProperty rimWidth = null;
+        protected MaterialProperty rimInvert = null;
 
         // Matcap
-        private MaterialProperty matCapTex = null;
-        private MaterialProperty matCapMode = null;
-        private MaterialProperty matCapStrength = null;
-        private MaterialProperty matCapTintTex = null;
-        private MaterialProperty matCapColor = null;
-        private MaterialProperty matCapOrigin = null;
+        protected MaterialProperty matCapTex = null;
+        protected MaterialProperty matCapMode = null;
+        protected MaterialProperty matCapStrength = null;
+        protected MaterialProperty matCapTintTex = null;
+        protected MaterialProperty matCapColor = null;
+        protected MaterialProperty matCapOrigin = null;
 
         // Outlines
-        private MaterialProperty outlineWidth = null;
-        private MaterialProperty outlineColor = null;
-        private MaterialProperty outlineTex = null;
-        private MaterialProperty outlineScreenspaceEnabled = null;
-        private MaterialProperty outlineScreenspaceMinDist = null;
-        private MaterialProperty outlineScreenspaceMaxDist = null;
-        private MaterialProperty outlineStencilComp = null;
-        private MaterialProperty outlineAlphaWidthEnabled = null;
+        protected MaterialProperty outlineWidth = null;
+        protected MaterialProperty outlineColor = null;
+        protected MaterialProperty outlineTex = null;
+        protected MaterialProperty outlineScreenspaceEnabled = null;
+        protected MaterialProperty outlineScreenspaceMinDist = null;
+        protected MaterialProperty outlineScreenspaceMaxDist = null;
+        protected MaterialProperty outlineStencilComp = null;
+        protected MaterialProperty outlineAlphaWidthEnabled = null;
 
         // Alpha To Coverage
-        private MaterialProperty alphaToCoverageEnabled = null;
+        protected MaterialProperty alphaToCoverageEnabled = null;
 
         // Detail normal
-        private MaterialProperty detailNormalTex = null;
-        private MaterialProperty detailNormalScale = null;
-        private MaterialProperty detailNormalUvMap = null;
-
-        //Eye tracking
-        private MaterialProperty targetEye = null;
-        private MaterialProperty maxLookRange = null;
-        private MaterialProperty maxLookDistance = null;
-        private MaterialProperty eyeTrackPatternTexture = null;
-        private MaterialProperty eyeTrackSpeed = null;
-        private MaterialProperty eyeTrackBlur = null;
-        private MaterialProperty eyeTrackBlenderCorrection = null;
+        protected MaterialProperty detailNormalTex = null;
+        protected MaterialProperty detailNormalScale = null;
+        protected MaterialProperty detailNormalUvMap = null;
 
         // Vertex Offset
-        private MaterialProperty vertexOffsetEnabled = null;
-        private MaterialProperty vertexOffsetPos = null;
-        private MaterialProperty vertexOffsetRot = null;
-        private MaterialProperty vertexOffsetScale = null;
-        private MaterialProperty vertexOffsetPosWorld = null;
+        protected MaterialProperty vertexOffsetEnabled = null;
+        protected MaterialProperty vertexOffsetPos = null;
+        protected MaterialProperty vertexOffsetRot = null;
+        protected MaterialProperty vertexOffsetScale = null;
+        protected MaterialProperty vertexOffsetPosWorld = null;
 
         // Stencils
-        private MaterialProperty stencilRef = null;
-        private MaterialProperty stencilPassOp = null;
-        private MaterialProperty stencilFailOp = null;
-        private MaterialProperty stencilZFailOp = null;
-        private MaterialProperty stencilCompareFunction = null;
+        protected MaterialProperty stencilRef = null;
+        protected MaterialProperty stencilPassOp = null;
+        protected MaterialProperty stencilFailOp = null;
+        protected MaterialProperty stencilZFailOp = null;
+        protected MaterialProperty stencilCompareFunction = null;
 
         // ZTest
-        private MaterialProperty zTest = null;
+        protected MaterialProperty zTest = null;
+
+        // Hue Shift
+        protected MaterialProperty hueShiftEnabled = null;
+        protected MaterialProperty hueShiftAmount = null;
+        protected MaterialProperty hueShiftMaskTex = null;
+        protected MaterialProperty hueShiftAmountOverTime = null;
 
         // Internal properties
-        private MaterialProperty srcBlend = null;
-        private MaterialProperty dstBlend = null;
-        private MaterialProperty outlineStencilWriteAction;
+        protected MaterialProperty srcBlend = null;
+        protected MaterialProperty dstBlend = null;
+        protected MaterialProperty outlineStencilWriteAction;
 
         // Keeps track of which sections are opened and closed.
         private bool mainExpanded = true;
@@ -135,9 +134,12 @@ namespace Rokk.DummyToon.Editor
         private bool metallicExpanded = false;
         private bool matcapExpanded = false;
         private bool rimlightExpanded = false;
-        private bool eyeTrackingExpanded = false;
         private bool vertexOffsetExpanded = false;
+        private bool hueShiftExpanded = false;
         private bool miscExpanded = false;
+#if SHADEROPTIMIZER_INSTALLED
+        private bool shaderOptimizerExpanded = false;
+#endif
 
         private bool emissionTintHelpExpanded = false;
         private bool rampTintHelpExpanded = false;
@@ -148,13 +150,48 @@ namespace Rokk.DummyToon.Editor
         private bool matCapOriginHelpExpanded = false;
         private bool vertexOffsetHelpExpanded = false;
 
-        private bool eyeTrackingTextureHelpExpanded = false;
-        private bool eyeTrackingRotationCorrectionHelpExpanded = false;
-
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             base.OnGUI(materialEditor, properties);
 
+            // Show a disclaimer if the material is locked
+            if(IsMaterialLocked())
+            {
+                EditorGUILayout.HelpBox("Material is locked, property changes might not go through. Unlock the material under \"Shader Optimizer\" to edit it.", MessageType.Info);
+            }
+
+            // Draw the main shader property groups
+            DrawShaderProperties();
+
+            // Always draw the misc and shader optimizer sections last
+            DrawMisc();
+
+#if SHADEROPTIMIZER_INSTALLED
+            if (CanMaterialBeLocked())
+            {
+                DrawShaderOptimizer();
+            }
+#endif
+
+            Divider();
+
+            DrawVersion();
+
+            // Setup shader keywords
+            SetupKeywords();
+
+            if (HasOutlines())
+            {
+                SetupOutlineStencilValues();
+            }
+        }
+
+        /// <summary>
+        /// Draw the main shader property groups. Can be overridden to add new sections more easily.
+        /// If overridden, the base implementation should be called first.
+        /// </summary>
+        protected virtual void DrawShaderProperties()
+        {
             DrawMain();
             if (HasOutlines())
             {
@@ -165,24 +202,12 @@ namespace Rokk.DummyToon.Editor
             DrawMatcap();
             DrawRimlight();
 
-            if (HasEyeTracking())
-            {
-                DrawEyeTracking();
-            }
-
             if (HasVertexOffset())
             {
                 DrawVertexOffset();
             }
 
-            DrawMisc();
-
-            SetupKeywords();
-
-            if (HasOutlines())
-            {
-                SetupOutlineStencilValues();
-            }
+            DrawHueShift();
         }
 
         // Called when user switches to this shader
@@ -511,29 +536,6 @@ namespace Rokk.DummyToon.Editor
             EditorGUI.EndDisabledGroup();
         }
 
-        private void DrawEyeTracking()
-        {
-            eyeTrackingExpanded = Section("Eye Tracking", eyeTrackingExpanded);
-            if (!eyeTrackingExpanded)
-            {
-                return;
-            }
-
-            editor.ShaderProperty(targetEye, new GUIContent("Target Eye", "In VR, this defines which eye the current eye should be looking at, allowing for more natural eye contact. No effect in non-VR."));
-
-            editor.RangeProperty(maxLookRange, "Maximum Look Range");
-
-            editor.FloatProperty(maxLookDistance, "Maximum Look Distance");
-
-            TexturePropertyWithHelp(new GUIContent("Eye Tracking Pattern Texture"), eyeTrackPatternTexture, ref eyeTrackingTextureHelpExpanded, "The eye tracking pattern texture should be a horizontal black and white gradient texture. It scrolls from left to right over time. When the current pixel is black, the eyes will look straight ahead. When the current pixel is white, the eyes will look straight towards the camera. In-between values are possible.");
-
-            editor.RangeProperty(eyeTrackSpeed, "Pattern Scroll Speed");
-
-            editor.RangeProperty(eyeTrackBlur, "Pattern Blur");
-
-            ShaderPropertyWithHelp(eyeTrackBlenderCorrection, new GUIContent("Blender rotation correction"), ref eyeTrackingRotationCorrectionHelpExpanded, "Blender FBX exports may be rotated 90 degrees on the X axis depending on export settings. Tick/untick this box if you experience this happening to your mesh.");
-        }
-
         private void DrawVertexOffset()
         {
             vertexOffsetExpanded = Section("Vertex Offset", vertexOffsetExpanded);
@@ -555,6 +557,25 @@ namespace Rokk.DummyToon.Editor
             editor.VectorProperty(vertexOffsetRot, "Rotation");
             editor.VectorProperty(vertexOffsetScale, "Scale");
             editor.VectorProperty(vertexOffsetPosWorld, "World Position Offset");
+
+            EditorGUI.EndDisabledGroup();
+        }
+
+        private void DrawHueShift()
+        {
+            hueShiftExpanded = Section("Hue Shift", hueShiftExpanded);
+            if (!hueShiftExpanded)
+            {
+                return;
+            }
+
+            editor.ShaderProperty(hueShiftEnabled, new GUIContent("Enable Hue Shift", "Enables hue shift, which shifts the color of affected areas."));
+
+            EditorGUI.BeginDisabledGroup(hueShiftEnabled.floatValue == 0);
+
+            editor.RangeProperty(hueShiftAmount, "Hue Shift Amount");
+            editor.TexturePropertySingleLine(new GUIContent("Hue Shift Mask", "Defines a mask texture for the hue shift. White areas are fully hue shifted, black areas are not hue shifted at all."), hueShiftMaskTex);
+            editor.FloatProperty(hueShiftAmountOverTime, "Hue Shift Amount Over Time");
 
             EditorGUI.EndDisabledGroup();
         }
@@ -602,6 +623,51 @@ namespace Rokk.DummyToon.Editor
 
             editor.RenderQueueField();
         }
+
+#if SHADEROPTIMIZER_INSTALLED
+        private void DrawShaderOptimizer()
+        {
+            shaderOptimizerExpanded = Section("Shader Optimizer", shaderOptimizerExpanded);
+            if (!shaderOptimizerExpanded)
+            {
+                return;
+            }
+
+            if (IsMaterialLocked())
+            {
+                if (GUILayout.Button("Unlock"))
+                {
+                    UnlockMaterial();
+                }
+                EditorGUILayout.HelpBox("Material is locked. Hit the \"Unlock\" button to unlock it and allow edits again.", MessageType.Info);
+            }
+            else
+            {
+                string propertiesToAnimate = material.GetTag("propertiesToAnimate", false, "");
+
+                if (GUILayout.Button("Lock Material"))
+                {
+                    if (propertiesToAnimate.Trim().Length > 0)
+                    {
+                        LockAllSelectedMaterials(propertiesToAnimate.Trim().Split(';').ToList());
+                    }
+                    else
+                    {
+                        LockAllSelectedMaterials();
+                    }
+                }                
+
+                EditorGUILayout.HelpBox("Locking your material optimizes it, but also prevents properties from being changed or animated afterwards.\r\n\r\nTo make a property editable, type its internal name into the text field below. Multiple semicolon-separated (;) values are possible.", MessageType.Info);
+                EditorGUILayout.LabelField(new GUIContent("Animatable properties"), EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                propertiesToAnimate = EditorGUILayout.TextField(propertiesToAnimate);
+                if(EditorGUI.EndChangeCheck())
+                {
+                    material.SetOverrideTag("propertiesToAnimate", propertiesToAnimate);
+                }
+            }
+        }
+#endif
 
         protected override void FindProperties(MaterialProperty[] props)
         {
@@ -706,21 +772,18 @@ namespace Rokk.DummyToon.Editor
             // ZTest
             zTest = FindProperty("_ZTest", false);
 
-            //Eye tracking stuff
-            targetEye = FindProperty("_TargetEye", false);
-            maxLookRange = FindProperty("_MaxLookRange", false);
-            maxLookDistance = FindProperty("_MaxLookDistance", false);
-            eyeTrackPatternTexture = FindProperty("_EyeTrackingPatternTex", false);
-            eyeTrackSpeed = FindProperty("_EyeTrackingScrollSpeed", false);
-            eyeTrackBlur = FindProperty("_EyeTrackingBlur", false);
-            eyeTrackBlenderCorrection = FindProperty("_EyeTrackingRotationCorrection", false);
-
             // Vertex offset
             vertexOffsetEnabled = FindProperty("_VertexOffsetEnabled");
             vertexOffsetPos = FindProperty("_VertexOffsetPos");
             vertexOffsetRot = FindProperty("_VertexOffsetRot");
             vertexOffsetScale = FindProperty("_VertexOffsetScale");
             vertexOffsetPosWorld = FindProperty("_VertexOffsetPosWorld");
+
+            // Hue shift
+            hueShiftEnabled = FindProperty("_HueShiftEnabled");
+            hueShiftAmount = FindProperty("_HueShiftAmount");
+            hueShiftMaskTex = FindProperty("_HueShiftMask");
+            hueShiftAmountOverTime = FindProperty("_HueShiftAmountOverTime");
 
             // Internal properties
             renderMode = FindProperty("_Mode");
@@ -745,159 +808,178 @@ namespace Rokk.DummyToon.Editor
             return zTest != null;
         }
 
-        private bool HasEyeTracking()
-        {
-            return targetEye != null;
-        }
-
         private bool HasVertexOffset()
         {
             return vertexOffsetPos != null;
         }
 
-        private void SetupKeywords()
+        protected virtual void SetupKeywords()
         {
-            // Delete all keywords first
-            material.shaderKeywords = new string[] { };
+            foreach (var mat in this.materials)
+            {
+                // Delete all keywords first
+                mat.shaderKeywords = new string[] { };
 
-            // Transparency keyword
-            if (renderMode.floatValue == 2)
-            {
-                material.EnableKeyword("_ALPHABLEND_ON");
-            }
-
-            // Add normal map keyword if used.
-            if (material.GetTexture("_BumpMap"))
-            {
-                material.EnableKeyword("_NORMALMAP");
-            }
-
-            // Add cutout keyword if used
-            if (cutoutEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_ALPHATEST_ON");
-            }
-
-            // Add ramp tinting keyword
-            if (rampTintingEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_COLORCOLOR_ON");
-            }
-
-            // Add ramp masking keyword
-            if (rampMaskingEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_COLORADDSUBDIFF_ON");
-            }
-
-            // Ramp anti-aliasing keyword
-            if (rampAntiAliasingEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_COLOROVERLAY_ON");
-            }
-
-            // Override world light dir keyword
-            if (overrideWorldLightDirection.floatValue == 1)
-            {
-                material.EnableKeyword("_FADING_ON");
-            }
-
-            // Additive Ramping keyword
-            if (additiveRampMode.floatValue == 1)
-            {
-                material.EnableKeyword("_TERRAIN_NORMAL_MAP");
-            }
-            else if (additiveRampMode.floatValue == 2)
-            {
-                material.EnableKeyword("_MAPPING_6_FRAMES_LAYOUT");
-            }
-
-            // Add Metallic or Specular keyword if used.
-            if (metallicMode.floatValue == 1)
-            {
-                material.EnableKeyword("_METALLICGLOSSMAP");
-            }
-            else if (metallicMode.floatValue == 2)
-            {
-                material.EnableKeyword("_SPECGLOSSMAP");
-            }
-
-            // Emission keyword
-            // Emission is automatically enabled when the emission tint is set to anything other than black. Alpha is ignored for the comparison.
-            Color emissionCol = emissionColor.colorValue;
-            if (new Color(emissionCol.r, emissionCol.g, emissionCol.b, 1) != Color.black)
-            {
-                material.EnableKeyword("_EMISSION");
-            }
-
-            // Matcap keyword
-            if (matCapMode.floatValue != 0)
-            {
-                material.EnableKeyword("_SUNDISK_NONE");
-            }
-
-            // Matcap tint texture keyword
-            if (matCapTintTex.textureValue != null && matCapMode.floatValue != 0)
-            {
-                material.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
-            }
-
-            // Outline alpha width keyword
-            if (HasOutlines() && outlineAlphaWidthEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
-            }
-
-            // Screenspace outline keyword
-            if (HasOutlines() && outlineScreenspaceEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
-            }
-
-            // Rimlight keyword
-            if (rimLightMode.floatValue == 1)
-            {
-                material.EnableKeyword("_SUNDISK_SIMPLE");
-            }
-            else if (rimLightMode.floatValue == 2)
-            {
-                material.EnableKeyword("_SUNDISK_HIGH_QUALITY");
-            }
-
-            // A2C keyword
-            if (alphaToCoverageEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_ALPHAMODULATE_ON");
-            }
-
-            // Detail normals keywords
-            if (detailNormalTex.textureValue != null)
-            {
-                if (detailNormalUvMap.floatValue == 0)
+                // Don't add keywords on locked in shaders
+                if (IsMaterialLocked(mat))
                 {
-                    material.EnableKeyword("_DETAIL_MULX2");
+                    continue;
                 }
-                else
-                {
-                    material.EnableKeyword("_REQUIRE_UV2");
-                }
-            }
 
-            // Vertex offset
-            if(vertexOffsetEnabled.floatValue == 1)
-            {
-                material.EnableKeyword("_PARALLAXMAP");
+                // Transparency keyword
+                if (mat.GetFloat("_Mode") == 2)
+                {
+                    mat.EnableKeyword("_ALPHABLEND_ON");
+                }
+
+                // Add normal map keyword if used.
+                if (mat.GetTexture("_BumpMap") != null)
+                {
+                    mat.EnableKeyword("_NORMALMAP");
+                }
+
+                // Add cutout keyword if used
+                if (mat.GetFloat("_CutoutEnabled") == 1)
+                {
+                    mat.EnableKeyword("_ALPHATEST_ON");
+                }
+
+                // Add ramp tinting keyword
+                if (mat.GetFloat("_RampTinting") == 1)
+                {
+                    mat.EnableKeyword("_COLORCOLOR_ON");
+                }
+
+                // Add ramp masking keyword
+                if (mat.GetFloat("_RampMaskEnabled") == 1)
+                {
+                    mat.EnableKeyword("_COLORADDSUBDIFF_ON");
+                }
+
+                // Ramp anti-aliasing keyword
+                if (mat.GetFloat("_RampAntiAliasingEnabled") == 1)
+                {
+                    mat.EnableKeyword("_COLOROVERLAY_ON");
+                }
+
+                // Override world light dir keyword
+                if (mat.GetFloat("_OverrideWorldLightDir") == 1)
+                {
+                    mat.EnableKeyword("_FADING_ON");
+                }
+
+                // Additive Ramping keyword
+                if (mat.GetFloat("_AdditiveRampMode") == 1)
+                {
+                    mat.EnableKeyword("_TERRAIN_NORMAL_MAP");
+                }
+                if (mat.GetFloat("_AdditiveRampMode") == 2)
+                {
+                    mat.EnableKeyword("_MAPPING_6_FRAMES_LAYOUT");
+                }
+
+                // Add Metallic or Specular keyword if used.
+                if (mat.GetFloat("_MetallicMode") == 1)
+                {
+                    mat.EnableKeyword("_METALLICGLOSSMAP");
+                }
+                if (mat.GetFloat("_MetallicMode") == 2)
+                {
+                    mat.EnableKeyword("_SPECGLOSSMAP");
+                }
+
+                // Emission keyword
+                // Emission is automatically enabled when the emission tint is set to anything other than black. Alpha is ignored for the comparison.
+                Color emissionCol = mat.GetColor("_EmissionColor");
+                if (new Color(emissionCol.r, emissionCol.g, emissionCol.b, 1) != Color.black)
+                {
+                    mat.EnableKeyword("_EMISSION");
+                }
+
+                // Matcap keyword
+                if (mat.GetFloat("_MatCapMode") != 0)
+                {
+                    mat.EnableKeyword("_SUNDISK_NONE");
+                }
+
+                // Matcap tint texture keyword
+                if (matCapTintTex.textureValue != null && mat.GetFloat("_MatCapMode") != 0)
+                {
+                    mat.EnableKeyword("_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+                }
+
+                // Outline alpha width keyword
+                if (HasOutlines() && mat.GetFloat("_OutlineAlphaWidthEnabled") == 1)
+                {
+                    mat.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
+                }
+
+                // Screenspace outline keyword
+                if (HasOutlines() && mat.GetFloat("_ScreenSpaceOutline") == 1)
+                {
+                    mat.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                }
+
+                // Rimlight keyword
+                if (mat.GetFloat("_RimLightMode") == 1)
+                {
+                    mat.EnableKeyword("_SUNDISK_SIMPLE");
+                }
+                else if (mat.GetFloat("_RimLightMode") == 2)
+                {
+                    mat.EnableKeyword("_SUNDISK_HIGH_QUALITY");
+                }
+
+                // A2C keyword
+                if (mat.GetFloat("_AlphaToCoverage") == 1)
+                {
+                    mat.EnableKeyword("_ALPHAMODULATE_ON");
+                }
+
+                // Detail normals keywords
+                if (mat.GetTexture("_DetailNormalMap") != null)
+                {
+                    if (mat.GetFloat("_UVSec") == 0)
+                    {
+                        mat.EnableKeyword("_DETAIL_MULX2");
+                    }
+                    else
+                    {
+                        mat.EnableKeyword("_REQUIRE_UV2");
+                    }
+                }
+
+                // Vertex offset
+                if (mat.GetFloat("_VertexOffsetEnabled") == 1)
+                {
+                    mat.EnableKeyword("_PARALLAXMAP");
+                }
+
+                // Hue shift
+                if (mat.GetFloat("_HueShiftEnabled") == 1)
+                {
+                    mat.EnableKeyword("EFFECT_HUE_VARIATION");
+                }
             }
         }
 
-        // Set up material blend modes and blending/alphatest keywords, render queues and override tags
-        // By default, the current material is used.
-        // A material can be manually specified in case this shader is newly assigned to the material, because the properties don't exist yet.
+        /// <summary>
+        /// Sets up material blend modes and blending/alphatest keywords, render queues and override tags.
+        /// By default, the currently selected materials are used.
+        /// This overload is preferred, but cannot be used with AssignNewShaderToMaterial().
+        /// </summary>
         private void SetupBlendModes()
         {
-            this.SetupBlendModes(this.material);
+            foreach (var mat in this.materials)
+            {
+                SetupBlendModes(mat);
+            }
         }
 
+        /// <summary>
+        /// Sets up material blend modes and blending/alphatest keywords, render queues and override tags.
+        /// </summary>
+        /// <param name="material">The material to set up.</param>
         private void SetupBlendModes(Material material)
         {
             // Check if the render type is transparent or not
@@ -960,7 +1042,7 @@ namespace Rokk.DummyToon.Editor
             // Display warning if ramp anti-aliasing is enabled but the toon ramp filter mode is Point.
             if (rampAntiAliasingEnabled.floatValue == 1 && TextureIsPointFiltered(rampProperty))
             {
-                EditorGUILayout.HelpBox("Ramp anti-aliasing is enabled, but the filtering mode of this ramp texture is set to Point.", MessageType.Warning);
+                EditorGUILayout.HelpBox("Ramp anti-aliasing is enabled, but the filtering mode of this ramp texture is set to Point. This feature only works with Bilinear/Trilinear.", MessageType.Warning);
             }
         }
     }

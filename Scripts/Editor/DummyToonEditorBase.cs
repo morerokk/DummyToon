@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,14 +12,41 @@ namespace Rokk.DummyToon.Editor
 
         protected Material material;
 
+        protected Material[] materials;
+
         protected Dictionary<string, MaterialProperty> materialProperties = new Dictionary<string, MaterialProperty>();
+
+        protected MaterialProperty shaderOptimized = null;
+
+        private MaterialProperty[] props;
+
+        private const string AnimatedSuffix = "Animated";
+
+        protected static string CurrentVersion
+        {
+            get
+            {
+                return "1.3.0";
+            }
+        }
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             FindProperties(properties);
             editor = materialEditor;
 
+            // Single material object. If multi-editing, this only refers to the first material. Use with caution.
             material = materialEditor.target as Material;
+
+            // Cast all individual target objects to actual material objects
+            // materialEditor.targets as Material[] does not work
+            materials = new Material[materialEditor.targets.Length];
+            for(int i = 0; i < materialEditor.targets.Length; i++)
+            {
+                materials[i] = materialEditor.targets[i] as Material;
+            }
+
+            props = properties;
         }
 
         /// <summary>
@@ -34,6 +62,8 @@ namespace Rokk.DummyToon.Editor
             {
                 materialProperties[prop.name] = prop;
             }
+
+            shaderOptimized = FindProperty("_ShaderOptimized", false);
         }
 
         /// <summary>
@@ -44,7 +74,8 @@ namespace Rokk.DummyToon.Editor
         /// <returns>The requested MaterialProperty if it exists.</returns>
         protected virtual MaterialProperty FindProperty(string name, bool mandatory)
         {
-            if (materialProperties.TryGetValue(name, out MaterialProperty prop))
+            MaterialProperty prop;
+            if (materialProperties.TryGetValue(name, out prop))
             {
                 return prop;
             }
@@ -285,6 +316,176 @@ namespace Rokk.DummyToon.Editor
             {
                 EditorGUILayout.HelpBox(helpText, MessageType.Info);
             }
+        }
+
+        protected virtual void Divider()
+        {
+            Divider(Color.gray);
+        }
+
+        protected virtual void Divider(Color color)
+        {
+            Divider(color, 2, 10);
+        }
+
+        protected virtual void Divider(Color color, int thickness, int padding)
+        {
+            Rect r = EditorGUILayout.GetControlRect(GUILayout.Height(padding + thickness));
+            r.height = thickness;
+            r.y += padding / 2;
+            r.x -= 2;
+            r.width += 6;
+            EditorGUI.DrawRect(r, color);
+        }
+
+
+        /// <summary>
+        /// Get a list of all currently selected materials.
+        /// </summary>
+        /// <returns>A list of selected materials</returns>
+        protected List<Material> GetAllSelectedMaterials()
+        {
+            return materials.ToList();
+        }
+
+        protected virtual bool IsMaterialLocked()
+        {
+#if SHADEROPTIMIZER_INSTALLED
+            return shaderOptimized != null && shaderOptimized.floatValue == 1;
+#else
+            return false;
+#endif
+        }
+
+        protected virtual bool IsMaterialLocked(Material material)
+        {
+#if SHADEROPTIMIZER_INSTALLED
+            return material.GetInt("_ShaderOptimized") == 1;
+#else
+            return false;
+#endif
+        }
+
+        protected virtual bool CanMaterialBeLocked()
+        {
+#if SHADEROPTIMIZER_INSTALLED
+            return shaderOptimized != null;
+#else
+            return false;
+#endif
+        }
+
+#if SHADEROPTIMIZER_INSTALLED
+        private static MaterialProperty GetFakeAnimatedProperty(string propName)
+        {
+            // Horrible reflection hack, currently the only way to instantiate a new MaterialProperty and set its name, which is what the optimizer checks for.
+            var materialProperty = new MaterialProperty();
+            var nameField = materialProperty.GetType().GetField("m_Name", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            nameField.SetValue(materialProperty, propName + AnimatedSuffix);
+            var typeField = materialProperty.GetType().GetField("m_Type", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            typeField.SetValue(materialProperty, MaterialProperty.PropType.Float);
+            var valueField = materialProperty.GetType().GetField("m_Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            valueField.SetValue(materialProperty, 1.0f);
+
+            return materialProperty;
+        }
+
+        /// <summary>
+        /// Locks the material, optimizing it.
+        /// </summary>
+        protected virtual void LockMaterial()
+        {
+            shaderOptimized.floatValue = 1;
+            Kaj.ShaderOptimizer.Lock(material, materialProperties.Values.ToArray());
+        }
+
+        /// <summary>
+        /// Locks the material, optimizing it.
+        /// </summary>
+        /// <param name="animatedProperties">A list of property names to keep and not optimize away.</param>
+        protected virtual void LockMaterial(List<string> animatedProperties)
+        {
+            var matProps = materialProperties.Values.ToList();
+            foreach (string prop in animatedProperties)
+            {
+                var materialProperty = GetFakeAnimatedProperty(prop);
+                matProps.Add(materialProperty);
+            }
+
+            shaderOptimized.floatValue = 1;
+            Kaj.ShaderOptimizer.Lock(material, matProps.ToArray());
+        }
+
+        /// <summary>
+        /// Locks all currently selected materials.
+        /// </summary>
+        protected virtual void LockAllSelectedMaterials()
+        {
+            foreach(Material mat in this.materials)
+            {
+                if(!mat.HasProperty("_ShaderOptimized"))
+                {
+                    continue;
+                }
+
+                mat.SetFloat("_ShaderOptimized", 1);
+                Kaj.ShaderOptimizer.Lock(mat, materialProperties.Values.ToArray());
+            }
+        }
+
+        /// <summary>
+        /// Locks all currently selected materials.
+        /// </summary>
+        /// <param name="animatedProperties">A list of property names to keep and not optimize away.</param>
+        protected virtual void LockAllSelectedMaterials(List<string> animatedProperties)
+        {
+            var matProps = materialProperties.Values.ToList();
+            foreach (string prop in animatedProperties)
+            {
+                var materialProperty = GetFakeAnimatedProperty(prop);
+                matProps.Add(materialProperty);
+            }
+
+            foreach (Material mat in this.materials)
+            {
+                if (!mat.HasProperty("_ShaderOptimized"))
+                {
+                    continue;
+                }
+
+                mat.SetFloat("_ShaderOptimized", 1);
+                Kaj.ShaderOptimizer.Lock(mat, matProps.ToArray());
+            }
+        }
+
+        /// <summary>
+        /// Unlocks the material and sets the shader back to its original.
+        /// </summary>
+        protected virtual void UnlockMaterial()
+        {
+            shaderOptimized.floatValue = 0;
+            Kaj.ShaderOptimizer.Unlock(material);
+        }
+
+        /// <summary>
+        /// Unlocks all selected materials, setting their shader back to its original.
+        /// </summary>
+        protected virtual void UnlockAllSelectedMaterials()
+        {
+            foreach (Material mat in this.materials)
+            {
+                if (!mat.HasProperty("_ShaderOptimized"))
+                {
+                    continue;
+                }
+                mat.SetFloat("_ShaderOptimized", 0);
+                Kaj.ShaderOptimizer.Unlock(mat);
+            }
+        }
+#endif
+        protected void DrawVersion()
+        {
+            EditorGUILayout.LabelField("Dummy Toon Shader v" + CurrentVersion, EditorStyles.boldLabel);
         }
     }
 }

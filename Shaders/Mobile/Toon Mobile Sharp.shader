@@ -6,6 +6,7 @@
         _Color ("Color", Color) = (1,1,1,1)
         [Toggle(_GUESSLIGHTDIR_ON)] _GuessLightDir ("Guess Light Dir", Float) = 1.0
         [Toggle(_VERTEXCOLOR_ON)] _UseVertexColor ("Use Vertex Colors", Float) = 0.0
+        [ShaderOptimizerLockButton] _ShaderOptimized("Shader Optimized", Int) = 0
     }
     SubShader
     {

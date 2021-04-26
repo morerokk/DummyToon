@@ -17,3 +17,6 @@ https://github.com/Xiexe/Xiexes-Unity-Shaders
 
 - Jasper Flick (Catlike Coding) for creating excellent tutorials on writing your own shaders, and making this shader possible
 https://catlikecoding.com/unity/tutorials/rendering/
+
+- Kaj for creating an amazing shader optimizer, you should definitely install it and give it a try!
+https://github.com/DarthShader/Kaj-Unity-Shaders

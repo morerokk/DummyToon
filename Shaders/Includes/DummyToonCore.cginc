@@ -151,8 +151,11 @@ struct v2f
     float3 tangentDir : TEXCOORD2;
     float3 bitangentDir : TEXCOORD3;
     float4 worldPos : TEXCOORD4;
-    float4 objWorldPos : TEXCOORD5;
-    SHADOW_COORDS(6)
+    SHADOW_COORDS(5)
+    UNITY_FOG_COORDS(6)
+    #ifndef LIMITED_INTERPOLATORS
+        float4 objWorldPos : TEXCOORD7;
+    #endif
 };
 
 #include "DummyToonLighting.cginc"
@@ -172,6 +175,10 @@ struct v2f
 
 #if defined(_PARALLAXMAP)
     #include "DummyToonVertexOffset.cginc"
+#endif
+
+#if defined(EFFECT_HUE_VARIATION)
+    #include "DummyToonHueShift.cginc"
 #endif
 
 float3 NormalDirection(v2f i)
@@ -241,8 +248,13 @@ float3 NormalDirection(v2f i)
         o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
         o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
         o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-        o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
+        #ifndef LIMITED_INTERPOLATORS
+            o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
+        #endif
+        
         TRANSFER_SHADOW(o);
+
+        UNITY_TRANSFER_FOG(o, o.pos);
         
         return o;
     }
@@ -275,6 +287,11 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
     #if defined(_ALPHATEST_ON)
         clip(mainTex.a - _Cutoff);
     #endif
+    
+    // Hue shift
+    #if defined(EFFECT_HUE_VARIATION)
+        ApplyHueShift(i.uv.xy, mainTex.rgb);
+    #endif
 
     // Get all vars related to toon ramping
     float IntensityVar;
@@ -305,15 +322,20 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
         // Matcap origin
         // If 0, viewdir to surface is used
         // If 1, viewdir to object center is used
-        float3 matcapViewDir;
-        if (_MatCapOrigin == 1)
-        {
-            matcapViewDir = normalize(_WorldSpaceCameraPos.xyz - i.objWorldPos.xyz);
-        }
-        else
-        {
-            matcapViewDir = viewDir;
-        }
+        // NOTE: if interpolators are limited (shader model 2.0), objWorldPos is not available, so the surface viewdir is used.
+        #ifdef LIMITED_INTERPOLATORS
+            float3 matcapViewDir = viewDir;
+        #else
+            float3 matcapViewDir;
+            if (_MatCapOrigin == 1)
+            {
+                matcapViewDir = normalize(_WorldSpaceCameraPos.xyz - i.objWorldPos.xyz);
+            }
+            else
+            {
+                matcapViewDir = viewDir;
+            }
+        #endif
         Matcap(matcapViewDir, normalDir, i.uv.xy, albedo);
     #endif
     
@@ -389,6 +411,10 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
     #else
         float finalAlpha = 1;
     #endif
+    
+    float4 finalOutput = float4(finalColor, finalAlpha);
 
-    return float4(finalColor, finalAlpha);
+    UNITY_APPLY_FOG(i.fogCoord, finalOutput);
+
+    return finalOutput;
 }

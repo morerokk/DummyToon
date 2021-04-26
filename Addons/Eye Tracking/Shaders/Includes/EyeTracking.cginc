@@ -192,6 +192,7 @@ v2f vertEyeTracking(appdata v)
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
     o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
     TRANSFER_SHADOW(o);
+    UNITY_TRANSFER_FOG(o, o.pos);
     
     return o;
 }

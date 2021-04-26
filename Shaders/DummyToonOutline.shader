@@ -25,8 +25,8 @@
         _ToonContrast ("Toon Contrast", Range(0, 1)) = 0.5
         _ToonRampOffset ("Toon Ramp Offset", Range(-2,2)) = 0
         _StaticToonLight ("Fallback Light Direction", Vector) = (0,1,0,0)
-        _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 0.8
-        _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1.3
+        _DirectLightBoost ("Direct Light Boost", Range(0,2)) = 1
+        _IndirectLightBoost ("Indirect Light Boost", Range (0,2)) = 1
         [Toggle(_COLORCOLOR_ON)] _RampTinting ("Ramp Tinting", Float) = 0
         [Toggle(_COLOROVERLAY_ON)] _RampAntiAliasingEnabled ("Ramp Anti-Aliasing", Float) = 0
         [Toggle(_FADING_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
@@ -106,6 +106,15 @@
         _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
         _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
         
+        // Hue Shift
+        [Toggle(EFFECT_HUE_VARIATION)] _HueShiftEnabled ("Enable Hue Shift", Float) = 0
+        _HueShiftAmount ("Hue Shift Amount", Range(0,1)) = 0
+        _HueShiftMask ("Hue Shift Mask", 2D) = "white" {}
+        _HueShiftAmountOverTime ("Hue Shift Amount Over Time", Float) = 0
+        
+        // Kaj shader optimizer
+        [ShaderOptimizerLockButton] _ShaderOptimized ("", Int) = 0
+        
         // Internal blend mode properties
         //[HideInInspector] _Mode ("__mode", Float) = 0.0
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
@@ -141,6 +150,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature _ALPHATEST_ON
@@ -154,6 +164,7 @@
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -193,6 +204,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature _GLOSSYREFLECTIONS_OFF
@@ -209,6 +221,7 @@
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -247,6 +260,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fog
             
             #pragma shader_feature _ALPHATEST_ON
             #pragma shader_feature _ALPHABLEND_ON
@@ -258,6 +272,7 @@
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -325,6 +340,7 @@
             #pragma target 2.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature _ALPHATEST_ON
@@ -336,6 +352,7 @@
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -349,6 +366,7 @@
             
             #define NO_DERIVATIVES
             #define NO_ISFRONTFACE
+            #define LIMITED_INTERPOLATORS
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG
@@ -376,6 +394,7 @@
             #pragma target 2.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature _GLOSSYREFLECTIONS_OFF
@@ -391,6 +410,7 @@
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -403,9 +423,10 @@
             #endif
             
             #define OUTLINE_PASS
-            #define NO_TEXLOD
+            #define NO_TEXLOD // Shader Model 2.0 does not support explicit LOD texture sampling (which also means no texture sampling in the vertex shader)
             #define NO_DERIVATIVES
             #define NO_ISFRONTFACE
+            #define LIMITED_INTERPOLATORS
 
             #include "Includes/DummyToonCore.cginc"
             
@@ -430,6 +451,7 @@
             #pragma target 2.0
 
             #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fog
             
             #pragma shader_feature _ALPHATEST_ON
             #pragma shader_feature _ALPHABLEND_ON
@@ -440,6 +462,7 @@
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -453,6 +476,7 @@
             
             #define NO_DERIVATIVES
             #define NO_ISFRONTFACE
+            #define LIMITED_INTERPOLATORS
 
             #include "Includes/DummyToonCore.cginc"
             ENDCG

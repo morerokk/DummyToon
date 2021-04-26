@@ -1,4 +1,4 @@
-﻿Shader "Dummy Toon/Advanced/Toon Eye Tracking"
+﻿Shader "Dummy Toon/Addons/Toon (Eye Tracking)"
 {
     Properties
     {
@@ -95,6 +95,15 @@
         _VertexOffsetRot ("Rotation", Vector) = (0,0,0,0)
         _VertexOffsetScale ("Scale", Vector) = (1,1,1,0)
         _VertexOffsetPosWorld ("World Position Offset", Vector) = (0,0,0,0)
+        
+        // Hue Shift
+        [Toggle(EFFECT_HUE_VARIATION)] _HueShiftEnabled ("Enable Hue Shift", Float) = 0
+        _HueShiftAmount ("Hue Shift Amount", Range(0,1)) = 0
+        _HueShiftMask ("Hue Shift Mask", 2D) = "white" {}
+        _HueShiftAmountOverTime ("Hue Shift Amount Over Time", Float) = 0
+        
+        // Kaj shader optimizer
+        [ShaderOptimizerLockButton] _ShaderOptimized ("Shader Optimized", Int) = 0
 
         // Stencils
         [IntRange] _StencilRef ("Stencil Value", Range(0, 255)) = 0
@@ -129,6 +138,14 @@
             Name "FORWARD"
             Tags { "LightMode"="ForwardBase" }
             
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
+            
             Cull [_Cull]
             ZWrite [_ZWrite]
             ZTest [_ZTest]
@@ -143,6 +160,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdbase_fullshadows
+            #pragma multi_compile_fog
             #pragma multi_compile _ VERTEXLIGHT_ON
             
             #pragma shader_feature _ALPHATEST_ON
@@ -155,6 +173,7 @@
             #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -166,9 +185,9 @@
                 #define UNITY_PASS_FORWARDBASE
             #endif
 
-            #include "../Includes/DummyToonCore.cginc"
+            #include "../../../Shaders/Includes/DummyToonCore.cginc"
             
-            #include "EyeTracking.cginc"
+            #include "Includes/EyeTracking.cginc"
             ENDCG
         }
         
@@ -176,6 +195,14 @@
         {
             Name "FORWARD_DELTA"
             Tags { "LightMode"="ForwardAdd" }
+            
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Blend [_SrcBlend] One
             ZWrite Off
@@ -192,6 +219,7 @@
             #pragma target 5.0
 
             #pragma multi_compile_fwdadd_fullshadows
+            #pragma multi_compile_fog
             
             #pragma shader_feature _ALPHATEST_ON
             #pragma shader_feature _ALPHABLEND_ON
@@ -202,6 +230,7 @@
             #pragma shader_feature _COLOROVERLAY_ON
             #pragma shader_feature _FADING_ON
             #pragma shader_feature _PARALLAXMAP
+            #pragma shader_feature EFFECT_HUE_VARIATION
 
             #pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
             #pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -213,9 +242,9 @@
                 #define UNITY_PASS_FORWARDADD
             #endif          
 
-            #include "../Includes/DummyToonCore.cginc"
+            #include "../../../Shaders/Includes/DummyToonCore.cginc"
             
-            #include "EyeTracking.cginc"
+            #include "Includes/EyeTracking.cginc"
             ENDCG
         }
         Pass {
@@ -224,6 +253,14 @@
                 "LightMode"="ShadowCaster"
             }
             Offset 1, 1
+            
+            Stencil {
+                Ref [_StencilRef]
+                Comp [_StencilCompareFunction]
+                Pass [_StencilPassOp]
+                Fail [_StencilFailOp]
+                ZFail [_StencilZFailOp]
+            }
             
             Cull [_Cull]
             
@@ -240,11 +277,11 @@
 
             #define EYE_TRACKING
             
-            #include "../Includes/DummyToonShadowcaster.cginc"
+            #include "../../../Shaders/Includes/DummyToonShadowcaster.cginc"
 
-            #include "EyeTrackingShadow.cginc"
+            #include "Includes/EyeTrackingShadow.cginc"
             ENDCG
         }
     }
-    CustomEditor "Rokk.DummyToon.Editor.DummyToonEditorGUI"
+    CustomEditor "Rokk.DummyToon.Editor.DummyToonEyeTrackingEditorGUI"
 }
