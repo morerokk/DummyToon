@@ -51,7 +51,7 @@
 		[HDR] _SpecColor("Specular Color", Color) = (1,1,1,1)
 
 		// New specular
-		[Toggle(_SPECULAR_ON)] _SpecularEnabled ("Specular Enabled", Float) = 0
+		[Toggle(ETC1_EXTERNAL_ALPHA)] _SpecularEnabled ("Specular Enabled", Float) = 0
 		[Enum(Blinn,0,Blinn Phong,1)] _SpecularMode ("Specular Mode", Float) = 0
 		[NoScaleOffset] _SpecMap ("_Specular Map", 2D) = "white" {}
 		[HDR] _SpecularColor ("Specular Color", Color) = (1,1,1,1)
@@ -185,8 +185,8 @@
 			#pragma shader_feature _FADING_ON
 			#pragma shader_feature _PARALLAXMAP
 			#pragma shader_feature EFFECT_HUE_VARIATION
-			#pragma shader_feature _SPECULAR_ON
-			#pragma shader_feature _OCCLUSION_ON
+			#pragma shader_feature ETC1_EXTERNAL_ALPHA
+			#pragma shader_feature EFFECT_BUMP
 
 			#pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
 			#pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -244,7 +244,7 @@
 			#pragma shader_feature _FADING_ON
 			#pragma shader_feature _PARALLAXMAP
 			#pragma shader_feature EFFECT_HUE_VARIATION
-			#pragma shader_feature _SPECULAR_ON
+			#pragma shader_feature ETC1_EXTERNAL_ALPHA
 
 			#pragma shader_feature _ _DETAIL_MULX2 _REQUIRE_UV2
 			#pragma shader_feature _ _METALLICGLOSSMAP _SPECGLOSSMAP

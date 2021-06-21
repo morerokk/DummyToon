@@ -18,7 +18,7 @@ float3 IndirectToonLighting(float3 albedo, float3 normalDir, float3 worldPos, fl
 		// Vertex lights must not be affected, as they are direct light sources.
 		// This creates a discontinuity when 4 or more vertex lights are present, since vertex lights may get rolled into SH.
 		// This is a contradiction that cannot be resolved without having vertex lights ignore AO, which is not desirable.
-		#if defined(_OCCLUSION_ON)
+		#if defined(EFFECT_BUMP)
 			lighting *= 1 - occlusionStrength;
 		#endif
 		

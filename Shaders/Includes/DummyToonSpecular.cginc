@@ -49,7 +49,7 @@ void Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 no
 
 	// This, again, does not make much sense for normal lights.
 	// However, specular highlights are also applied for the fake base ambient light, which should be negated by AO.
-	#if defined(_OCCLUSION_ON)
+	#if defined(EFFECT_BUMP)
 		specularCol *= 1 - occlusionStrength;
 	#endif
 

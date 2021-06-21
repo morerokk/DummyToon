@@ -968,7 +968,7 @@ namespace Rokk.DummyToon.Editor
                 // Specular highlights keyword
                 if(mat.GetFloat("_SpecularEnabled") == 1)
                 {
-                    mat.EnableKeyword("_SPECULAR_ON");
+                    mat.EnableKeyword("ETC1_EXTERNAL_ALPHA");
                 }
 
                 // Emission keyword
@@ -1047,7 +1047,7 @@ namespace Rokk.DummyToon.Editor
                 // AO
                 if(mat.GetTexture("_OcclusionMap") != null)
                 {
-                    mat.EnableKeyword("_OCCLUSION_ON");
+                    mat.EnableKeyword("EFFECT_BUMP");
                 }
             }
         }

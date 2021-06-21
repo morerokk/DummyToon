@@ -125,7 +125,7 @@ float _Glossiness;
 	float3 _VertexOffsetPosWorld;
 #endif
 
-#if defined(_OCCLUSION_ON)
+#if defined(EFFECT_BUMP)
 	sampler2D _OcclusionMap;
 	float _OcclusionStrength;
 #endif
@@ -170,7 +170,7 @@ struct v2f
 	#include "DummyToonMetallicSpecular.cginc"
 #endif
 
-#if defined(_SPECULAR_ON)
+#if defined(ETC1_EXTERNAL_ALPHA)
 	#include "DummyToonSpecular.cginc"
 #endif
 
@@ -356,7 +356,7 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 	// Lighting
 
 	// If enabled, sample AO map in ForwardBase to handle AO
-	#if defined(UNITY_PASS_FORWARDBASE) && defined(_OCCLUSION_ON)
+	#if defined(UNITY_PASS_FORWARDBASE) && defined(EFFECT_BUMP)
 		float4 occlusionTex = tex2D(_OcclusionMap, i.uv.xy);
 		float occlusionStrength = (1 - occlusionTex.r) * _OcclusionStrength;
 	#else
@@ -387,13 +387,13 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 		#endif
 
 		// Since this is actually a "fake" environmental light, dim it based on the AO strength.
-		#if defined(_OCCLUSION_ON)
+		#if defined(EFFECT_BUMP)
 			finalColor += ToonLightingBase(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost * (1 - occlusionStrength);
 		#else
 			finalColor += ToonLightingBase(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
 		#endif
 		// Apply specular highlights for the base light
-		#if defined(_SPECULAR_ON)
+		#if defined(ETC1_EXTERNAL_ALPHA)
 			Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, occlusionStrength, finalColor);
 		#endif
 	#endif
@@ -409,13 +409,13 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 		{
 			finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
 			// Apply specular highlights again for the realtime light
-			#if defined(_SPECULAR_ON)
+			#if defined(ETC1_EXTERNAL_ALPHA)
 				Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0, finalColor);
 			#endif
 		}
 	#else
 		finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
-		#if defined(_SPECULAR_ON)
+		#if defined(ETC1_EXTERNAL_ALPHA)
 			Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0, finalColor);
 		#endif
 	#endif
