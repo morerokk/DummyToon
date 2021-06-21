@@ -26,13 +26,12 @@ namespace Rokk.DummyToon.Editor
         {
             get
             {
-                return "1.3.0";
+                return "1.4.0";
             }
         }
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            FindProperties(properties);
             editor = materialEditor;
 
             // Single material object. If multi-editing, this only refers to the first material. Use with caution.
@@ -41,9 +40,37 @@ namespace Rokk.DummyToon.Editor
             // Cast all individual target objects to actual material objects
             // materialEditor.targets as Material[] does not work
             materials = new Material[materialEditor.targets.Length];
-            for(int i = 0; i < materialEditor.targets.Length; i++)
+            for (int i = 0; i < materialEditor.targets.Length; i++)
             {
                 materials[i] = materialEditor.targets[i] as Material;
+            }
+
+            try
+            {
+                FindProperties(properties);
+            }
+            catch(KeyNotFoundException e)
+            {
+                // This should never happen, but if it does, handle it a little more gracefully.
+#if SHADEROPTIMIZER_INSTALLED
+                // The primary reason this can happen is if you have an optimized shader from an older version.
+                // If so, simply draw an Unlock button.
+                if (material.GetFloat("_ShaderOptimized") == 1)
+                {
+                    EditorGUILayout.HelpBox("This material was optimized with an older version of Dummy Toon. Editing or viewing properties is not available.\n\nPress the \"unlock\" button to view and edit the material again.", MessageType.Warning);
+                    if (GUILayout.Button("Unlock"))
+                    {
+                        UnlockMaterial();
+                    }
+
+                    // Prevent the child class from still attempting to draw the material.
+                    throw;
+                }
+#else
+                // Something else went wrong, probably on our end.
+                EditorGUILayout.HelpBox("An error occurred while trying to read the material shader properties. Check the console for more information.", MessageType.Error);
+                throw;
+#endif
             }
 
             props = properties;
@@ -429,7 +456,8 @@ namespace Rokk.DummyToon.Editor
                 }
 
                 mat.SetFloat("_ShaderOptimized", 1);
-                Kaj.ShaderOptimizer.Lock(mat, materialProperties.Values.ToArray());
+                var matProps = MaterialEditor.GetMaterialProperties(new UnityEngine.Object[] { mat });
+                Kaj.ShaderOptimizer.Lock(mat, matProps);
             }
         }
 
@@ -439,18 +467,18 @@ namespace Rokk.DummyToon.Editor
         /// <param name="animatedProperties">A list of property names to keep and not optimize away.</param>
         protected virtual void LockAllSelectedMaterials(List<string> animatedProperties)
         {
-            var matProps = materialProperties.Values.ToList();
-            foreach (string prop in animatedProperties)
-            {
-                var materialProperty = GetFakeAnimatedProperty(prop);
-                matProps.Add(materialProperty);
-            }
-
             foreach (Material mat in this.materials)
             {
                 if (!mat.HasProperty("_ShaderOptimized"))
                 {
                     continue;
+                }
+
+                var matProps = MaterialEditor.GetMaterialProperties(new UnityEngine.Object[] { mat }).ToList();
+                foreach (string prop in animatedProperties)
+                {
+                    var materialProperty = GetFakeAnimatedProperty(prop);
+                    matProps.Add(materialProperty);
                 }
 
                 mat.SetFloat("_ShaderOptimized", 1);
@@ -463,7 +491,7 @@ namespace Rokk.DummyToon.Editor
         /// </summary>
         protected virtual void UnlockMaterial()
         {
-            shaderOptimized.floatValue = 0;
+            material.SetFloat("_ShaderOptimized", 0);
             Kaj.ShaderOptimizer.Unlock(material);
         }
 

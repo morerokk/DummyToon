@@ -6,17 +6,17 @@
 float _Cutoff;
 
 #if defined(_NORMALMAP)
-    sampler2D _BumpMap;
-    float4 _BumpMap_ST;
-    float _BumpScale;
+	sampler2D _BumpMap;
+	float4 _BumpMap_ST;
+	float _BumpScale;
 #endif
 
 #if defined(_DETAIL_MULX2) || defined(_REQUIRE_UV2)
-    #define DETAILNORMALMAP
+	#define DETAILNORMALMAP
 
-    sampler2D _DetailNormalMap;
-    float4 _DetailNormalMap_ST;
-    float _DetailNormalMapScale;
+	sampler2D _DetailNormalMap;
+	float4 _DetailNormalMap_ST;
+	float _DetailNormalMapScale;
 #endif
 
 sampler2D _Ramp;
@@ -35,94 +35,99 @@ float _IndirectLightDirMergeMin;
 float _IndirectLightDirMergeMax;
 
 #if defined(_COLORADDSUBDIFF_ON)
-    sampler2D _RampMaskTex;
+	sampler2D _RampMaskTex;
 
-    sampler2D _RampR;
-    float4 _RampR_TexelSize;
-    float _ToonContrastR;
-    float _ToonRampOffsetR;
-    float _IntensityR;
-    float _SaturationR;
-    
-    sampler2D _RampG;
-    float4 _RampG_TexelSize;
-    float _ToonContrastG;
-    float _ToonRampOffsetG;
-    float _IntensityG;
-    float _SaturationG;
-    
-    sampler2D _RampB;
-    float4 _RampB_TexelSize;
-    float _ToonContrastB;
-    float _ToonRampOffsetB;
-    float _IntensityB;
-    float _SaturationB;
+	sampler2D _RampR;
+	float4 _RampR_TexelSize;
+	float _ToonContrastR;
+	float _ToonRampOffsetR;
+	float _IntensityR;
+	float _SaturationR;
+	
+	sampler2D _RampG;
+	float4 _RampG_TexelSize;
+	float _ToonContrastG;
+	float _ToonRampOffsetG;
+	float _IntensityG;
+	float _SaturationG;
+	
+	sampler2D _RampB;
+	float4 _RampB_TexelSize;
+	float _ToonContrastB;
+	float _ToonRampOffsetB;
+	float _IntensityB;
+	float _SaturationB;
 #endif
 
 #if defined(_TERRAIN_NORMAL_MAP) || defined(_MAPPING_6_FRAMES_LAYOUT)
-    sampler2D _AdditiveRamp;
-    float4 _AdditiveRamp_TexelSize;
+	sampler2D _AdditiveRamp;
+	float4 _AdditiveRamp_TexelSize;
 #endif
 
 #if defined(_METALLICGLOSSMAP)
-    sampler2D _MetallicGlossMap;
+	sampler2D _MetallicGlossMap;
 #endif
 
 float _Metallic;
 float _Glossiness;
 
 #if defined(_SPECGLOSSMAP)
-    // _SpecColor is already defined somewhere
-    //float4 _SpecColor;
-    sampler2D _SpecGlossMap;
+	// _SpecColor is already defined somewhere
+	//float4 _SpecColor;
+	sampler2D _SpecGlossMap;
 #endif
 
 #if defined(_EMISSION)
-    sampler2D _EmissionMap;
-    float4 _EmissionColor;
+	sampler2D _EmissionMap;
+	float4 _EmissionColor;
 
-    float _EmissionMapIsTint;
+	float _EmissionMapIsTint;
 #endif
 
 #if defined(_SUNDISK_NONE)
-    float _MatCapMode;
+	float _MatCapMode;
 
-    sampler2D _MatCap;
-    float _MatCapStrength;
+	sampler2D _MatCap;
+	float _MatCapStrength;
 
-    float4 _MatCapColor;
-    #if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
-        sampler2D _MatCapTintTex;
-    #endif
-    float _MatCapOrigin;
+	float4 _MatCapColor;
+	#if defined(_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A)
+		sampler2D _MatCapTintTex;
+	#endif
+	float _MatCapOrigin;
 #endif
 
 #if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
-    sampler2D _RimTex;
-    float4 _RimLightColor;
-    float _RimLightMode;
-    float _RimWidth;
-    float _RimInvert;
+	sampler2D _RimTex;
+	float4 _RimLightColor;
+	float _RimLightMode;
+	float _RimWidth;
+	float _RimInvert;
 #endif
 
 #ifdef OUTLINE_PASS
-    uniform sampler2D _OutlineTex;
-    uniform float4 _OutlineTex_ST;
-    uniform float _OutlineWidth;
-    uniform float4 _OutlineColor;
+	uniform sampler2D _OutlineTex;
+	uniform float4 _OutlineTex_ST;
+	uniform float _OutlineWidth;
+	uniform float4 _OutlineColor;
 
-    uniform float _ScreenSpaceMinDist;
-    uniform float _ScreenSpaceMaxDist;
+	uniform float _ScreenSpaceMinDist;
+	uniform float _ScreenSpaceMaxDist;
 #else
-    sampler2D _MainTex;
-    float4 _Color;
+	sampler2D _MainTex;
+	float4 _Color;
 #endif
 
 #if defined(_PARALLAXMAP)
-    float3 _VertexOffsetPos;
-    float3 _VertexOffsetRot;
-    float3 _VertexOffsetScale;
-    float3 _VertexOffsetPosWorld;
+	float3 _VertexOffsetPos;
+	float3 _VertexOffsetRot;
+	float3 _VertexOffsetScale;
+	float3 _VertexOffsetPosWorld;
+#endif
+
+#if defined(_OCCLUSION_ON)
+	sampler2D _OcclusionMap;
+	float _OcclusionStrength;
 #endif
 
 // Most textures reuse the tiling and offset values of the main texture, so this should always be available
@@ -130,134 +135,138 @@ float4 _MainTex_ST;
 
 struct appdata
 {
-    float4 vertex : POSITION;
-    float3 normal : NORMAL;
-    float4 tangent : TANGENT;
-    float2 uv : TEXCOORD0;
-    #if defined(_REQUIRE_UV2)
-        float2 uv1 : TEXCOORD1;
-    #endif
+	float4 vertex : POSITION;
+	float3 normal : NORMAL;
+	float4 tangent : TANGENT;
+	float2 uv : TEXCOORD0;
+	#if defined(_REQUIRE_UV2)
+		float2 uv1 : TEXCOORD1;
+	#endif
 };
 
 struct v2f
 {
-    #if defined(_REQUIRE_UV2)
-        float4 uv : TEXCOORD0; // Pack UV0 and UV1 into the same interpolator, if UV1 exists
-    #else
-        float2 uv : TEXCOORD0;
-    #endif
-    float4 pos : SV_POSITION;
-    float3 normalDir : TEXCOORD1;
-    float3 tangentDir : TEXCOORD2;
-    float3 bitangentDir : TEXCOORD3;
-    float4 worldPos : TEXCOORD4;
-    SHADOW_COORDS(5)
-    UNITY_FOG_COORDS(6)
-    #ifndef LIMITED_INTERPOLATORS
-        float4 objWorldPos : TEXCOORD7;
-    #endif
+	#if defined(_REQUIRE_UV2)
+		float4 uv : TEXCOORD0; // Pack UV0 and UV1 into the same interpolator, if UV1 exists
+	#else
+		float2 uv : TEXCOORD0;
+	#endif
+	float4 pos : SV_POSITION;
+	float3 normalDir : TEXCOORD1;
+	float3 tangentDir : TEXCOORD2;
+	float3 bitangentDir : TEXCOORD3;
+	float4 worldPos : TEXCOORD4;
+	SHADOW_COORDS(5)
+	UNITY_FOG_COORDS(6)
+	#ifndef LIMITED_INTERPOLATORS
+		float4 objWorldPos : TEXCOORD7;
+	#endif
 };
 
 #include "DummyToonLighting.cginc"
 #include "DummyToonRamping.cginc"
 
 #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-    #include "DummyToonMetallicSpecular.cginc"
+	#include "DummyToonMetallicSpecular.cginc"
+#endif
+
+#if defined(_SPECULAR_ON)
+	#include "DummyToonSpecular.cginc"
 #endif
 
 #if defined(_SUNDISK_NONE)
-    #include "DummyToonMatcap.cginc"
+	#include "DummyToonMatcap.cginc"
 #endif
 
 #if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
-    #include "DummyToonRimlight.cginc"
+	#include "DummyToonRimlight.cginc"
 #endif
 
 #if defined(_PARALLAXMAP)
-    #include "DummyToonVertexOffset.cginc"
+	#include "DummyToonVertexOffset.cginc"
 #endif
 
 #if defined(EFFECT_HUE_VARIATION)
-    #include "DummyToonHueShift.cginc"
+	#include "DummyToonHueShift.cginc"
 #endif
 
 float3 NormalDirection(v2f i)
 {
-    float3 normalDir = normalize(i.normalDir);
-    
-    // Perturb normals with a normal map
-    #if defined(_NORMALMAP) && defined(DETAILNORMALMAP) // Both normal and detail normal
-        float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
-        
-        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
-        
-        // Choose the correct UV map set
-        #if defined(_DETAIL_MULX2)
-            // Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
-            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
-        #else
-            // Sample the detail normal with UV1
-            float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
-        #endif
-        
-        float3 normalLocal = BlendNormals(bumpTex, detailBumpTex);
-        normalDir = normalize(mul(normalLocal, tangentTransform));  
-    #elif defined(_NORMALMAP) // Only normal
-        float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
-        float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
-        float3 normalLocal = bumpTex.rgb;
-        normalDir = normalize(mul(normalLocal, tangentTransform));  
-    #elif defined(DETAILNORMALMAP) // Only detail normal
-        float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
-        
-        // Choose the correct UV map set
-        #if defined(_DETAIL_MULX2)
-            // Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
-            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
-        #else
-            float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
-        #endif
-        
-        float3 normalLocal = bumpTex.rgb;
-        normalDir = normalize(mul(normalLocal, tangentTransform));  
-    #endif
-    
-    return normalDir;
+	float3 normalDir = normalize(i.normalDir);
+	
+	// Perturb normals with a normal map
+	#if defined(_NORMALMAP) && defined(DETAILNORMALMAP) // Both normal and detail normal
+		float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+		
+		float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
+		
+		// Choose the correct UV map set
+		#if defined(_DETAIL_MULX2)
+			// Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
+			float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
+		#else
+			// Sample the detail normal with UV1
+			float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
+		#endif
+		
+		float3 normalLocal = BlendNormals(bumpTex, detailBumpTex);
+		normalDir = normalize(mul(normalLocal, tangentTransform));  
+	#elif defined(_NORMALMAP) // Only normal
+		float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+		float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
+		float3 normalLocal = bumpTex.rgb;
+		normalDir = normalize(mul(normalLocal, tangentTransform));  
+	#elif defined(DETAILNORMALMAP) // Only detail normal
+		float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+		
+		// Choose the correct UV map set
+		#if defined(_DETAIL_MULX2)
+			// Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
+			float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
+		#else
+			float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
+		#endif
+		
+		float3 normalLocal = bumpTex.rgb;
+		normalDir = normalize(mul(normalLocal, tangentTransform));  
+	#endif
+	
+	return normalDir;
 }
 
 // Prevent name conflict in outline pass
 #ifndef OUTLINE_PASS
-    v2f vert (appdata v)
-    {
-        // If vertex offset is enabled, apply that first
-        #if defined(_PARALLAXMAP)
-            VertexOffset(v);
-        #endif
+	v2f vert (appdata v)
+	{
+		// If vertex offset is enabled, apply that first
+		#if defined(_PARALLAXMAP)
+			VertexOffset(v);
+		#endif
 
-        v2f o;
-        o.pos = UnityObjectToClipPos(v.vertex);
-        // If UV1 is used, pack UV0 and UV1 into a single float4
-        #if defined(_REQUIRE_UV2)
-            float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
-            float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-            o.uv = float4(uv0, uv1);
-        #else
-            o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-        #endif
-        o.normalDir = UnityObjectToWorldNormal(v.normal);
-        o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
-        o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-        o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-        #ifndef LIMITED_INTERPOLATORS
-            o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
-        #endif
-        
-        TRANSFER_SHADOW(o);
+		v2f o;
+		o.pos = UnityObjectToClipPos(v.vertex);
+		// If UV1 is used, pack UV0 and UV1 into a single float4
+		#if defined(_REQUIRE_UV2)
+			float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
+			float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
+			o.uv = float4(uv0, uv1);
+		#else
+			o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+		#endif
+		o.normalDir = UnityObjectToWorldNormal(v.normal);
+		o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
+		o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
+		o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+		#ifndef LIMITED_INTERPOLATORS
+			o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
+		#endif
+		
+		TRANSFER_SHADOW(o);
 
-        UNITY_TRANSFER_FOG(o, o.pos);
-        
-        return o;
-    }
+		UNITY_TRANSFER_FOG(o, o.pos);
+		
+		return o;
+	}
 #endif
 
 // Use SV_IsFrontFace semantic in shader model 5.0, this is not available in 2.0 so is not used
@@ -267,154 +276,178 @@ float4 frag (v2f i) : SV_Target
 float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 #endif
 {
-    float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
+	float3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
 
-    // Sample main texture
-    #ifdef OUTLINE_PASS
-        float4 mainTex = tex2D(_OutlineTex, i.uv.xy);
-        mainTex *= _OutlineColor;
-    #else
-        float4 mainTex = tex2D(_MainTex, i.uv.xy);
-        mainTex *= _Color;
-    #endif
-    
-    // Alpha to coverage
-    #if defined(_ALPHAMODULATE_ON) && !defined(NO_DERIVATIVES)
-        mainTex.a = (mainTex.a - _Cutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
-    #endif
-    
-    // Cutout
-    #if defined(_ALPHATEST_ON)
-        clip(mainTex.a - _Cutoff);
-    #endif
-    
-    // Hue shift
-    #if defined(EFFECT_HUE_VARIATION)
-        ApplyHueShift(i.uv.xy, mainTex.rgb);
-    #endif
+	// Sample main texture
+	#ifdef OUTLINE_PASS
+		float4 mainTex = tex2D(_OutlineTex, i.uv.xy);
+		mainTex *= _OutlineColor;
+	#else
+		float4 mainTex = tex2D(_MainTex, i.uv.xy);
+		mainTex *= _Color;
+	#endif
+	
+	// Alpha to coverage
+	#if defined(_ALPHAMODULATE_ON) && !defined(NO_DERIVATIVES)
+		mainTex.a = (mainTex.a - _Cutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
+	#endif
+	
+	// Cutout
+	#if defined(_ALPHATEST_ON)
+		clip(mainTex.a - _Cutoff);
+	#endif
+	
+	// Hue shift
+	#if defined(EFFECT_HUE_VARIATION)
+		ApplyHueShift(i.uv.xy, mainTex.rgb);
+	#endif
 
-    // Get all vars related to toon ramping
-    float IntensityVar;
-    float SaturationVar;
-    float ToonContrastVar;
-    float ToonRampOffsetVar;
-    float4 ToonRampMaskColor;
-    GetToonVars(i.uv.xy, IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, ToonRampMaskColor);
-    
-    // Obtain albedo from main texture and multiply by intensity
-    float3 albedo = mainTex.rgb * IntensityVar;
-    
-    // Apply saturation modifier
-    float lum = Luminance(albedo);
-    albedo = lerp(float3(lum, lum, lum), albedo, SaturationVar);
+	// Get all vars related to toon ramping
+	float IntensityVar;
+	float SaturationVar;
+	float ToonContrastVar;
+	float ToonRampOffsetVar;
+	float4 ToonRampMaskColor;
+	GetToonVars(i.uv.xy, IntensityVar, SaturationVar, ToonContrastVar, ToonRampOffsetVar, ToonRampMaskColor);
+	
+	// Obtain albedo from main texture and multiply by intensity
+	float3 albedo = mainTex.rgb * IntensityVar;
+	
+	// Apply saturation modifier
+	float lum = Luminance(albedo);
+	albedo = lerp(float3(lum, lum, lum), albedo, SaturationVar);
 
-    // Get normal direction from vertex normals (and normal maps if applicable)
-    float3 normalDir = NormalDirection(i);
+	// Get normal direction from vertex normals (and normal maps if applicable)
+	float3 normalDir = NormalDirection(i);
 
-    // If this is a backface, reverse the normal direction
-    #ifndef NO_ISFRONTFACE
-        float faceSign = facing ? 1 : -1;
-        normalDir *= faceSign;
-    #endif
-    
-    // Matcap
-    #if defined(_SUNDISK_NONE)
-        // Matcap origin
-        // If 0, viewdir to surface is used
-        // If 1, viewdir to object center is used
-        // NOTE: if interpolators are limited (shader model 2.0), objWorldPos is not available, so the surface viewdir is used.
-        #ifdef LIMITED_INTERPOLATORS
-            float3 matcapViewDir = viewDir;
-        #else
-            float3 matcapViewDir;
-            if (_MatCapOrigin == 1)
-            {
-                matcapViewDir = normalize(_WorldSpaceCameraPos.xyz - i.objWorldPos.xyz);
-            }
-            else
-            {
-                matcapViewDir = viewDir;
-            }
-        #endif
-        Matcap(matcapViewDir, normalDir, i.uv.xy, albedo);
-    #endif
-    
-    // Rimlight
-    #if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
-        Rimlight(i.uv.xy, viewDir, normalDir, albedo);
-    #endif
-    
-    // Lighting
-    
-    // Get light attenuation
-    UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
-    
-    float3 lightDirection;
-    float3 lightColor;
-    
-    // Fill the finalcolor with indirect light data (SH and vertex lights)
-    float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz);
-    
-    #ifdef UNITY_PASS_FORWARDBASE
-        // Run the lighting function with non-realtime data first       
-        GetBaseLightData(lightDirection, lightColor);
-        
-        // If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
-        // the direction will be smoothly merged.
-        // This makes the lighting look better with sharp toon ramps.
-        #if !defined(_FADING_ON)
-            if(any(_WorldSpaceLightPos0))
-            {
-                SmoothBaseLightData(lightDirection);
-            }
-        #endif
-        
-        finalColor += ToonLightingBase(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
-    #endif
-    
-    // Fill lightDirection and lightColor with current light data
-    GetLightData(i.worldPos.xyz, lightDirection, lightColor);
-    
-    // Apply current light
-    // If the current light is black, it will have no effect. Skip it to save on calculations and texture samples.
-    #ifdef UNITY_PASS_FORWARDBASE
-        UNITY_BRANCH
-        if(any(_LightColor0.rgb))
-        {
-            finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
-        }
-    #else
-        finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
-    #endif
-    
-    // Apply metallic
-    #if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-        MetallicSpecularGloss(i.worldPos.xyz, i.uv.xy, normalDir, albedo, finalColor);
-    #endif
-    
-    // Apply emission
-    #if defined(UNITY_PASS_FORWARDBASE) && defined(_EMISSION)
-        float4 emissive = tex2D(_EmissionMap, i.uv.xy);
-        emissive *= _EmissionColor;
-        
-        UNITY_BRANCH
-        if(_EmissionMapIsTint == 1)
-        {
-            emissive.rgb *= mainTex.rgb;
-        }
-        
-        finalColor += emissive.rgb;
-    #endif
-    
-    #if defined(_ALPHABLEND_ON) || defined(_ALPHAMODULATE_ON)
-        float finalAlpha = mainTex.a;
-    #else
-        float finalAlpha = 1;
-    #endif
-    
-    float4 finalOutput = float4(finalColor, finalAlpha);
+	// If this is a backface, reverse the normal direction
+	#ifndef NO_ISFRONTFACE
+		float faceSign = facing ? 1 : -1;
+		normalDir *= faceSign;
+	#endif
+	
+	// Matcap
+	#if defined(_SUNDISK_NONE)
+		// Matcap origin
+		// If 0, viewdir to surface is used
+		// If 1, viewdir to object center is used
+		// NOTE: if interpolators are limited (shader model 2.0), objWorldPos is not available, so the surface viewdir is used.
+		#ifdef LIMITED_INTERPOLATORS
+			float3 matcapViewDir = viewDir;
+		#else
+			float3 matcapViewDir;
+			if (_MatCapOrigin == 1)
+			{
+				matcapViewDir = normalize(_WorldSpaceCameraPos.xyz - i.objWorldPos.xyz);
+			}
+			else
+			{
+				matcapViewDir = viewDir;
+			}
+		#endif
+		Matcap(matcapViewDir, normalDir, i.uv.xy, albedo);
+	#endif
+	
+	// Rimlight
+	#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
+		Rimlight(i.uv.xy, viewDir, normalDir, albedo);
+	#endif
+	
+	// Lighting
 
-    UNITY_APPLY_FOG(i.fogCoord, finalOutput);
+	// If enabled, sample AO map in ForwardBase to handle AO
+	#if defined(UNITY_PASS_FORWARDBASE) && defined(_OCCLUSION_ON)
+		float4 occlusionTex = tex2D(_OcclusionMap, i.uv.xy);
+		float occlusionStrength = (1 - occlusionTex.r) * _OcclusionStrength;
+	#else
+		float occlusionStrength = 0;
+	#endif
+	
+	// Get light attenuation
+	UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
+	
+	float3 lightDirection;
+	float3 lightColor;
+	
+	// Fill the finalcolor with indirect light data (SH and vertex lights)
+	float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz, occlusionStrength);
+	
+	#ifdef UNITY_PASS_FORWARDBASE
+		// Run the lighting function with non-realtime data first       
+		GetBaseLightData(lightDirection, lightColor);
+		
+		// If the ambient light direction is too close to the actual realtime directional light direction (happens with mixed lights),
+		// the direction will be smoothly merged.
+		// This makes the lighting look better with sharp toon ramps.
+		#if !defined(_FADING_ON)
+			if(any(_WorldSpaceLightPos0))
+			{
+				SmoothBaseLightData(lightDirection);
+			}
+		#endif
 
-    return finalOutput;
+		// Since this is actually a "fake" environmental light, dim it based on the AO strength.
+		#if defined(_OCCLUSION_ON)
+			finalColor += ToonLightingBase(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost * (1 - occlusionStrength);
+		#else
+			finalColor += ToonLightingBase(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * _IndirectLightBoost;
+		#endif
+		// Apply specular highlights for the base light
+		#if defined(_SPECULAR_ON)
+			Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, occlusionStrength, finalColor);
+		#endif
+	#endif
+
+	// Fill lightDirection and lightColor with current light data
+	GetLightData(i.worldPos.xyz, lightDirection, lightColor);
+	
+	// Apply current light
+	// If the current light is black, it will have no effect. Skip it to save on calculations and texture samples.
+	#ifdef UNITY_PASS_FORWARDBASE
+		UNITY_BRANCH
+		if(any(_LightColor0.rgb))
+		{
+			finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
+			// Apply specular highlights again for the realtime light
+			#if defined(_SPECULAR_ON)
+				Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0, finalColor);
+			#endif
+		}
+	#else
+		finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
+		#if defined(_SPECULAR_ON)
+			Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0, finalColor);
+		#endif
+	#endif
+	
+	// Apply metallic
+	#if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
+		MetallicSpecularGloss(i.worldPos.xyz, i.uv.xy, normalDir, albedo, finalColor);
+	#endif
+	
+	// Apply emission
+	#if defined(UNITY_PASS_FORWARDBASE) && defined(_EMISSION)
+		float4 emissive = tex2D(_EmissionMap, i.uv.xy);
+		emissive *= _EmissionColor;
+		
+		UNITY_BRANCH
+		if(_EmissionMapIsTint == 1)
+		{
+			emissive.rgb *= mainTex.rgb;
+		}
+		
+		finalColor += emissive.rgb;
+	#endif
+	
+	#if defined(_ALPHABLEND_ON) || defined(_ALPHAMODULATE_ON)
+		float finalAlpha = mainTex.a;
+	#else
+		float finalAlpha = 1;
+	#endif
+	
+	float4 finalOutput = float4(finalColor, finalAlpha);
+
+	UNITY_APPLY_FOG(i.fogCoord, finalOutput);
+
+	return finalOutput;
 }

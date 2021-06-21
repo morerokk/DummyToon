@@ -22,6 +22,10 @@ namespace Rokk.DummyToon.Editor
         protected MaterialProperty zWrite = null;
         protected MaterialProperty cutoutEnabled = null;
 
+        // AO
+        protected MaterialProperty occlusionMap = null;
+        protected MaterialProperty occlusionStrength = null;
+
         // Toon lighting
         protected MaterialProperty ramp = null;
         protected MaterialProperty toonContrast = null;
@@ -39,13 +43,21 @@ namespace Rokk.DummyToon.Editor
         protected MaterialProperty additiveRampMode = null;
         protected MaterialProperty additiveRamp = null;
 
-        // Metallic and specular
+        // Metallic and specular (old)
         protected MaterialProperty metallicMode = null;
         protected MaterialProperty metallicMapTex = null;
         protected MaterialProperty metallic = null;
         protected MaterialProperty smoothness = null;
-        protected MaterialProperty specularTex = null;
+        protected MaterialProperty metalSpecularTex = null;
+        protected MaterialProperty metalSpecularColor = null;
+
+        // New specular
+        protected MaterialProperty specularEnabled = null;
+        protected MaterialProperty specularMode = null;
+        protected MaterialProperty specularMap = null;
         protected MaterialProperty specularColor = null;
+        protected MaterialProperty specularToonyEnabled = null;
+        protected MaterialProperty specularToonyCutoff = null;
 
         // Ramp masking
         protected MaterialProperty rampMaskingEnabled = null;
@@ -132,6 +144,7 @@ namespace Rokk.DummyToon.Editor
         private bool toonExpanded = true;
         private bool outlinesExpanded = false;
         private bool metallicExpanded = false;
+        private bool specularExpanded = false;
         private bool matcapExpanded = false;
         private bool rimlightExpanded = false;
         private bool vertexOffsetExpanded = false;
@@ -149,13 +162,18 @@ namespace Rokk.DummyToon.Editor
         private bool additiveRampHelpExpanded = false;
         private bool matCapOriginHelpExpanded = false;
         private bool vertexOffsetHelpExpanded = false;
+        private bool specularModeHelpExpanded = false;
+
+        private bool shouldRegenerateKeywords = true;
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             base.OnGUI(materialEditor, properties);
 
+            shouldRegenerateKeywords = true;
+
             // Show a disclaimer if the material is locked
-            if(IsMaterialLocked())
+            if (IsMaterialLocked())
             {
                 EditorGUILayout.HelpBox("Material is locked, property changes might not go through. Unlock the material under \"Shader Optimizer\" to edit it.", MessageType.Info);
             }
@@ -199,6 +217,7 @@ namespace Rokk.DummyToon.Editor
             }
             DrawToonLighting();
             DrawMetallic();
+            DrawSpecular();
             DrawMatcap();
             DrawRimlight();
 
@@ -274,6 +293,16 @@ namespace Rokk.DummyToon.Editor
             if (renderMode.floatValue != 2 && zWrite.floatValue == 0)
             {
                 EditorGUILayout.HelpBox("ZWrite is disabled on a non-transparent rendering mode. This is likely not intentional.", MessageType.Warning);
+            }
+
+            editor.TexturePropertySingleLine(new GUIContent("Occlusion Map", "The Ambient Occlusion map for this material. The red channel of the AO map determines how much indirect light is contributed."), occlusionMap);
+            if(occlusionMap.textureValue != null)
+            {
+                editor.RangeProperty(occlusionStrength, "Occlusion Strength");
+                if(occlusionStrength.floatValue == 0)
+                {
+                    EditorGUILayout.HelpBox("Occlusion Strength is 0. Consider setting the Occlusion Map texture to None.", MessageType.Warning);
+                }
             }
 
             editor.TextureScaleOffsetProperty(mainTex);
@@ -471,8 +500,36 @@ namespace Rokk.DummyToon.Editor
 
         private void DrawSpecularWorkflow()
         {
-            editor.TexturePropertyWithHDRColor(new GUIContent("Specular Map", "Defines Specular color (RGB) and Smoothness (A). Lower smoothness blurs reflections."), specularTex, specularColor, true);
+            editor.TexturePropertyWithHDRColor(new GUIContent("Specular Map", "Defines Specular color (RGB) and Smoothness (A). Lower smoothness blurs reflections."), metalSpecularTex, metalSpecularColor, true);
             editor.RangeProperty(smoothness, "Smoothness");
+        }
+
+        private void DrawSpecular()
+        {
+            specularExpanded = Section("Specular Highlights", specularExpanded);
+            if (!specularExpanded)
+            {
+                return;
+            }
+
+            editor.ShaderProperty(specularEnabled, new GUIContent("Specular Enabled", "Enables the Specular Highlights feature."));
+
+            EditorGUI.BeginDisabledGroup(specularEnabled.floatValue == 0);
+            ShaderPropertyWithHelp(specularMode, new GUIContent(
+                "Specular Mode", "Defines the specular mode that should be used."),
+                ref specularModeHelpExpanded,
+                "Defines the type of specular to use. Blinn-Phong shows up from wider angles than Blinn.\n\nBlinn-Phong looks more \"realistic\", but can sometimes look strange when lit from behind."
+            );
+
+            editor.TexturePropertySingleLine(new GUIContent("Specular Map", "The specular map texture to use. RGB defines color, A defines smoothness."), specularMap, specularColor);
+
+            editor.ShaderProperty(specularToonyEnabled, new GUIContent("Toony Specular", "Enables toony specular, which looks sharper."));
+            if(specularToonyEnabled.floatValue == 1)
+            {
+                editor.ShaderProperty(specularToonyCutoff, new GUIContent("Specular Cutoff", "Specularity below this value is cut off and replaced with no specular. Any specularity above this value is replaced with full specular instead, giving a toonier look."));
+            }
+
+            EditorGUI.EndDisabledGroup();
         }
 
         private void DrawMatcap()
@@ -647,6 +704,9 @@ namespace Rokk.DummyToon.Editor
 
                 if (GUILayout.Button("Lock Material"))
                 {
+                    // For this event, skip the keyword stuff
+                    shouldRegenerateKeywords = false;
+
                     if (propertiesToAnimate.Trim().Length > 0)
                     {
                         LockAllSelectedMaterials(propertiesToAnimate.Trim().Split(';').ToList());
@@ -685,6 +745,10 @@ namespace Rokk.DummyToon.Editor
             cullMode = FindProperty("_Cull");
             cutoutEnabled = FindProperty("_CutoutEnabled");
 
+            // AO
+            occlusionMap = FindProperty("_OcclusionMap");
+            occlusionStrength = FindProperty("_OcclusionStrength");
+
             // Toon lighting
             ramp = FindProperty("_Ramp");
             toonContrast = FindProperty("_ToonContrast");
@@ -702,13 +766,21 @@ namespace Rokk.DummyToon.Editor
             additiveRampMode = FindProperty("_AdditiveRampMode");
             additiveRamp = FindProperty("_AdditiveRamp");
 
-            // Metallic and specular
+            // Metallic and specular (old)
             metallicMode = FindProperty("_MetallicMode");
             metallicMapTex = FindProperty("_MetallicGlossMap");
             metallic = FindProperty("_Metallic");
             smoothness = FindProperty("_Glossiness");
-            specularTex = FindProperty("_SpecGlossMap");
-            specularColor = FindProperty("_SpecColor");
+            metalSpecularTex = FindProperty("_SpecGlossMap");
+            metalSpecularColor = FindProperty("_SpecColor");
+
+            // New specular
+            specularEnabled = FindProperty("_SpecularEnabled");
+            specularMode = FindProperty("_SpecularMode");
+            specularMap = FindProperty("_SpecMap");
+            specularColor = FindProperty("_SpecularColor");
+            specularToonyEnabled = FindProperty("_SpecularToonyEnabled");
+            specularToonyCutoff = FindProperty("_SpecularToonyCutoff");
 
             // Ramp masking
             rampMaskingEnabled = FindProperty("_RampMaskEnabled");
@@ -815,12 +887,17 @@ namespace Rokk.DummyToon.Editor
 
         protected virtual void SetupKeywords()
         {
+            if(!shouldRegenerateKeywords)
+            {
+                return;
+            }
+
             foreach (var mat in this.materials)
             {
                 // Delete all keywords first
                 mat.shaderKeywords = new string[] { };
 
-                // Don't add keywords on locked in shaders
+                // Don't add new keywords on locked in shaders
                 if (IsMaterialLocked(mat))
                 {
                     continue;
@@ -886,6 +963,12 @@ namespace Rokk.DummyToon.Editor
                 if (mat.GetFloat("_MetallicMode") == 2)
                 {
                     mat.EnableKeyword("_SPECGLOSSMAP");
+                }
+
+                // Specular highlights keyword
+                if(mat.GetFloat("_SpecularEnabled") == 1)
+                {
+                    mat.EnableKeyword("_SPECULAR_ON");
                 }
 
                 // Emission keyword
@@ -959,6 +1042,12 @@ namespace Rokk.DummyToon.Editor
                 if (mat.GetFloat("_HueShiftEnabled") == 1)
                 {
                     mat.EnableKeyword("EFFECT_HUE_VARIATION");
+                }
+
+                // AO
+                if(mat.GetTexture("_OcclusionMap") != null)
+                {
+                    mat.EnableKeyword("_OCCLUSION_ON");
                 }
             }
         }
