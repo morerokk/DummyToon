@@ -5,7 +5,7 @@ uniform float _SpecularToonyCutoff;
 uniform sampler2D _SpecMap;
 uniform float4 _SpecularColor;
 
-void Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 normalDir, float3 viewDirection, float attenuation, float2 uv, float occlusionStrength inout float3 finalColor)
+void Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 normalDir, float3 viewDirection, float attenuation, float2 uv, float occlusionStrength, inout float3 finalColor)
 {
 	// Calculate reflection direction
 	float3 reflectionDir;
