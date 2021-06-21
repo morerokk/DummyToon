@@ -1,5 +1,5 @@
 # Dummy Toon Shader
-A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline. For earlier versions of Unity, check the `unity2018` branch.
+A toon shader for Unity 2018 (and older, including 2017 and 5.6). Supports the Forward rendering pipeline. For versions of Unity 2019 and up, check the `master` branch.
 
 ## Features
 * Solid toon shading that looks good and consistent in a large variety of different lighting setups
@@ -18,7 +18,7 @@ A toon shader for Unity 2019 and up. Supports the Forward rendering pipeline. Fo
 ## Installation
 Grab the latest release from the "Releases" tab of this repository. Download and import the unity package. If your Unity version is older than the package, download this repository as zip instead, and extract it to your assets folder.
 
-This shader only works in Unity 2019 and up, due to the reliance on local shader keywords.
+This version of the shader works in Unity 2018, and should work on almost any older version (and newer version) too. It does not use local keywords, so keep an eye out for the 256 shader keyword limit, or use the shader optimizer under third-party to bake in the material keywords. If you are on Unity 2019 and up, use the master branch/2019 releases instead.
 
 For more information on the shader or how to use features, make sure to check the Wiki tab of this repository.
 
