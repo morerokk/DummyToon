@@ -7,6 +7,7 @@
         [NoScaleOffset] _Matcap ("Matcap Texture", 2D) = "white" {}
         [Toggle(_GUESSLIGHTDIR_ON)] _GuessLightDir ("Guess Light Dir", Float) = 1.0
         [Toggle(_VERTEXCOLOR_ON)] _UseVertexColor ("Use Vertex Colors", Float) = 0.0
+        [ShaderOptimizerLockButton] _ShaderOptimized("Shader Optimized", Int) = 0
     }
     SubShader
     {

@@ -23,6 +23,15 @@ namespace Rokk.DummyToon.Editor
 
             editor.RenderQueueField();
 
+#if SHADEROPTIMIZER_INSTALLED
+            if (CanMaterialBeLocked())
+            {
+                DrawShaderOptimizer();
+            }
+#endif
+
+            DrawVersion();
+
             SetupKeywords();
         }
 
@@ -30,7 +39,6 @@ namespace Rokk.DummyToon.Editor
         {
             ColorProperty(color, "Color");
             TextureProperty(mainTex, "Main Texture", false);
-
 
             if (HasRamp())
             {
@@ -77,29 +85,52 @@ namespace Rokk.DummyToon.Editor
             return this.matcap != null;
         }
 
+#if SHADEROPTIMIZER_INSTALLED
+        private void DrawShaderOptimizer()
+        {
+            if (IsMaterialLocked())
+            {
+                if (GUILayout.Button("Unlock shader"))
+                {
+                    UnlockAllSelectedMaterials();
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Lock in optimized shader"))
+                {
+                    LockAllSelectedMaterials();
+                }
+            }
+        }
+#endif
+
         private void SetupKeywords()
         {
-            // Clear out all existing keywords first
-            material.shaderKeywords = new string[] { };
-
-            if (mainTex.textureValue != null)
+            foreach (var mat in this.materials)
             {
-                material.EnableKeyword("_MAINTEX_ON");
-            }
+                // Clear out all existing keywords first
+                mat.shaderKeywords = new string[] { };
 
-            if (!color.colorValue.Equals(Color.white))
-            {
-                material.EnableKeyword("_COLOR_ON");
-            }
+                if (mat.GetTexture("_MainTex") != null)
+                {
+                    mat.EnableKeyword("_MAINTEX_ON");
+                }
 
-            if (guessLightDir.floatValue == 1)
-            {
-                material.EnableKeyword("_GUESSLIGHTDIR_ON");
-            }
+                if (!mat.GetColor("_Color").Equals(Color.white))
+                {
+                    mat.EnableKeyword("_COLOR_ON");
+                }
 
-            if (useVertexColor.floatValue == 1)
-            {
-                material.EnableKeyword("_VERTEXCOLOR_ON");
+                if (mat.GetFloat("_GuessLightDir") == 1)
+                {
+                    mat.EnableKeyword("_GUESSLIGHTDIR_ON");
+                }
+
+                if (mat.GetFloat("_UseVertexColor") == 1)
+                {
+                    mat.EnableKeyword("_VERTEXCOLOR_ON");
+                }
             }
         }
     }
