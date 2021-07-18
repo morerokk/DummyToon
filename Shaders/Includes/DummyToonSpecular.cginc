@@ -1,11 +1,12 @@
 uniform float _SpecularMode;
 uniform float _SpecularToonyEnabled;
 uniform float _SpecularToonyCutoff;
+uniform float _SpecularIndirectBoost;
 
 uniform sampler2D _SpecMap;
 uniform float4 _SpecularColor;
 
-void Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 normalDir, float3 viewDirection, float attenuation, float2 uv, float occlusionStrength, inout float3 finalColor)
+float3 Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 normalDir, float3 viewDirection, float attenuation, float2 uv, float occlusionStrength)
 {
 	// Calculate reflection direction
 	float3 reflectionDir;
@@ -17,10 +18,16 @@ void Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 no
 		// How close is our view direction to the reflection direction?
 		dotProduct = max(dot(viewDirection, reflectionDir), 0);
 	}
-	else
+	else if(_SpecularMode == 1)
 	{
 		// Use Blinn-Phong specular
 		reflectionDir = normalize(lightDirection + viewDirection);
+		dotProduct = max(dot(reflectionDir, normalDir), 0);
+	}
+	else
+	{
+		// Use Blinn-Phong specular, but view-aligned instead. Not realistic, but can look good (works very similarly to matcaps).
+		reflectionDir = float3(0,0,1);
 		dotProduct = max(dot(viewDirection, normalDir), 0);
 	}
 
@@ -53,6 +60,5 @@ void Specular(float3 albedo, float3 lightDirection, float3 lightColor, float3 no
 		specularCol *= 1 - occlusionStrength;
 	#endif
 
-	// Apply the specular to the output color
-	finalColor += specularCol;
+	return specularCol;
 }

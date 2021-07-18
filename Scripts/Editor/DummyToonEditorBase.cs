@@ -26,7 +26,7 @@ namespace Rokk.DummyToon.Editor
         {
             get
             {
-                return "1.4.0";
+                return "1.4.1";
             }
         }
 
@@ -64,6 +64,12 @@ namespace Rokk.DummyToon.Editor
                     }
 
                     // Prevent the child class from still attempting to draw the material.
+                    throw;
+                }
+                else
+                {
+                    // Material isn't optimized, so something else went wrong, probably on our end.
+                    EditorGUILayout.HelpBox("An error occurred while trying to read the material shader properties. Check the console for more information.", MessageType.Error);
                     throw;
                 }
 #else
@@ -279,6 +285,112 @@ namespace Rokk.DummyToon.Editor
         }
 
         /// <summary>
+        /// Draws a vector property with XYZ components only (no W).
+        /// </summary>
+        /// <param name="prop">The vector property to draw.</param>
+        /// <param name="label">The label to give to this vector property.</param>
+        /// <param name="horizontalLabel">If true, the label will be drawn next to the property, rather than above it.</param>
+        protected virtual void Vector3Property(MaterialProperty prop, GUIContent label, bool horizontalLabel)
+        {
+            var oldLabelWidth = EditorGUIUtility.labelWidth;
+            var oldFieldWidth = EditorGUIUtility.fieldWidth;
+            var oldShowMixedValue = EditorGUI.showMixedValue;
+            
+            // Store the current material property value in a new variable
+            Vector4 propValue = prop.vectorValue;
+
+            // Draw vertical label
+            if (!horizontalLabel)
+            {
+                EditorGUILayout.LabelField(label);
+            }
+
+            EditorGUILayout.BeginHorizontal();
+
+            // Draw horizontal label
+            if(horizontalLabel)
+            {
+                EditorGUIUtility.labelWidth = EditorGUIUtility.currentViewWidth * 0.15f;
+                EditorGUILayout.LabelField(label);
+            }
+
+            EditorGUIUtility.labelWidth = 13f;
+            EditorGUIUtility.fieldWidth = 20f;
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+
+            EditorGUI.BeginChangeCheck();
+
+            // Draw the XYZ fields only, and store their values into the vector variable
+            propValue.x = EditorGUILayout.FloatField("X", propValue.x);
+            propValue.y = EditorGUILayout.FloatField("Y", propValue.y);
+            propValue.z = EditorGUILayout.FloatField("Z", propValue.z);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUIUtility.labelWidth = oldLabelWidth;
+            EditorGUIUtility.fieldWidth = oldFieldWidth;
+            EditorGUI.showMixedValue = oldShowMixedValue;
+
+            // If any of the fields were changed, write out the new value to the material property
+            if (EditorGUI.EndChangeCheck())
+            {
+                prop.vectorValue = propValue;
+            }
+        }
+
+        /// <summary>
+        /// Draws a vector property with XYZ components only (no W).
+        /// </summary>
+        /// <param name="prop">The vector property to draw.</param>
+        /// <param name="label">The label to give to this vector property.</param>
+        protected virtual void Vector3Property(MaterialProperty prop, GUIContent label)
+        {
+            Vector3Property(prop, label, false);
+        }
+
+        /// <summary>
+        /// Draws a vector property with XYZ components only (no W).
+        /// Additionally, draws a help button next to the label.
+        /// </summary>
+        /// <param name="prop">The vector property to draw.</param>
+        /// <param name="label">The label to give to this vector property.</param>
+        protected virtual void Vector3PropertyWithHelp(MaterialProperty prop, GUIContent label, ref bool helpExpanded, string helpText)
+        {
+            var oldLabelWidth = EditorGUIUtility.labelWidth;
+            var oldFieldWidth = EditorGUIUtility.fieldWidth;
+            var oldShowMixedValue = EditorGUI.showMixedValue;
+
+            // Store the current material property value in a new variable
+            Vector4 propValue = prop.vectorValue;
+
+            // Draw vertical help label
+            LabelWithHelp(label, ref helpExpanded, helpText);
+
+            EditorGUILayout.BeginHorizontal();
+
+            EditorGUIUtility.labelWidth = 13f;
+            EditorGUIUtility.fieldWidth = 20f;
+            EditorGUI.showMixedValue = prop.hasMixedValue;
+
+            EditorGUI.BeginChangeCheck();
+
+            // Draw the XYZ fields only, and store their values into the vector variable
+            propValue.x = EditorGUILayout.FloatField("X", propValue.x);
+            propValue.y = EditorGUILayout.FloatField("Y", propValue.y);
+            propValue.z = EditorGUILayout.FloatField("Z", propValue.z);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUIUtility.labelWidth = oldLabelWidth;
+            EditorGUIUtility.fieldWidth = oldFieldWidth;
+            EditorGUI.showMixedValue = oldShowMixedValue;
+
+            // If any of the fields were changed, write out the new value to the material property
+            if (EditorGUI.EndChangeCheck())
+            {
+                prop.vectorValue = propValue;
+            }
+        }
+
+        /// <summary>
         /// Draws a shader property with a help button and an expandable help box.
         /// </summary>
         /// <param name="prop">The shader property to draw with a help box.</param>
@@ -417,22 +529,25 @@ namespace Rokk.DummyToon.Editor
             return materialProperty;
         }
 
+
         /// <summary>
-        /// Locks the material, optimizing it.
+        /// Locks the given material, optimizing it.
         /// </summary>
-        protected virtual void LockMaterial()
+        /// <param name="mat">The material to lock.</param>
+        protected virtual void LockMaterial(Material mat)
         {
             shaderOptimized.floatValue = 1;
-            Kaj.ShaderOptimizer.Lock(material, materialProperties.Values.ToArray());
+            Kaj.ShaderOptimizer.Lock(mat, MaterialEditor.GetMaterialProperties(new UnityEngine.Object[] { mat }));
         }
 
         /// <summary>
         /// Locks the material, optimizing it.
         /// </summary>
+        /// <param name="mat">The material to lock.</param>
         /// <param name="animatedProperties">A list of property names to keep and not optimize away.</param>
-        protected virtual void LockMaterial(List<string> animatedProperties)
+        protected virtual void LockMaterial(Material mat, List<string> animatedProperties)
         {
-            var matProps = materialProperties.Values.ToList();
+            var matProps = MaterialEditor.GetMaterialProperties(new UnityEngine.Object[] { mat }).ToList();
             foreach (string prop in animatedProperties)
             {
                 var materialProperty = GetFakeAnimatedProperty(prop);
@@ -440,7 +555,24 @@ namespace Rokk.DummyToon.Editor
             }
 
             shaderOptimized.floatValue = 1;
-            Kaj.ShaderOptimizer.Lock(material, matProps.ToArray());
+            Kaj.ShaderOptimizer.Lock(mat, matProps.ToArray());
+        }
+
+        /// <summary>
+        /// Locks the first material, optimizing it. Not recommended with multiple materials selected.
+        /// </summary>
+        protected virtual void LockMaterial()
+        {
+            LockMaterial(this.material);
+        }
+
+        /// <summary>
+        /// Locks the first material, optimizing it. Not recommended with multiple materials selected.
+        /// </summary>
+        /// <param name="animatedProperties">A list of property names to keep and not optimize away.</param>
+        protected virtual void LockMaterial(List<string> animatedProperties)
+        {
+            LockMaterial(this.material, animatedProperties);
         }
 
         /// <summary>

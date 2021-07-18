@@ -5,6 +5,10 @@
 
 float _Cutoff;
 
+#if defined(_ALPHAMODULATE_ON)
+	float _AlphaToCoverageCutoff;
+#endif
+
 #if defined(_NORMALMAP)
 	sampler2D _BumpMap;
 	float4 _BumpMap_ST;
@@ -17,6 +21,7 @@ float _Cutoff;
 	sampler2D _DetailNormalMap;
 	float4 _DetailNormalMap_ST;
 	float _DetailNormalMapScale;
+	sampler2D _DetailMask;
 #endif
 
 sampler2D _Ramp;
@@ -33,6 +38,8 @@ float _IndirectLightBoost;
 
 float _IndirectLightDirMergeMin;
 float _IndirectLightDirMergeMax;
+
+float3 _LightDirectionNudge;
 
 #if defined(_COLORADDSUBDIFF_ON)
 	sampler2D _RampMaskTex;
@@ -82,6 +89,7 @@ float _Glossiness;
 	float4 _EmissionColor;
 
 	float _EmissionMapIsTint;
+	float _EmissionPremultiply;
 #endif
 
 #if defined(_SUNDISK_NONE)
@@ -137,7 +145,9 @@ struct appdata
 {
 	float4 vertex : POSITION;
 	float3 normal : NORMAL;
-	float4 tangent : TANGENT;
+	#if defined(_NORMALMAP) || defined(DETAILNORMALMAP)
+		float4 tangent : TANGENT;
+	#endif
 	float2 uv : TEXCOORD0;
 	#if defined(_REQUIRE_UV2)
 		float2 uv1 : TEXCOORD1;
@@ -153,8 +163,10 @@ struct v2f
 	#endif
 	float4 pos : SV_POSITION;
 	float3 normalDir : TEXCOORD1;
-	float3 tangentDir : TEXCOORD2;
-	float3 bitangentDir : TEXCOORD3;
+	#if defined(_NORMALMAP) || defined(DETAILNORMALMAP)
+		float3 tangentDir : TEXCOORD2;
+		float3 bitangentDir : TEXCOORD3;
+	#endif
 	float4 worldPos : TEXCOORD4;
 	SHADOW_COORDS(5)
 	UNITY_FOG_COORDS(6)
@@ -162,6 +174,10 @@ struct v2f
 		float4 objWorldPos : TEXCOORD7;
 	#endif
 };
+
+#if defined(UNITY_UI_ALPHACLIP)
+	#include "DummyToonDebug.cginc"
+#endif
 
 #include "DummyToonLighting.cginc"
 #include "DummyToonRamping.cginc"
@@ -197,16 +213,19 @@ float3 NormalDirection(v2f i)
 	// Perturb normals with a normal map
 	#if defined(_NORMALMAP) && defined(DETAILNORMALMAP) // Both normal and detail normal
 		float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+
+		// Get detail mask
+		float4 detailMaskTex = tex2D(_DetailMask, i.uv.xy);
 		
 		float3 bumpTex = UnpackScaleNormal(tex2D(_BumpMap, i.uv.xy), _BumpScale);
 		
 		// Choose the correct UV map set
 		#if defined(_DETAIL_MULX2)
 			// Sample the detail normal using UV0, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
-			float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
+			float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale * detailMaskTex.r);
 		#else
 			// Sample the detail normal with UV1
-			float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
+			float3 detailBumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale * detailMaskTex.r);
 		#endif
 		
 		float3 normalLocal = BlendNormals(bumpTex, detailBumpTex);
@@ -218,13 +237,16 @@ float3 NormalDirection(v2f i)
 		normalDir = normalize(mul(normalLocal, tangentTransform));  
 	#elif defined(DETAILNORMALMAP) // Only detail normal
 		float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalDir);
+
+		// Get detail mask
+		float4 detailMaskTex = tex2D(_DetailMask, i.uv.xy);
 		
 		// Choose the correct UV map set
 		#if defined(_DETAIL_MULX2)
 			// Sample the detail normal, and re-apply the tiling. This may result in stacked tiling if the main texture is also transformed.
-			float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale);
+			float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap,TRANSFORM_TEX(i.uv.xy, _DetailNormalMap)), _DetailNormalMapScale * detailMaskTex.r);
 		#else
-			float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale);
+			float3 bumpTex = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailNormalMapScale * detailMaskTex.r);
 		#endif
 		
 		float3 normalLocal = bumpTex.rgb;
@@ -234,40 +256,51 @@ float3 NormalDirection(v2f i)
 	return normalDir;
 }
 
-// Prevent name conflict in outline pass
-#ifndef OUTLINE_PASS
-	v2f vert (appdata v)
-	{
-		// If vertex offset is enabled, apply that first
-		#if defined(_PARALLAXMAP)
-			VertexOffset(v);
-		#endif
+v2f vert (appdata v)
+{
+	// If vertex offset is enabled, apply that first
+	#if defined(_PARALLAXMAP)
+		VertexOffset(v);
+	#endif
 
-		v2f o;
-		o.pos = UnityObjectToClipPos(v.vertex);
-		// If UV1 is used, pack UV0 and UV1 into a single float4
-		#if defined(_REQUIRE_UV2)
-			float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
-			float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
-			o.uv = float4(uv0, uv1);
-		#else
-			o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-		#endif
-		o.normalDir = UnityObjectToWorldNormal(v.normal);
+	v2f o;
+
+	#if defined(UNITY_UI_ALPHACLIP)
+		if(_DebugEnabled == 1)
+		{
+			v.vertex = DebugUVs(v.uv, v.vertex);
+		}
+	#endif
+
+	o.pos = UnityObjectToClipPos(v.vertex);
+	// If UV1 is used, pack UV0 and UV1 into a single float4
+	#if defined(_REQUIRE_UV2)
+		float2 uv0 = TRANSFORM_TEX(v.uv, _MainTex);
+		float2 uv1 = TRANSFORM_TEX(v.uv1, _DetailNormalMap);
+		o.uv = float4(uv0, uv1);
+	#else
+		o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+	#endif
+	o.normalDir = UnityObjectToWorldNormal(v.normal);
+
+	// If we're not using normal maps or detail normal maps, we don't need the tangent or bitangent at all, saving us 2 interpolators.
+	#if defined(_NORMALMAP) || defined(DETAILNORMALMAP)
 		o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
 		o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-		o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-		#ifndef LIMITED_INTERPOLATORS
-			o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
-		#endif
-		
-		TRANSFER_SHADOW(o);
+	#endif
 
-		UNITY_TRANSFER_FOG(o, o.pos);
-		
-		return o;
-	}
-#endif
+	o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+
+	#ifndef LIMITED_INTERPOLATORS
+		o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
+	#endif
+	
+	TRANSFER_SHADOW(o);
+
+	UNITY_TRANSFER_FOG(o, o.pos);
+	
+	return o;
+}
 
 // Use SV_IsFrontFace semantic in shader model 5.0, this is not available in 2.0 so is not used
 #ifdef NO_ISFRONTFACE
@@ -289,7 +322,7 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 	
 	// Alpha to coverage
 	#if defined(_ALPHAMODULATE_ON) && !defined(NO_DERIVATIVES)
-		mainTex.a = (mainTex.a - _Cutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
+		mainTex.a = (mainTex.a - _AlphaToCoverageCutoff) / max(fwidth(mainTex.a), 0.00001) + 0.5;
 	#endif
 	
 	// Cutout
@@ -312,6 +345,12 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 	
 	// Obtain albedo from main texture and multiply by intensity
 	float3 albedo = mainTex.rgb * IntensityVar;
+
+	// Get the difference to subtract later.
+	// This essentially fades out the albedo without fading out other effects that rely on albedo (such as matcap or metallics)
+	#if defined(_ALPHAPREMULTIPLY_ON)
+		float3 premultiplyDifference = albedo - (albedo * mainTex.a);	
+	#endif
 	
 	// Apply saturation modifier
 	float lum = Luminance(albedo);
@@ -352,6 +391,11 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 	#if defined(_SUNDISK_SIMPLE) || defined(_SUNDISK_HIGH_QUALITY)
 		Rimlight(i.uv.xy, viewDir, normalDir, albedo);
 	#endif
+
+	#if defined(_ALPHAPREMULTIPLY_ON)
+		float3 originalAlbedo = albedo;
+		albedo -= premultiplyDifference;
+	#endif
 	
 	// Lighting
 
@@ -368,6 +412,8 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 	
 	float3 lightDirection;
 	float3 lightColor;
+
+	float3 specularColor = float3(0,0,0);
 	
 	// Fill the finalcolor with indirect light data (SH and vertex lights)
 	float3 finalColor = IndirectToonLighting(albedo, normalDir, i.worldPos.xyz, occlusionStrength);
@@ -394,7 +440,7 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 		#endif
 		// Apply specular highlights for the base light
 		#if defined(ETC1_EXTERNAL_ALPHA)
-			Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, occlusionStrength, finalColor);
+			specularColor += Specular(albedo, lightDirection, lightColor, normalDir, viewDir, 1, i.uv.xy, occlusionStrength) * _SpecularIndirectBoost;
 		#endif
 	#endif
 
@@ -410,19 +456,28 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 			finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
 			// Apply specular highlights again for the realtime light
 			#if defined(ETC1_EXTERNAL_ALPHA)
-				Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0, finalColor);
+				specularColor += Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0);
 			#endif
 		}
 	#else
 		finalColor += ToonLighting(albedo, normalDir, lightDirection, lightColor, ToonRampMaskColor, ToonContrastVar, ToonRampOffsetVar) * attenuation * _DirectLightBoost;
 		#if defined(ETC1_EXTERNAL_ALPHA)
-			Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0, finalColor);
+			specularColor += Specular(albedo, lightDirection, lightColor, normalDir, viewDir, attenuation, i.uv.xy, 0);
 		#endif
 	#endif
 	
 	// Apply metallic
 	#if defined(_METALLICGLOSSMAP) || defined(_SPECGLOSSMAP)
-		MetallicSpecularGloss(i.worldPos.xyz, i.uv.xy, normalDir, albedo, finalColor);
+		#if defined(_ALPHAPREMULTIPLY_ON)
+			MetallicSpecularGloss(i.worldPos.xyz, i.uv.xy, normalDir, originalAlbedo, finalColor);
+		#else
+			MetallicSpecularGloss(i.worldPos.xyz, i.uv.xy, normalDir, albedo, finalColor);
+		#endif
+	#endif
+
+	// After the metallic, apply the specular highlights
+	#if defined(ETC1_EXTERNAL_ALPHA)
+		finalColor += specularColor;
 	#endif
 	
 	// Apply emission
@@ -436,18 +491,38 @@ float4 frag (v2f i, bool facing : SV_IsFrontFace) : SV_Target
 			emissive.rgb *= mainTex.rgb;
 		}
 		
-		finalColor += emissive.rgb;
+		// When using premultiplied transparency, optionally premultiply the emission color too.
+		#if defined(_ALPHAPREMULTIPLY_ON)
+			if(_EmissionPremultiply == 1)
+			{
+				finalColor += emissive.rgb * mainTex.a;
+			}
+			else
+			{
+				finalColor += emissive.rgb;
+			}
+		#else
+			finalColor += emissive.rgb;
+		#endif
 	#endif
 	
-	#if defined(_ALPHABLEND_ON) || defined(_ALPHAMODULATE_ON)
+	#if defined(_ALPHABLEND_ON) || defined(_ALPHAMODULATE_ON) || defined(_ALPHAPREMULTIPLY_ON)
 		float finalAlpha = mainTex.a;
 	#else
 		float finalAlpha = 1;
 	#endif
-	
+
 	float4 finalOutput = float4(finalColor, finalAlpha);
 
 	UNITY_APPLY_FOG(i.fogCoord, finalOutput);
+
+	#if defined(UNITY_UI_ALPHACLIP)
+		if(_DebugEnabled == 1 && _DebugNormals == 1)
+		{
+			float3 normalColor = DebugNormalColor(normalDir);
+			return float4(normalColor, 1);
+		}
+	#endif
 
 	return finalOutput;
 }

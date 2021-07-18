@@ -75,6 +75,7 @@ v2f vertEyeTracking(appdata v)
     }
     
     // Pre-apply scale
+    // Calculate the XYZ scales
     float4 modelX = float4(1.0, 0.0, 0.0, 0.0);
     float4 modelY = float4(0.0, 1.0, 0.0, 0.0);
     float4 modelZ = float4(0.0, 0.0, 1.0, 0.0);
@@ -87,7 +88,7 @@ v2f vertEyeTracking(appdata v)
     float scaleY = length(modelYInWorld);
     float scaleZ = length(modelZInWorld);
     
-    // Pre-apply scale
+    // Apply scales
     v.vertex.xyz *= float3(scaleX, scaleY, scaleZ);
     v.normal = normalize(v.normal * float3(scaleX, scaleY, scaleZ));
 
@@ -105,7 +106,7 @@ v2f vertEyeTracking(appdata v)
     // Get the default looking ahead vector
     // To obtain this vector, a forward vector is created and multiplied by unity_ObjectToWorld.
     // Casting it to float3x3 eliminates translation data and only leaves the rotation and scale of the mesh.
-    // Normalizing it will then get rid of any scaling effects.
+    // Normalizing it will then get rid of the scale.
     float3 forwardVect = normalize(mul((float3x3)unity_ObjectToWorld, float3(0,0,-1)));
     
     //Check if the camera is behind the eye
@@ -171,8 +172,11 @@ v2f vertEyeTracking(appdata v)
     matrix_M_noRot[2][1] = 0;
     matrix_M_noRot[2][2] = 1;
     
+    // Apply our custom object to world matrix to the vertex position
     float4 vertWorldPos = mul(matrix_M_noRot, newPos);
-    newNormal = mul(matrix_M_noRot, newNormal);
+
+    // Apply it again to the normals
+    newNormal = normalize(mul(matrix_M_noRot, newNormal));
     
 
     v2f o;
@@ -187,8 +191,13 @@ v2f vertEyeTracking(appdata v)
         o.uv = TRANSFORM_TEX(v.uv, _MainTex);
     #endif
     o.normalDir = newNormal;
-    o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
-    o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
+
+	// If we're not using normal maps or detail normal maps, we don't need the tangent or bitangent at all, saving us 2 interpolators.
+	#if defined(_NORMALMAP) || defined(DETAILNORMALMAP)
+		o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
+		o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
+	#endif
+
     o.worldPos = mul(unity_ObjectToWorld, v.vertex);
     o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
     TRANSFER_SHADOW(o);

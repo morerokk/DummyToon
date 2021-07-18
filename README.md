@@ -1,16 +1,17 @@
 # Dummy Toon Shader
-A toon shader for Unity 2018 (and older, including 2017 and 5.6). Supports the Forward rendering pipeline. For versions of Unity 2019 and up, check the `master` branch.
+A toon shader for Unity. Supports the Forward rendering pipeline. This branch is for Unity 5, 2017 and 2018. For versions of Unity 2019 and up, check the `master` branch.
 
 ## Features
 * Solid toon shading that looks good and consistent in a large variety of different lighting setups
 * Supports baked lighting, realtime lighting, shadows, vertex lights and anything else you can expect a Unity scene to have.
 * VR-friendly and light on performance
 * Normal maps, detail normals, emission
-* Opaque, Cutout, Transparent and Alpha To Coverage rendering modes
+* Supports most opaque and transparent rendering modes
 * Outlines
 * Matcaps
 * Rimlight
 * Hue Shifting
+* Metallics and specular highlights
 * Custom toon ramps, supporting up to 4 different toon ramps on the same material, helping keep the amount of drawcalls down
 * Experimental "eye tracking" feature, which allows a character to dynamically look at the camera and back forward using only a shader
 * Custom editor GUI with integrated help boxes and a clean interface
@@ -18,7 +19,7 @@ A toon shader for Unity 2018 (and older, including 2017 and 5.6). Supports the F
 ## Installation
 Grab the latest release from the "Releases" tab of this repository. Download and import the unity package. If your Unity version is older than the package, download this repository as zip instead, and extract it to your assets folder.
 
-This version of the shader works in Unity 2018, and should work on almost any older version (and newer version) too. It does not use local keywords, so keep an eye out for the 256 shader keyword limit, or use the shader optimizer under third-party to bake in the material keywords. If you are on Unity 2019 and up, use the master branch/2019 releases instead.
+This version of the shader was made on Unity 2018, and should work on almost any older version (and newer version) too. It does not use local keywords, so keep an eye out for the 256 shader keyword limit, or use the shader optimizer under third-party to bake in the material keywords. If you are on Unity 2019 and up, use the master branch/2019 releases instead.
 
 For more information on the shader or how to use features, make sure to check the Wiki tab of this repository.
 

@@ -17,6 +17,7 @@ namespace Rokk.DummyToon.Editor
         protected MaterialProperty emissionMap = null;
         protected MaterialProperty emissionColor = null;
         protected MaterialProperty emissionIsTint = null;
+        protected MaterialProperty emissionPremultiplyEnabled = null;
         protected MaterialProperty cullMode = null;
         protected MaterialProperty renderMode = null;
         protected MaterialProperty zWrite = null;
@@ -42,6 +43,7 @@ namespace Rokk.DummyToon.Editor
         protected MaterialProperty overrideWorldLightDirection = null;
         protected MaterialProperty additiveRampMode = null;
         protected MaterialProperty additiveRamp = null;
+        protected MaterialProperty lightDirectionNudge = null;
 
         // Metallic and specular (old)
         protected MaterialProperty metallicMode = null;
@@ -58,6 +60,7 @@ namespace Rokk.DummyToon.Editor
         protected MaterialProperty specularColor = null;
         protected MaterialProperty specularToonyEnabled = null;
         protected MaterialProperty specularToonyCutoff = null;
+        protected MaterialProperty specularIndirectLightBoost = null;
 
         // Ramp masking
         protected MaterialProperty rampMaskingEnabled = null;
@@ -105,11 +108,13 @@ namespace Rokk.DummyToon.Editor
 
         // Alpha To Coverage
         protected MaterialProperty alphaToCoverageEnabled = null;
+        protected MaterialProperty alphaToCoverageCutoff = null;
 
         // Detail normal
         protected MaterialProperty detailNormalTex = null;
         protected MaterialProperty detailNormalScale = null;
         protected MaterialProperty detailNormalUvMap = null;
+        protected MaterialProperty detailMaskTex = null;
 
         // Vertex Offset
         protected MaterialProperty vertexOffsetEnabled = null;
@@ -134,6 +139,22 @@ namespace Rokk.DummyToon.Editor
         protected MaterialProperty hueShiftMaskTex = null;
         protected MaterialProperty hueShiftAmountOverTime = null;
 
+        // Debug properties
+        /// <summary>
+        /// Controls whether the debug section is enabled at all.
+        /// </summary>
+        protected MaterialProperty debugOptionsEnabled = null;
+
+        /// <summary>
+        /// Controls whether debug is *currently* enabled or not. Allows toggling the feature on/off at runtime without having to adjust the keywords.
+        /// </summary>
+        protected MaterialProperty debugEnabled = null;
+        protected MaterialProperty debugMinLightBrightness = null;
+        protected MaterialProperty debugMaxLightBrightness = null;
+        protected MaterialProperty debugNormalsEnabled = null;
+        protected MaterialProperty debugUvsEnabled = null;
+        protected MaterialProperty debugUvsOffset = null;
+
         // Internal properties
         protected MaterialProperty srcBlend = null;
         protected MaterialProperty dstBlend = null;
@@ -142,19 +163,22 @@ namespace Rokk.DummyToon.Editor
         // Keeps track of which sections are opened and closed.
         private bool mainExpanded = true;
         private bool toonExpanded = true;
-        private bool outlinesExpanded = false;
+        private bool outlinesExpanded = true;
         private bool metallicExpanded = false;
         private bool specularExpanded = false;
         private bool matcapExpanded = false;
         private bool rimlightExpanded = false;
         private bool vertexOffsetExpanded = false;
         private bool hueShiftExpanded = false;
+        private bool debugExpanded = false;
         private bool miscExpanded = false;
 #if SHADEROPTIMIZER_INSTALLED
         private bool shaderOptimizerExpanded = false;
 #endif
 
         private bool emissionTintHelpExpanded = false;
+        private bool emissionPremultiplyHelpExpanded = false;
+        private bool renderModeHelpExpanded = false;
         private bool rampTintHelpExpanded = false;
         private bool rampMaskHelpExpanded = false;
         private bool indirectLightMergeHelpExpanded = false;
@@ -163,6 +187,7 @@ namespace Rokk.DummyToon.Editor
         private bool matCapOriginHelpExpanded = false;
         private bool vertexOffsetHelpExpanded = false;
         private bool specularModeHelpExpanded = false;
+        private bool lightDirectionNudgeHelpExpanded = false;
 
         private bool shouldRegenerateKeywords = true;
 
@@ -227,6 +252,8 @@ namespace Rokk.DummyToon.Editor
             }
 
             DrawHueShift();
+
+            DrawDebug();
         }
 
         // Called when user switches to this shader
@@ -259,6 +286,7 @@ namespace Rokk.DummyToon.Editor
 
             editor.TexturePropertySingleLine(new GUIContent("Emission Map"), emissionMap, emissionColor);
 
+            EditorGUI.indentLevel += 2;
             ShaderPropertyWithHelp(
                 emissionIsTint,
                 new GUIContent("Tinted Emission", "If enabled, the emission is maintex * emission rather than just emission."),
@@ -267,10 +295,32 @@ namespace Rokk.DummyToon.Editor
                 "If disabled, the emission map is used as-is."
             );
 
+            if (renderMode.floatValue == 3)
+            {
+                ShaderPropertyWithHelp(
+                    emissionPremultiplyEnabled,
+                    new GUIContent("Premultiply Emission", "If enabled, the emission color will be premultiplied by the alpha."),
+                    ref emissionPremultiplyHelpExpanded,
+                    "If enabled, the emission color will be multiplied by the alpha. It will fade out as the alpha decreases.\r\n\r\n" +
+                    "If disabled, the emission will not fade out when alpha decreases."
+                );
+            }
+            EditorGUI.indentLevel -= 2;
+
             editor.ShaderProperty(cullMode, new GUIContent("Sidedness", "Which sides of the mesh should be rendered."));
 
             EditorGUI.BeginChangeCheck();
-            editor.ShaderProperty(renderMode, new GUIContent("Render Mode", "Change the rendering mode of the material."));
+
+            ShaderPropertyWithHelp(
+                renderMode,
+                new GUIContent("Render Mode", "Change the rendering mode of the material."),
+                ref renderModeHelpExpanded,
+                "Sets the transparency mode.\n\n" +
+                "Opaque: No transparency. Default.\n\n" +
+                "Fade: Traditional alpha blended transparency. Best used for things like blush effects, ghosts and holograms.\n\n" +
+                "Transparent: More physically plausible transparency. Special effects such as metallics and specular highlights are not affected by alpha. Best used for things like glass and other physical surfaces."
+            );
+
             if (EditorGUI.EndChangeCheck())
             {
                 SetupBlendModes();
@@ -285,12 +335,14 @@ namespace Rokk.DummyToon.Editor
 
             if (cutoutEnabled.floatValue == 1)
             {
+                EditorGUI.indentLevel += 2;
                 editor.RangeProperty(cutoff, "Alpha Cutoff");
+                EditorGUI.indentLevel -= 2;
             }
 
             editor.ShaderProperty(zWrite, new GUIContent("ZWrite", "Whether the shader should write to the depth buffer or not."));
 
-            if (renderMode.floatValue != 2 && zWrite.floatValue == 0)
+            if (renderMode.floatValue == 0 && zWrite.floatValue == 0)
             {
                 EditorGUILayout.HelpBox("ZWrite is disabled on a non-transparent rendering mode. This is likely not intentional.", MessageType.Warning);
             }
@@ -298,8 +350,10 @@ namespace Rokk.DummyToon.Editor
             editor.TexturePropertySingleLine(new GUIContent("Occlusion Map", "The Ambient Occlusion map for this material. The red channel of the AO map determines how much indirect light is contributed."), occlusionMap);
             if(occlusionMap.textureValue != null)
             {
+                EditorGUI.indentLevel += 2;
                 editor.RangeProperty(occlusionStrength, "Occlusion Strength");
-                if(occlusionStrength.floatValue == 0)
+                EditorGUI.indentLevel -= 2;
+                if (occlusionStrength.floatValue == 0)
                 {
                     EditorGUILayout.HelpBox("Occlusion Strength is 0. Consider setting the Occlusion Map texture to None.", MessageType.Warning);
                 }
@@ -335,8 +389,10 @@ namespace Rokk.DummyToon.Editor
                 "This helps prevent the creation of two different light directions on the same Mixed directional light."
             );
 
+            EditorGUI.indentLevel += 2;
             editor.RangeProperty(indirectLightDirMergeMin, "Minimum Merge Threshold");
             editor.RangeProperty(indirectLightDirMergeMax, "Maximum Merge Threshold");
+            EditorGUI.indentLevel -= 2;
 
             EditorGUILayout.Space();
 
@@ -356,7 +412,7 @@ namespace Rokk.DummyToon.Editor
                 "Toon ramp tinting is an experimental feature that tints the darker side of the toon ramp towards the surface color. This can help make colors look less washed out on the dark side of the ramp. Works best with greyscale ramps, not recommended with colored ramps."
             );
 
-            editor.VectorProperty(staticToonLight, "Fallback light direction");
+            Vector3Property(staticToonLight, new GUIContent("Fallback light direction", "The direction the fake light should be coming from if no light or ambient lighting was detected at all."), true);
             editor.ShaderProperty(overrideWorldLightDirection, new GUIContent("Always use fallback", "Whether the fallback light direction should *always* be used."));
 
             // Draw the ramp masking toggle and a help box button horizontally
@@ -364,7 +420,8 @@ namespace Rokk.DummyToon.Editor
                 rampMaskingEnabled,
                 new GUIContent("Ramp Masking", "Enable the Ramp Masking feature, allowing you to use RGB masks to define up to 4 toon ramps on the same material."),
                 ref rampMaskHelpExpanded,
-                "Toon Ramp Masking is an experimental feature to allow up to 4 different toon ramps and toon values to be used on the same material. The color of the mask texture defines whether the Red, Green, Blue or Default values are used in that particular area."
+                "Toon Ramp Masking allows up to 4 different toon ramps and toon values to be used on the same material. The color of the mask texture defines whether the Red, Green, Blue or Default values are used in that particular area.\n\n" +
+                "Color an area red on the mask texture to use the R values, green for G values, and so on. Black means use the default values above."
             );
 
             if (rampMaskingEnabled.floatValue == 1)
@@ -387,6 +444,15 @@ namespace Rokk.DummyToon.Editor
             {
                 editor.TexturePropertySingleLine(new GUIContent("Additive Ramp", "The toon ramp texture to use for realtime lights."), additiveRamp);
             }
+
+            // Light direction nudge
+            Vector3PropertyWithHelp(
+                lightDirectionNudge,
+                new GUIContent("Light Direction Nudge"),
+                ref lightDirectionNudgeHelpExpanded,
+                "Nudges the light into a particular direction. Useful on toony models where lights don't look good when coming from above.\n\n" +
+                "For instance, lowering the Y value will make the light come from more horizontal directions instead."
+            );
         }
 
         private void DrawRampMasking()
@@ -397,28 +463,38 @@ namespace Rokk.DummyToon.Editor
             //Red ramp
             ToonRampProperty(new GUIContent("Toon Ramp (R)", "The toon ramp texture to use on the red parts of the mask."), rampR);
 
+            EditorGUI.indentLevel += 2;
             editor.RangeProperty(toonContrastR, "Toon Contrast (R)");
             editor.RangeProperty(toonRampOffsetR, "Toon Ramp Offset (R)");
             editor.RangeProperty(intensityR, "Intensity (R)");
             editor.RangeProperty(saturationR, "Saturation (R)");
+            EditorGUI.indentLevel -= 2;
 
             EditorGUILayout.Space();
 
             //Green ramp
             ToonRampProperty(new GUIContent("Toon Ramp (G)", "The toon ramp texture to use on the green parts of the mask."), rampG);
+
+            EditorGUI.indentLevel += 2;
             editor.RangeProperty(toonContrastG, "Toon Contrast (G)");
             editor.RangeProperty(toonRampOffsetG, "Toon Ramp Offset (G)");
             editor.RangeProperty(intensityG, "Intensity (G)");
             editor.RangeProperty(saturationG, "Saturation (G)");
+            EditorGUI.indentLevel -= 2;
 
             EditorGUILayout.Space();
 
             //Blue ramp
             ToonRampProperty(new GUIContent("Toon Ramp (B)", "The toon ramp texture to use on the blue parts of the mask."), rampB);
+
+            EditorGUI.indentLevel += 2;
             editor.RangeProperty(toonContrastB, "Toon Contrast (B)");
             editor.RangeProperty(toonRampOffsetB, "Toon Ramp Offset (B)");
             editor.RangeProperty(intensityB, "Intensity (B)");
             editor.RangeProperty(saturationB, "Saturation (B)");
+            EditorGUI.indentLevel -= 2;
+
+            EditorGUILayout.Space();
         }
 
         private void DrawOutlines()
@@ -518,7 +594,8 @@ namespace Rokk.DummyToon.Editor
             ShaderPropertyWithHelp(specularMode, new GUIContent(
                 "Specular Mode", "Defines the specular mode that should be used."),
                 ref specularModeHelpExpanded,
-                "Defines the type of specular to use. Blinn-Phong shows up from wider angles than Blinn.\n\nBlinn-Phong looks more \"realistic\", but can sometimes look strange when lit from behind."
+                "Defines the type of specular to use. Blinn-Phong shows up from wider angles than Blinn, and is slightly more realistic.\n\n" +
+                "Blinn-Phong View is \"fake\" specular that is visible from any direction, similar to a matcap."
             );
 
             editor.TexturePropertySingleLine(new GUIContent("Specular Map", "The specular map texture to use. RGB defines color, A defines smoothness."), specularMap, specularColor);
@@ -526,8 +603,12 @@ namespace Rokk.DummyToon.Editor
             editor.ShaderProperty(specularToonyEnabled, new GUIContent("Toony Specular", "Enables toony specular, which looks sharper."));
             if(specularToonyEnabled.floatValue == 1)
             {
+                EditorGUI.indentLevel += 2;
                 editor.ShaderProperty(specularToonyCutoff, new GUIContent("Specular Cutoff", "Specularity below this value is cut off and replaced with no specular. Any specularity above this value is replaced with full specular instead, giving a toonier look."));
+                EditorGUI.indentLevel -= 2;
             }
+
+            editor.ShaderProperty(specularIndirectLightBoost, new GUIContent("Specular Indirect Light Boost", "Increases or decreases the intensity of specular highlights from the environment. Set to 0 to only receive specular highlights from realtime lights."));
 
             EditorGUI.EndDisabledGroup();
         }
@@ -610,10 +691,10 @@ namespace Rokk.DummyToon.Editor
 
             EditorGUI.BeginDisabledGroup(vertexOffsetEnabled.floatValue == 0);
 
-            editor.VectorProperty(vertexOffsetPos, "Local Position Offset");
-            editor.VectorProperty(vertexOffsetRot, "Rotation");
-            editor.VectorProperty(vertexOffsetScale, "Scale");
-            editor.VectorProperty(vertexOffsetPosWorld, "World Position Offset");
+            Vector3Property(vertexOffsetPos, new GUIContent("Local Position Offset", "How much to translate the mesh by in object space."), true);
+            Vector3Property(vertexOffsetRot, new GUIContent("Rotation", "How much to rotate the mesh by in object space."), true);
+            Vector3Property(vertexOffsetScale, new GUIContent("Scale", "How much to scale the mesh by in object space."), true);
+            Vector3Property(vertexOffsetPosWorld, new GUIContent("World Position Offset", "How much to translate the mesh by in world space."), true);
 
             EditorGUI.EndDisabledGroup();
         }
@@ -648,6 +729,7 @@ namespace Rokk.DummyToon.Editor
             editor.TexturePropertySingleLine(new GUIContent("Detail Normal Map", "An additional detail normal map."), detailNormalTex, detailNormalScale);
             editor.TextureScaleOffsetProperty(detailNormalTex);
             editor.ShaderProperty(detailNormalUvMap, new GUIContent("UV Map", "Which UV Map to use for the detail normals."));
+            editor.TexturePropertySingleLine(new GUIContent("Detail Mask", "A mask texture that defines how strong the normal map should be (R)."), detailMaskTex);
 
             EditorGUILayout.Space();
 
@@ -655,7 +737,9 @@ namespace Rokk.DummyToon.Editor
 
             if (alphaToCoverageEnabled.floatValue == 1)
             {
-                editor.RangeProperty(cutoff, "Alpha Cutoff");
+                EditorGUI.indentLevel += 2;
+                editor.RangeProperty(alphaToCoverageCutoff, "Alpha Cutoff");
+                EditorGUI.indentLevel -= 2;
                 EditorGUILayout.HelpBox("When using Alpha To Coverage, ensure that the main texture has \"Mip Maps Preserve Coverage\" enabled in the import settings.", MessageType.Info);
             }
 
@@ -679,6 +763,29 @@ namespace Rokk.DummyToon.Editor
             }
 
             editor.RenderQueueField();
+        }
+
+        private void DrawDebug()
+        {
+            debugExpanded = Section("Debug", debugExpanded);
+            if (!debugExpanded)
+            {
+                return;
+            }
+
+            editor.ShaderProperty(debugOptionsEnabled, new GUIContent("Allow Debug Values", "If enabled, allows you to use the below debug values, such as putting a limit on the min/max brightness of lights."));
+
+            EditorGUI.BeginDisabledGroup(debugOptionsEnabled.floatValue == 0);
+
+            editor.ShaderProperty(debugEnabled, new GUIContent("Enable Debug Values", "Enables the below debug options (only if Allow Debug Values is enabled)."));
+            editor.ShaderProperty(debugMinLightBrightness, new GUIContent("Min Light Brightness", "If debug is enabled and a light is darker than this, it will be brightened to this value."));
+            editor.ShaderProperty(debugMaxLightBrightness, new GUIContent("Max Light Brightness", "If debug is enabled and a light is brighter than this, it will be darkened to this value."));
+            
+            editor.ShaderProperty(debugNormalsEnabled, new GUIContent("Show Normals", "Shows the surface normals as colors."));
+            editor.ShaderProperty(debugUvsEnabled, new GUIContent("Visualize UV's", "Visualize the model's UV maps."));
+            Vector3Property(debugUvsOffset, new GUIContent("UV Offset", "How much to offset the mesh by after visualizing the UV's."));
+
+            EditorGUI.EndDisabledGroup();
         }
 
 #if SHADEROPTIMIZER_INSTALLED
@@ -707,23 +814,47 @@ namespace Rokk.DummyToon.Editor
                     // For this event, skip the keyword stuff
                     shouldRegenerateKeywords = false;
 
-                    if (propertiesToAnimate.Trim().Length > 0)
+                    // Lock all materials individually, respecting the "properties to animate" box
+                    foreach(var mat in this.materials)
                     {
-                        LockAllSelectedMaterials(propertiesToAnimate.Trim().Split(';').ToList());
+                        string propertiesToAnimateForThisMaterial = mat.GetTag("propertiesToAnimate", false, "");
+                        if (propertiesToAnimateForThisMaterial.Trim().Length > 0)
+                        {
+                            LockMaterial(mat, propertiesToAnimateForThisMaterial.Trim().Split(';').ToList());
+                        }
+                        else
+                        {
+                            LockMaterial(mat);
+                        }
                     }
-                    else
+                }
+
+                // Check if the text field should be shown as a "mixed" value, this happens if materials have different values for the properties to animate field.
+                var showMixed = false;
+                foreach(var mat in this.materials)
+                {
+                    string propertiesToAnimateForThisMaterial = mat.GetTag("propertiesToAnimate", false, "");
+                    if(propertiesToAnimate != propertiesToAnimateForThisMaterial)
                     {
-                        LockAllSelectedMaterials();
+                        showMixed = true;
+                        break;
                     }
-                }                
+                }
 
                 EditorGUILayout.HelpBox("Locking your material optimizes it, but also prevents properties from being changed or animated afterwards.\r\n\r\nTo make a property editable, type its internal name into the text field below. Multiple semicolon-separated (;) values are possible.", MessageType.Info);
                 EditorGUILayout.LabelField(new GUIContent("Animatable properties"), EditorStyles.boldLabel);
                 EditorGUI.BeginChangeCheck();
+
+                EditorGUI.showMixedValue = showMixed;
                 propertiesToAnimate = EditorGUILayout.TextField(propertiesToAnimate);
+                EditorGUI.showMixedValue = false;
+
                 if(EditorGUI.EndChangeCheck())
                 {
-                    material.SetOverrideTag("propertiesToAnimate", propertiesToAnimate);
+                    foreach (var mat in this.materials)
+                    {
+                        mat.SetOverrideTag("propertiesToAnimate", propertiesToAnimate);
+                    }
                 }
             }
         }
@@ -742,6 +873,7 @@ namespace Rokk.DummyToon.Editor
             emissionMap = FindProperty("_EmissionMap");
             emissionColor = FindProperty("_EmissionColor");
             emissionIsTint = FindProperty("_EmissionMapIsTint");
+            emissionPremultiplyEnabled = FindProperty("_EmissionPremultiply");
             cullMode = FindProperty("_Cull");
             cutoutEnabled = FindProperty("_CutoutEnabled");
 
@@ -765,6 +897,7 @@ namespace Rokk.DummyToon.Editor
             overrideWorldLightDirection = FindProperty("_OverrideWorldLightDir");
             additiveRampMode = FindProperty("_AdditiveRampMode");
             additiveRamp = FindProperty("_AdditiveRamp");
+            lightDirectionNudge = FindProperty("_LightDirectionNudge");
 
             // Metallic and specular (old)
             metallicMode = FindProperty("_MetallicMode");
@@ -781,6 +914,7 @@ namespace Rokk.DummyToon.Editor
             specularColor = FindProperty("_SpecularColor");
             specularToonyEnabled = FindProperty("_SpecularToonyEnabled");
             specularToonyCutoff = FindProperty("_SpecularToonyCutoff");
+            specularIndirectLightBoost = FindProperty("_SpecularIndirectBoost");
 
             // Ramp masking
             rampMaskingEnabled = FindProperty("_RampMaskEnabled");
@@ -828,11 +962,13 @@ namespace Rokk.DummyToon.Editor
 
             // A2C
             alphaToCoverageEnabled = FindProperty("_AlphaToCoverage");
+            alphaToCoverageCutoff = FindProperty("_AlphaToCoverageCutoff");
 
             // Detail normal
             detailNormalTex = FindProperty("_DetailNormalMap");
             detailNormalScale = FindProperty("_DetailNormalMapScale");
             detailNormalUvMap = FindProperty("_UVSec");
+            detailMaskTex = FindProperty("_DetailMask");
 
             // Stencils
             stencilRef = FindProperty("_StencilRef", false);
@@ -856,6 +992,14 @@ namespace Rokk.DummyToon.Editor
             hueShiftAmount = FindProperty("_HueShiftAmount");
             hueShiftMaskTex = FindProperty("_HueShiftMask");
             hueShiftAmountOverTime = FindProperty("_HueShiftAmountOverTime");
+
+            debugOptionsEnabled = FindProperty("_DebugOptionsEnabled");
+            debugEnabled = FindProperty("_DebugEnabled");
+            debugMinLightBrightness = FindProperty("_DebugMinLightBrightness");
+            debugMaxLightBrightness = FindProperty("_DebugMaxLightBrightness");
+            debugNormalsEnabled = FindProperty("_DebugNormals");
+            debugUvsEnabled = FindProperty("_DebugUVs");
+            debugUvsOffset = FindProperty("_DebugUVsOffset");
 
             // Internal properties
             renderMode = FindProperty("_Mode");
@@ -907,6 +1051,10 @@ namespace Rokk.DummyToon.Editor
                 if (mat.GetFloat("_Mode") == 2)
                 {
                     mat.EnableKeyword("_ALPHABLEND_ON");
+                }
+                else if (mat.GetFloat("_Mode") == 3)
+                {
+                    mat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
                 }
 
                 // Add normal map keyword if used.
@@ -1049,6 +1197,12 @@ namespace Rokk.DummyToon.Editor
                 {
                     mat.EnableKeyword("EFFECT_BUMP");
                 }
+
+                // Debug options
+                if(mat.GetFloat("_DebugOptionsEnabled") == 1)
+                {
+                    mat.EnableKeyword("UNITY_UI_ALPHACLIP");
+                }
             }
         }
 
@@ -1071,15 +1225,28 @@ namespace Rokk.DummyToon.Editor
         /// <param name="material">The material to set up.</param>
         private void SetupBlendModes(Material material)
         {
-            // Check if the render type is transparent or not
+            // Check if the render type is fade/transparent or not
             if (material.GetInt("_Mode") == 2)
             {
-                // Set up transparent blend modes
+                // Set up fade blend modes
                 material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                 material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
 
                 // Enable alpha blend keyword
                 material.EnableKeyword("_ALPHABLEND_ON");
+
+                // Set queue and rendertype
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                material.SetOverrideTag("RenderType", "Transparent");
+            }
+            else if (material.GetInt("_Mode") == 3)
+            {
+                // Set up transparent blend modes
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+
+                // Enable alpha premultiply keyword
+                material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
 
                 // Set queue and rendertype
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
@@ -1091,8 +1258,9 @@ namespace Rokk.DummyToon.Editor
                 material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
                 material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
 
-                // Disable alpha blend keyword
+                // Disable alpha blend/premultiply keywords
                 material.DisableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
 
                 // If Cutout is enabled, set the queue to AlphaTest and change the rendertype
                 // Otherwise, set the queue and rendertype back to default.

@@ -12,7 +12,19 @@ float3 IndirectToonLighting(float3 albedo, float3 normalDir, float3 worldPos, fl
 
 		// Under extreme circumstances, ShadeSH9 can give the wrong information for flat ambient purposes, whereas the equation below it is more accurate.
 		//float3 lighting = albedo * ShadeSH9(float4(0,0,0,1));
-		float3 lighting = albedo * (float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w) + float3(unity_SHBr.z, unity_SHBg.z, unity_SHBb.z) / 3.0);
+
+		float3 ambientLightColor = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w) + float3(unity_SHBr.z, unity_SHBg.z, unity_SHBb.z) / 3.0;
+
+		// Debug options
+		#if defined(UNITY_UI_ALPHACLIP)
+			if(_DebugEnabled == 1)
+			{
+				ambientLightColor = min(_DebugMaxLightBrightness, ambientLightColor);
+				ambientLightColor = max(_DebugMinLightBrightness, ambientLightColor);
+			}
+		#endif
+
+		float3 lighting = albedo * ambientLightColor;
 
 		// Reduce SH contribution based on AO strength.
 		// Vertex lights must not be affected, as they are direct light sources.
@@ -187,9 +199,20 @@ void GetBaseLightData(inout float3 lightDirection, inout float3 lightColor)
 		lightDirection = GIsonarDirection();
 	#endif
 
+	lightDirection = normalize(lightDirection * _LightDirectionNudge);
+
 	// What
 	//lightColor = ShadeSH9(float4(0,0,0,1));
 	lightColor = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w) + float3(unity_SHBr.z, unity_SHBg.z, unity_SHBb.z) / 3.0;
+
+	// Debug options
+	#if defined(UNITY_UI_ALPHACLIP)
+		if(_DebugEnabled == 1)
+		{
+			lightColor = min(_DebugMaxLightBrightness, lightColor);
+			lightColor = max(_DebugMinLightBrightness, lightColor);
+		}
+	#endif
 }
 
 // Fill the light direction and light color parameters.
@@ -217,6 +240,17 @@ void GetLightData(float3 worldPos, inout float3 lightDirection, inout float3 lig
 			#endif
 		#endif
 	#endif
+
+	// Debug options
+	#if defined(UNITY_UI_ALPHACLIP)
+		if(_DebugEnabled == 1)
+		{
+			lightColor = min(_DebugMaxLightBrightness, lightColor);
+			lightColor = max(_DebugMinLightBrightness, lightColor);
+		}
+	#endif
+
+	lightDirection = normalize(lightDirection * _LightDirectionNudge);
 }
 
 // If the direction of the baked light is too close to that of the ForwardBase realtime directional light,
