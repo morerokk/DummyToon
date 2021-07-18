@@ -34,9 +34,14 @@ v2f vertOutline(appdata v)
 	o.pos = UnityObjectToClipPos(float4(v.vertex.xyz + v.normal*OutlineScale,1));
 
 	o.normalDir = UnityObjectToWorldNormal(v.normal);
-	o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
-	o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
+
+	#if defined(_NORMALMAP) || defined(DETAILNORMALMAP)
+		o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
+		o.bitangentDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
+	#endif
+
 	o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+
 	#ifndef LIMITED_INTERPOLATORS
 		o.objWorldPos = mul(unity_ObjectToWorld, float4(0,0,0,1));
 	#endif

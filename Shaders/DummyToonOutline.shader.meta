@@ -6,18 +6,22 @@ ShaderImporter:
   - _MainTex: {instanceID: 0}
   - _BumpMap: {instanceID: 0}
   - _EmissionMap: {instanceID: 0}
-  - _Ramp: {fileID: 2800000, guid: e9b2e3debb91f8a4581576bf71b2bf99, type: 3}
-  - _AdditiveRamp: {fileID: 2800000, guid: e9b2e3debb91f8a4581576bf71b2bf99, type: 3}
+  - _OcclusionMap: {instanceID: 0}
+  - _Ramp: {fileID: 2800000, guid: d2d340836723d5b489d2c22a17657a6b, type: 3}
+  - _AdditiveRamp: {fileID: 2800000, guid: d2d340836723d5b489d2c22a17657a6b, type: 3}
   - _MetallicGlossMap: {instanceID: 0}
   - _SpecGlossMap: {instanceID: 0}
+  - _SpecMap: {instanceID: 0}
   - _RampMaskTex: {instanceID: 0}
   - _RampR: {instanceID: 0}
   - _RampG: {instanceID: 0}
   - _RampB: {instanceID: 0}
   - _RimTex: {instanceID: 0}
   - _MatCap: {instanceID: 0}
+  - _MatCapTintTex: {instanceID: 0}
   - _OutlineTex: {instanceID: 0}
   - _DetailNormalMap: {instanceID: 0}
+  - _HueShiftMask: {instanceID: 0}
   nonModifiableTextures: []
   userData: 
   assetBundleName: 

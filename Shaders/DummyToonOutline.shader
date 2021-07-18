@@ -8,7 +8,7 @@
 		[NoScaleOffset] [Normal] _BumpMap ("Normal Map", 2D) = "bump" {}
 		_BumpScale("Normal Scale", Float) = 1.0
 		
-		[Enum(Opaque,0,Transparent,2)] _Mode ("Rendering Mode", Float) = 0
+		[Enum(Opaque,0,Fade,2,Transparent,3)] _Mode ("Rendering Mode", Float) = 0
 		
 		[Toggle(_ALPHATEST_ON)] _CutoutEnabled ("Cutout", Float) = 0
 		_Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
@@ -19,6 +19,7 @@
 		[NoScaleOffset] _EmissionMap("Emission Map", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission Color", Color) = (0,0,0)
 		[Toggle(_)] _EmissionMapIsTint("Emission Map is tint", Float) = 0
+		[Toggle(_)] _EmissionPremultiply("Premultiply Emission by Alpha", Float) = 0
 
 		[NoScaleOffset] _OcclusionMap ("Ambient Occlusion Map", 2D) = "white" {}
 		_OcclusionStrength ("AO Strength", Range(0,1)) = 1
@@ -35,6 +36,7 @@
 		[Toggle(_OVERRIDEWORLDLIGHTDIR_ON)] _OverrideWorldLightDir ("Always use fallback", Float) = 0
 		[Enum(None,0,Additive Only,1,Always,2)] _AdditiveRampMode ("Additive Ramp Mode", Float) = 0
 		[NoScaleOffset] _AdditiveRamp ("Additive Toon Ramp", 2D) = "white" {}
+		_LightDirectionNudge ("Light Direction Nudge", Vector) = (1,1,1,1)
 		
 		_Intensity ("Intensity", Range(0, 5)) = 1.3
 		_Saturation ("Saturation", Range(0, 5)) = 1
@@ -52,11 +54,12 @@
 
 		// New specular
 		[Toggle(_SPECULAR_ON)] _SpecularEnabled ("Specular Enabled", Float) = 0
-		[Enum(Blinn,0,Blinn Phong,1)] _SpecularMode ("Specular Mode", Float) = 0
+		[Enum(Blinn,0,Blinn Phong,1,Blinn Phong View,2)] _SpecularMode ("Specular Mode", Float) = 1
 		[NoScaleOffset] _SpecMap ("_Specular Map", 2D) = "white" {}
 		[HDR] _SpecularColor ("Specular Color", Color) = (1,1,1,1)
 		[Toggle(_)] _SpecularToonyEnabled ("Toony Specular", Float) = 1
 		_SpecularToonyCutoff ("Specular Cutoff", Range(0,1)) = 1
+		_SpecularIndirectBoost ("Specular Indirect Light Boost", Range(0,3)) = 1
 		
 		// Toon ramp masking
 		[Toggle(_RAMPMASK_ON)] _RampMaskEnabled ("Ramp Masking", Float) = 0
@@ -93,7 +96,7 @@
 		[Enum(Surface,0,Object,1)] _MatCapOrigin("Matcap Origin", Float) = 0
 		
 		// Outline
-		_OutlineWidth ("Outline Width", Float ) = 0
+		_OutlineWidth ("Outline Width", Float ) = 2
 		_OutlineColor ("Outline Tint", Color) = (0,0,0,1)
 		_OutlineTex ("Outline Texture", 2D) = "white" {}
 		[Toggle(_OUTLINE_SCREENSPACE)] _ScreenSpaceOutline ("Screen-Space Outline", Float ) = 0
@@ -104,11 +107,13 @@
 		
 		// Alpha to coverage
 		[Toggle(_ALPHATOCOVERAGE_ON)] _AlphaToCoverage ("Alpha To Coverage", Float) = 0
+		_AlphaToCoverageCutoff ("Cutoff", Range(0,1)) = 0.5
 		
 		// Detail normal
 		[Normal] _DetailNormalMap("Detail Normal Map", 2D) = "bump" {}
 		_DetailNormalMapScale("Detail Normal Scale", Float) = 1.0
 		[Enum(UV0,0,UV1,1)] _UVSec ("UV Map for detail normals", Float) = 0
+		_DetailMask ("Detail Mask", 2D) = "white" {}
 
 		// Vertex Offset
 		[Toggle(_VERTEXOFFSET_ON)] _VertexOffsetEnabled ("Enable Vertex Offset", Float) = 0
@@ -122,6 +127,15 @@
 		_HueShiftAmount ("Hue Shift Amount", Range(0,1)) = 0
 		_HueShiftMask ("Hue Shift Mask", 2D) = "white" {}
 		_HueShiftAmountOverTime ("Hue Shift Amount Over Time", Float) = 0
+
+		// Debug options
+		[Toggle(_DEBUG_ON)] _DebugOptionsEnabled ("Enable Debug Options", Float) = 0 // Turns this entire category on/off using a keyword.
+		[Toggle(_)] _DebugEnabled ("Debug Enabled", Float) = 1 // Turns the feature on/off in the shader itself. Allows the debug options to be "inactive" even if the keyword is enabled, allowing you to switch it on/off.
+		_DebugMinLightBrightness ("Minimum Light Brightness", Float) = 0
+		_DebugMaxLightBrightness ("Maximum Light Brightness", Float) = 10
+		[Toggle(_)] _DebugNormals ("Show Normals", Float) = 0
+		_DebugUVs ("Visualize UV's", Range(0,1)) = 0
+		_DebugUVsOffset ("UV Visualization Offset", Vector) = (-0.5,-0.5,0,0)
 		
 		// Kaj shader optimizer
 		[ShaderOptimizerLockButton] _ShaderOptimized ("", Int) = 0
@@ -165,7 +179,7 @@
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			
 			#pragma shader_feature_local _ALPHATEST_ON
-			#pragma shader_feature_local _ALPHABLEND_ON
+			#pragma shader_feature_local _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature_local _ALPHATOCOVERAGE_ON
 			#pragma shader_feature_local _NORMALMAP
 			#pragma shader_feature_local _EMISSION
@@ -178,6 +192,7 @@
 			#pragma shader_feature_local _HUESHIFT_ON
 			#pragma shader_feature_local _SPECULAR_ON
 			#pragma shader_feature_local _OCCLUSION_ON
+			#pragma shader_feature_local _DEBUG_ON
 
 			#pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
 			#pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -224,7 +239,7 @@
 			#pragma shader_feature_local _OUTLINE_SCREENSPACE
 			
 			#pragma shader_feature_local _ALPHATEST_ON
-			#pragma shader_feature_local _ALPHABLEND_ON
+			#pragma shader_feature_local _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature_local _ALPHATOCOVERAGE_ON
 			#pragma shader_feature_local _NORMALMAP
 			#pragma shader_feature_local _EMISSION
@@ -237,6 +252,7 @@
 			#pragma shader_feature_local _HUESHIFT_ON
 			#pragma shader_feature_local _SPECULAR_ON
 			#pragma shader_feature_local _OCCLUSION_ON
+			#pragma shader_feature_local _DEBUG_ON
 
 			#pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
 			#pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -278,7 +294,7 @@
 			#pragma multi_compile_fog
 			
 			#pragma shader_feature_local _ALPHATEST_ON
-			#pragma shader_feature_local _ALPHABLEND_ON
+			#pragma shader_feature_local _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature_local _ALPHATOCOVERAGE_ON
 			#pragma shader_feature_local _NORMALMAP
 			#pragma shader_feature_local _RAMPMASK_ON
@@ -289,6 +305,7 @@
 			#pragma shader_feature_local _VERTEXOFFSET_ON
 			#pragma shader_feature_local _HUESHIFT_ON
 			#pragma shader_feature_local _SPECULAR_ON
+			#pragma shader_feature_local _DEBUG_ON
 
 			#pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
 			#pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -360,7 +377,7 @@
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			
 			#pragma shader_feature_local _ALPHATEST_ON
-			#pragma shader_feature_local _ALPHABLEND_ON
+			#pragma shader_feature_local _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature_local _NORMALMAP
 			#pragma shader_feature_local _EMISSION
 			#pragma shader_feature_local _RAMPMASK_ON
@@ -371,6 +388,7 @@
 			#pragma shader_feature_local _HUESHIFT_ON
 			#pragma shader_feature_local _SPECULAR_ON
 			#pragma shader_feature_local _OCCLUSION_ON
+			#pragma shader_feature_local _DEBUG_ON
 
 			#pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
 			#pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -419,7 +437,7 @@
 			#pragma shader_feature_local _OUTLINE_SCREENSPACE
 			
 			#pragma shader_feature_local _ALPHATEST_ON
-			#pragma shader_feature_local _ALPHABLEND_ON
+			#pragma shader_feature_local _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature_local _NORMALMAP
 			#pragma shader_feature_local _EMISSION
 			#pragma shader_feature_local _RAMPMASK_ON
@@ -431,6 +449,7 @@
 			#pragma shader_feature_local _HUESHIFT_ON
 			#pragma shader_feature_local _SPECULAR_ON
 			#pragma shader_feature_local _OCCLUSION_ON
+			#pragma shader_feature_local _DEBUG_ON
 
 			#pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
 			#pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP
@@ -474,7 +493,7 @@
 			#pragma multi_compile_fog
 			
 			#pragma shader_feature_local _ALPHATEST_ON
-			#pragma shader_feature_local _ALPHABLEND_ON
+			#pragma shader_feature_local _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature_local _NORMALMAP
 			#pragma shader_feature_local _RAMPMASK_ON
 			#pragma shader_feature_local _RAMPTINT_ON
@@ -484,6 +503,7 @@
 			#pragma shader_feature_local _VERTEXOFFSET_ON
 			#pragma shader_feature_local _HUESHIFT_ON
 			#pragma shader_feature_local _SPECULAR_ON
+			#pragma shader_feature_local _DEBUG_ON
 
 			#pragma shader_feature_local _ _DETAILNORMAL_UV0 _DETAILNORMAL_UV1
 			#pragma shader_feature_local _ _METALLICGLOSSMAP _SPECGLOSSMAP

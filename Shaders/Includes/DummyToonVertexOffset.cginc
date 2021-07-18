@@ -37,6 +37,11 @@ void VertexOffset(inout appdata v)
 	vertexPos = mul(zRotation3dRadians(radians(_VertexOffsetRot.z)), vertexPos);
 	v.vertex = float4(vertexPos, v.vertex.w);
 
+	// Rotate normals
+	v.normal = mul(xRotation3dRadians(radians(_VertexOffsetRot.x)), v.normal);
+	v.normal = mul(yRotation3dRadians(radians(_VertexOffsetRot.y)), v.normal);
+	v.normal = mul(zRotation3dRadians(radians(_VertexOffsetRot.z)), v.normal);
+
 	//Apply local offset
 	v.vertex.xyz += _VertexOffsetPos;
 	
